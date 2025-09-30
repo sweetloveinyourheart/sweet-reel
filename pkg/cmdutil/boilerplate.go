@@ -44,7 +44,9 @@ func BoilerplateRun(serviceType string) (*AppRun, error) {
 		"service", serviceName,
 	)
 
-	readyChan := StartHealthServices(ctx, serviceName, config.Instance().GetInt("healthcheck.port"), config.Instance().GetInt("healthcheck.web.port"))
+	healthCheckPort := config.Instance().GetInt("healthcheck.port")
+	healthCheckWebPort := config.Instance().GetInt("healthcheck.web.port")
+	readyChan := StartHealthServices(ctx, serviceName, healthCheckPort, healthCheckWebPort)
 
 	return &AppRun{
 		serviceType: serviceType,

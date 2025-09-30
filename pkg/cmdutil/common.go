@@ -18,6 +18,9 @@ import (
 	"google.golang.org/grpc/reflection"
 )
 
+const HealthCheckPortGRPC = 5051
+const HealthCheckPortHTTP = 5052
+
 func StartHealthServices(ctx context.Context, serviceName string, grpcPort int, webPort int) chan bool {
 	readyHTTP := make(chan bool)
 	readyGRPC := make(chan bool)
