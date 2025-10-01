@@ -32,7 +32,7 @@ var README_FOOTER = fmt.Sprintf(`
 
 func generateDocs(cmd *cobra.Command) {
 	out := new(bytes.Buffer)
-	err := genMarkdownCustom(cmd, out, func(s string) string { return s })
+	err := genMarkdownCustom(cmd, out)
 	if err != nil {
 		golog.Fatal(err)
 	}
@@ -47,7 +47,7 @@ func generateDocs(cmd *cobra.Command) {
 	}
 }
 
-func genMarkdownCustom(rootCmd *cobra.Command, w io.Writer, linkHandler func(string) string) error {
+func genMarkdownCustom(rootCmd *cobra.Command, w io.Writer) error {
 	cmds := append([]*cobra.Command{rootCmd}, rootCmd.Commands()...)
 	if _, err := w.Write([]byte(README_HEADER)); err != nil {
 		return err
