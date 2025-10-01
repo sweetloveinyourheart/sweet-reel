@@ -42,7 +42,7 @@ function fixBadImports() {
     done
 }
 
-app-echo "Running goimports..."
+app_echo "Running goimports..."
 
 currentBranch=$(git rev-parse --abbrev-ref HEAD)
 
@@ -79,11 +79,11 @@ if [[ "$arg1" == "fix-goimports" ]]; then
     fixBadImports $badImports2
     fixBadImports $badImports3
     fixBadImports $badImports4
-    [ -z "$badImports1" ] || app-echo-red "$badImports1"
-    [ -z "$badImports2" ] || app-echo-red "$badImports2"
-    [ -z "$badImports3" ] || app-echo-red "$badImports3"
-    [ -z "$badImports4" ] || app-echo-red "$badImports4"
-    app-echo-green "goimports fixed."
+    [ -z "$badImports1" ] || app_echo_red "$badImports1"
+    [ -z "$badImports2" ] || app_echo_red "$badImports2"
+    [ -z "$badImports3" ] || app_echo_red "$badImports3"
+    [ -z "$badImports4" ] || app_echo_red "$badImports4"
+    app_echo_green "goimports fixed."
     exit 0
 fi
 
@@ -95,16 +95,16 @@ checkForMalformedFile $badImports3 || goImportsExitCode=1
 checkForMalformedFile $badImports4 || goImportsExitCode=1
 
 if [ $goImportsExitCode -eq 1 ]; then
-    app-echo-red "goimports failed for the following files:"
-    [ -z "$badImports1" ] || app-echo-red "$badImports1"
-    [ -z "$badImports2" ] || app-echo-red "$badImports2"
-    [ -z "$badImports3" ] || app-echo-red "$badImports3"
-    [ -z "$badImports4" ] || app-echo-red "$badImports4"
-    app-echo-red "Please run 'goimports --local "github.com/sweetloveinyourheart/sweet-reel" -w <file>' on the above files (or run 'make goimports') and commit the changes."
+    app_echo_red "goimports failed for the following files:"
+    [ -z "$badImports1" ] || app_echo_red "$badImports1"
+    [ -z "$badImports2" ] || app_echo_red "$badImports2"
+    [ -z "$badImports3" ] || app_echo_red "$badImports3"
+    [ -z "$badImports4" ] || app_echo_red "$badImports4"
+    app_echo_red "Please run 'goimports --local "github.com/sweetloveinyourheart/sweet-reel" -w <file>' on the above files (or run 'make goimports') and commit the changes."
     exit 1
 fi
 
-app-echo "Running golangci-lint..."
+app_echo "Running golangci-lint..."
 go run github.com/golangci/golangci-lint/cmd/golangci-lint@v1.64.5 run --timeout 10m0s ./... || ( app-echo-red "Linting failed." && exit 1 )
 
-app-echo-green "Linting passed."
+app_echo_green "Linting passed."

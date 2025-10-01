@@ -8,13 +8,13 @@ gray='\033[0;90m'
 cyan='\033[0;36m'
 nc='\033[0m' # No Color, use this to terminate color sequences
 
-app-timestamp() {
+app_timestamp() {
     date +"%H:%M:%S"
     return 0
 }
 
-app-echo() {
-    local timestamp=$(app-timestamp)
+app_echo() {
+    local timestamp=$(app_timestamp)
     local callLocation=$(caller)
     local callLocationFile=$(echo $callLocation | cut -d' ' -f2)
     local callLocationLine=$(echo $callLocation | cut -d' ' -f1)
@@ -22,8 +22,8 @@ app-echo() {
     return 0
 }
 
-app-echo-red() {
-    local timestamp=$(app-timestamp)
+app_echo_red() {
+    local timestamp=$(app_timestamp)
     local callLocation=$(caller)
     local callLocationFile=$(echo $callLocation | cut -d' ' -f2)
     local callLocationLine=$(echo $callLocation | cut -d' ' -f1)
@@ -31,8 +31,8 @@ app-echo-red() {
     return 0
 }
 
-app-echo-yellow() {
-    local timestamp=$(app-timestamp)
+app_echo_yellow() {
+    local timestamp=$(app_timestamp)
     local callLocation=$(caller)
     local callLocationFile=$(echo $callLocation | cut -d' ' -f2)
     local callLocationLine=$(echo $callLocation | cut -d' ' -f1)
@@ -40,8 +40,8 @@ app-echo-yellow() {
     return 0
 }
 
-app-echo-green() {
-    local timestamp=$(app-timestamp)
+app_echo_green() {
+    local timestamp=$(app_timestamp)
     local callLocation=$(caller)
     local callLocationFile=$(echo $callLocation | cut -d' ' -f2)
     local callLocationLine=$(echo $callLocation | cut -d' ' -f1)
@@ -49,8 +49,8 @@ app-echo-green() {
     return 0
 }
 
-app-echo-blue() {
-    local timestamp=$(app-timestamp)
+app_echo_blue() {
+    local timestamp=$(app_timestamp)
     local callLocation=$(caller)
     local callLocationFile=$(echo $callLocation | cut -d' ' -f2)
     local callLocationLine=$(echo $callLocation | cut -d' ' -f1)

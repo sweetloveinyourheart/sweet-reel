@@ -4,7 +4,7 @@
 set -e
 
 function resetFiles() {
-    app-echo "Resetting files matching $1"
+    app_echo "Resetting files matching $1"
     local filePattern=$1
     local files=$(find proto -name "$filePattern" -type f)
     for file in $files; do
@@ -18,8 +18,8 @@ resetFiles "*.connect.go"
 goImportsCmd="go run golang.org/x/tools/cmd/goimports --local "github.com/sweetloveinyourheart/sweet-reel" -w ./"
 goGenerateCmd="go generate --tags generate ./..."
 
-app-echo "Running goimports..."
+app_echo "Running goimports..."
 $goImportsCmd
 
-app-echo "Running go generate..."
-$goGenerateCmd || (app-echo "go generate failed, retrying after goimports..." && $goImportsCmd && $goGenerateCmd)
+app_echo "Running go generate..."
+$goGenerateCmd || (app_echo "go generate failed, retrying after goimports..." && $goImportsCmd && $goGenerateCmd)
