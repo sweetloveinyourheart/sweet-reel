@@ -10,8 +10,9 @@ import (
 	"github.com/golang-migrate/migrate/v4"
 	migrateDriver "github.com/golang-migrate/migrate/v4/database/pgx"
 	"github.com/golang-migrate/migrate/v4/source/iofs"
-	"github.com/sweetloveinyourheart/sweet-reel/pkg/logger"
 	"go.uber.org/zap"
+
+	"github.com/sweetloveinyourheart/sweet-reel/pkg/logger"
 )
 
 // PerformMigrations will automatically connect to the database and perform any unapplied migrations from the passed in

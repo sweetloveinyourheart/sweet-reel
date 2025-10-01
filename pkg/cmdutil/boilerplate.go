@@ -11,11 +11,12 @@ import (
 	"syscall"
 
 	"github.com/spf13/cobra"
+	"go.uber.org/zap"
+
 	"github.com/sweetloveinyourheart/sweet-reel/pkg/config"
 	"github.com/sweetloveinyourheart/sweet-reel/pkg/db"
 	"github.com/sweetloveinyourheart/sweet-reel/pkg/logger"
 	"github.com/sweetloveinyourheart/sweet-reel/pkg/stringsutil"
-	"go.uber.org/zap"
 )
 
 type AppRun struct {

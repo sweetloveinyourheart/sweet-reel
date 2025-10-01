@@ -10,12 +10,15 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/sweetloveinyourheart/sweet-reel/pkg/logger"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/health"
 	"google.golang.org/grpc/health/grpc_health_v1"
 	"google.golang.org/grpc/reflection"
+
+	"github.com/sweetloveinyourheart/sweet-reel/pkg/logger"
+
+	_ "golang.org/x/tools/go/packages"
 )
 
 const HealthCheckPortGRPC = 5051

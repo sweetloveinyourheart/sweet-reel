@@ -87,6 +87,12 @@ func InitializeService(command ...*cobra.Command) {
 		ServiceRootCmd.AddCommand(c)
 	}
 
+	if len(os.Args) > 1 && os.Args[1] == "generate" {
+		generateDocs(ServiceRootCmd)
+		generateSchema(ServiceRootCmd)
+		return
+	}
+
 	if err := ServiceRootCmd.Execute(); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
