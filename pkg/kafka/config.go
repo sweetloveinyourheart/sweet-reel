@@ -1,9 +1,12 @@
 package kafka
 
 import (
+	"fmt"
+	"strings"
 	"time"
 
 	"github.com/IBM/sarama"
+	"github.com/sweetloveinyourheart/sweet-reel/pkg/config"
 )
 
 // Config holds the configuration for Kafka client
@@ -38,6 +41,62 @@ func DefaultConfig() *Config {
 		IdempotentWrites: true,
 		SecurityProtocol: "PLAINTEXT",
 	}
+}
+
+func ServiceConfig(serviceType string) *Config {
+	cfg := DefaultConfig()
+
+	if brokersStr := config.Instance().GetString(fmt.Sprintf("%s.kafka.brokers", serviceType)); brokersStr != "" {
+		cfg.Brokers = strings.Split(brokersStr, ",")
+		for i, broker := range cfg.Brokers {
+			cfg.Brokers[i] = strings.TrimSpace(broker)
+		}
+	}
+
+	// Basic producer settings
+	cfg.RetryMax = int(config.Instance().GetInt32(fmt.Sprintf("%s.kafka.retry_max", serviceType)))
+	cfg.RetryBackoff = time.Duration(config.Instance().GetInt64(fmt.Sprintf("%s.kafka.retry_backoff_ms", serviceType))) * time.Millisecond
+	cfg.FlushFrequency = time.Duration(config.Instance().GetInt64(fmt.Sprintf("%s.kafka.flush_frequency_ms", serviceType))) * time.Millisecond
+	cfg.FlushMessages = int(config.Instance().GetInt32(fmt.Sprintf("%s.kafka.flush_messages", serviceType)))
+	cfg.FlushBytes = int(config.Instance().GetInt32(fmt.Sprintf("%s.kafka.flush_bytes", serviceType)))
+	cfg.IdempotentWrites = config.Instance().GetBool(fmt.Sprintf("%s.kafka.idempotent_writes", serviceType))
+
+	// Parse required acks
+	switch strings.ToLower(config.Instance().GetString(fmt.Sprintf("%s.kafka.required_acks", serviceType))) {
+	case "none", "0":
+		cfg.RequiredAcks = sarama.NoResponse
+	case "leader", "1":
+		cfg.RequiredAcks = sarama.WaitForLocal
+	case "all", "-1":
+		cfg.RequiredAcks = sarama.WaitForAll
+	default:
+		cfg.RequiredAcks = sarama.WaitForAll
+	}
+
+	// Parse compression
+	switch strings.ToLower(config.Instance().GetString(fmt.Sprintf("%s.kafka.compression", serviceType))) {
+	case "none":
+		cfg.Compression = sarama.CompressionNone
+	case "gzip":
+		cfg.Compression = sarama.CompressionGZIP
+	case "snappy":
+		cfg.Compression = sarama.CompressionSnappy
+	case "lz4":
+		cfg.Compression = sarama.CompressionLZ4
+	case "zstd":
+		cfg.Compression = sarama.CompressionZSTD
+	default:
+		cfg.Compression = sarama.CompressionSnappy
+	}
+
+	// Security settings
+	cfg.SecurityProtocol = config.Instance().GetString(fmt.Sprintf("%s.kafka.security_protocol", serviceType))
+	cfg.SASLMechanism = config.Instance().GetString(fmt.Sprintf("%s.kafka.sasl_mechanism", serviceType))
+	cfg.SASLUsername = config.Instance().GetString(fmt.Sprintf("%s.kafka.sasl_username", serviceType))
+	cfg.SASLPassword = config.Instance().GetString(fmt.Sprintf("%s.kafka.sasl_password", serviceType))
+	cfg.TLSEnabled = config.Instance().GetBool(fmt.Sprintf("%s.kafka.tls_enabled", serviceType))
+
+	return cfg
 }
 
 // ToSaramaConfig converts our config to Sarama config

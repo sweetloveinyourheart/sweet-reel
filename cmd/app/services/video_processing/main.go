@@ -3,10 +3,7 @@ package appvideoprocessing
 import (
 	"context"
 	"fmt"
-	"strings"
-	"time"
 
-	"github.com/IBM/sarama"
 	"github.com/samber/do"
 	"github.com/spf13/cobra"
 
@@ -55,7 +52,7 @@ func Command(rootCmd *cobra.Command) *cobra.Command {
 	}
 
 	// config options
-	config.Int64Default(dataProviderCommand, "video_processing.grpc.port", "grpc-port", DEFAULT_VIDEO_PROCESSING_GRPC_PORT, "GRPC Port to listen on", "VIDEO_PROCESSING_GRPC_PORT")
+	config.Int64Default(dataProviderCommand, fmt.Sprintf("%s.grpc.port", serviceType), "grpc-port", DEFAULT_VIDEO_PROCESSING_GRPC_PORT, "GRPC Port to listen on", "VIDEO_PROCESSING_GRPC_PORT")
 
 	cmdutil.BoilerplateFlagsCore(dataProviderCommand, serviceType, envPrefix)
 	cmdutil.BoilerplateFlagsKafka(dataProviderCommand, serviceType, envPrefix)
@@ -78,63 +75,19 @@ func setupDependencies(ctx context.Context) error {
 }
 
 func initKafkaClient(ctx context.Context) (*kafka.Client, error) {
-	cfg := kafka.DefaultConfig()
-
-	if brokersStr := config.Instance().GetString("video_processing.kafka.brokers"); brokersStr != "" {
-		cfg.Brokers = strings.Split(brokersStr, ",")
-		for i, broker := range cfg.Brokers {
-			cfg.Brokers[i] = strings.TrimSpace(broker)
-		}
-	}
-
-	// Basic producer settings
-	cfg.RetryMax = int(config.Instance().GetInt32("video_processing.kafka.retry_max"))
-	cfg.RetryBackoff = time.Duration(config.Instance().GetInt64("video_processing.kafka.retry_backoff_ms")) * time.Millisecond
-	cfg.FlushFrequency = time.Duration(config.Instance().GetInt64("video_processing.kafka.flush_frequency_ms")) * time.Millisecond
-	cfg.FlushMessages = int(config.Instance().GetInt32("video_processing.kafka.flush_messages"))
-	cfg.FlushBytes = int(config.Instance().GetInt32("video_processing.kafka.flush_bytes"))
-	cfg.IdempotentWrites = config.Instance().GetBool("video_processing.kafka.idempotent_writes")
-
-	// Parse required acks
-	switch strings.ToLower(config.Instance().GetString("video_processing.kafka.required_acks")) {
-	case "none", "0":
-		cfg.RequiredAcks = sarama.NoResponse
-	case "leader", "1":
-		cfg.RequiredAcks = sarama.WaitForLocal
-	case "all", "-1":
-		cfg.RequiredAcks = sarama.WaitForAll
-	default:
-		cfg.RequiredAcks = sarama.WaitForAll
-	}
-
-	// Parse compression
-	switch strings.ToLower(config.Instance().GetString("video_processing.kafka.compression")) {
-	case "none":
-		cfg.Compression = sarama.CompressionNone
-	case "gzip":
-		cfg.Compression = sarama.CompressionGZIP
-	case "snappy":
-		cfg.Compression = sarama.CompressionSnappy
-	case "lz4":
-		cfg.Compression = sarama.CompressionLZ4
-	case "zstd":
-		cfg.Compression = sarama.CompressionZSTD
-	default:
-		cfg.Compression = sarama.CompressionSnappy
-	}
-
-	// Security settings
-	cfg.SecurityProtocol = config.Instance().GetString("video_processing.kafka.security_protocol")
-	cfg.SASLMechanism = config.Instance().GetString("video_processing.kafka.sasl_mechanism")
-	cfg.SASLUsername = config.Instance().GetString("video_processing.kafka.sasl_username")
-	cfg.SASLPassword = config.Instance().GetString("video_processing.kafka.sasl_password")
-	cfg.TLSEnabled = config.Instance().GetBool("video_processing.kafka.tls_enabled")
+	cfg := kafka.ServiceConfig(serviceType)
 
 	// Init client
 	client, err := kafka.NewClient(cfg)
 	if err != nil {
 		return nil, err
 	}
+
+	// Gracefull shutdown
+	go func() {
+		<-ctx.Done()
+		client.Close()
+	}()
 
 	return client, nil
 }
