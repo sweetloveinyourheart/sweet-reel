@@ -3,7 +3,7 @@
 set -e
 set -u
 
-(minio server /data &)
+(minio server /data --console-address ":9001" &)
 while [ "$(mc ready local)" != "The cluster is ready" ]; do
     sleep 1;
 done

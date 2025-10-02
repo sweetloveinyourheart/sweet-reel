@@ -17,6 +17,9 @@ services:
     volumes:
       - ./minio/create_buckets.sh:/create_buckets.sh
       - ./minio_data_:/data
+    depends_on:
+      phase_one_leader:
+        condition: service_completed_successfully
     networks:
       fs_test_net:
         ipv4_address: "172.16.244.140"
