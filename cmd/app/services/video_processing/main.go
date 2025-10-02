@@ -11,9 +11,8 @@ import (
 	"github.com/sweetloveinyourheart/sweet-reel/pkg/config"
 	"github.com/sweetloveinyourheart/sweet-reel/pkg/kafka"
 	"github.com/sweetloveinyourheart/sweet-reel/pkg/logger"
-	"github.com/sweetloveinyourheart/sweet-reel/pkg/s3"
-
-	awsS3 "github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/sweetloveinyourheart/sweet-reel/pkg/storage"
+	"github.com/sweetloveinyourheart/sweet-reel/pkg/storage/s3"
 )
 
 const DEFAULT_VIDEO_PROCESSING_GRPC_PORT = 50055
@@ -75,7 +74,7 @@ func setupDependencies(ctx context.Context) error {
 		return err
 	}
 
-	initS3Client, err := initS3Client(ctx)
+	storageClient, err := initStorageClient(ctx)
 	if err != nil {
 		return err
 	}
@@ -84,8 +83,8 @@ func setupDependencies(ctx context.Context) error {
 		return kafkaClient, nil
 	})
 
-	do.Provide(nil, func(i *do.Injector) (*awsS3.Client, error) {
-		return initS3Client, nil
+	do.Provide(nil, func(i *do.Injector) (storage.Storage, error) {
+		return storageClient, nil
 	})
 
 	return nil
@@ -109,9 +108,13 @@ func initKafkaClient(ctx context.Context) (*kafka.Client, error) {
 	return client, nil
 }
 
-func initS3Client(ctx context.Context) (*awsS3.Client, error) {
+func initStorageClient(ctx context.Context) (storage.Storage, error) {
+	// Init S3
 	cfg := s3.ServiceConfig(serviceType)
-	s3Client := s3.CreateS3Client(ctx, cfg)
+	storageClient, err := storage.GetStorageInstance(ctx, storage.Storage_S3, cfg)
+	if err != nil {
+		return nil, err
+	}
 
-	return s3Client, nil
+	return storageClient, nil
 }
