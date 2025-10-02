@@ -219,7 +219,7 @@ func (s *healthServer) disableReadyHandler(w http.ResponseWriter, r *http.Reques
 	w.WriteHeader(http.StatusAccepted)
 }
 
-func (s *healthServer) JSONResponse(w http.ResponseWriter, r *http.Request, result interface{}) {
+func (s *healthServer) JSONResponse(w http.ResponseWriter, r *http.Request, result any) {
 	body, err := json.Marshal(result)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)

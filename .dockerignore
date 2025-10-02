@@ -1,0 +1,24 @@
+# Directories
+.github
+client
+dockerfiles
+docs
+node_modules
+scripts
+
+#tests - TODO - Enable this once the seed application is remediated, and remove the exceptions below
+tests/logs
+
+# Files
+.dockerignore
+.env
+.env.local
+.env.local.sample
+.env.sample
+.envrc
+.gitignore
+.golangci.yaml
+.tool-versions
+LICENSE
+Makefile
+README.md

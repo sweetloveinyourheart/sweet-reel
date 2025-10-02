@@ -35,4 +35,4 @@ app-build:
 
 app-docker:
 	@make app-build $(optionalReproFlag) extraArgs=$(extraArgs)
-	@make build-docker buildPlatform=$(buildPlatorm) target=app
+	@make build-docker buildPlatform=$(buildPlatorm) target=srl

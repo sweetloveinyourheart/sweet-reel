@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"slices"
 
 	"github.com/samber/lo"
 	"github.com/spf13/cobra"
@@ -10,14 +11,10 @@ import (
 )
 
 const (
-	ServerId             = "server.id"
-	ServerReplicaNumber  = "server.replica_number"
-	ServerReplicaCount   = "server.replica_count"
-	ServerNamespace      = "server.namespace"
-	NatsStreamReplicas   = "nats.stream.replicas"
-	NatsStreamStorage    = "nats.stream.storage"
-	NatsConsumerReplicas = "nats.consumer.replicas"
-	NatsConsumerStorage  = "nats.consumer.storage"
+	ServerId            = "server.id"
+	ServerReplicaNumber = "server.replica_number"
+	ServerReplicaCount  = "server.replica_count"
+	ServerNamespace     = "server.namespace"
 )
 
 var Registry = make(map[*pflag.Flag]Binding)
@@ -55,7 +52,7 @@ func Bind(flag *pflag.Flag, name string, env ...string) {
 	registerBinding(flag, name, flag.Usage, nil, false, env...)
 }
 
-func BindWithDefault(flag *pflag.Flag, name string, defaultValue interface{}, env ...string) {
+func BindWithDefault(flag *pflag.Flag, name string, defaultValue any, env ...string) {
 	if flag == nil {
 		panic(fmt.Sprintf("cannot bind pFlag '%s' no such flag was registered", name))
 	}
@@ -168,11 +165,9 @@ func registerBinding(flag *pflag.Flag, name string, usage string, defaultValue a
 func ResolveRequireFlags(cmd *cobra.Command) {
 	cmd.Flags().VisitAll(func(f *pflag.Flag) {
 		lookup := Registry[f]
-		for _, l := range lookup.Aliases {
-			if viper.IsSet(l) {
-				_ = cmd.Flags().SetAnnotation(f.Name, cobra.BashCompOneRequiredFlag, []string{"false"})
-				return
-			}
+		if slices.ContainsFunc(lookup.Aliases, viper.IsSet) {
+			_ = cmd.Flags().SetAnnotation(f.Name, cobra.BashCompOneRequiredFlag, []string{"false"})
+			return
 		}
 	})
 }

@@ -35,11 +35,11 @@ RUN adduser -S -G app app
 #=======================================================
 # SWEET REEL - Gather, set permissions, and build the app image
 #=======================================================
-FROM gather-files-base AS gather-app
+FROM gather-files-base AS gather-sweet-reel
 COPY cmd/app/app /cmd/app/app
 RUN chown -R app:app /cmd/app/app
 
-FROM appcontainer AS app
-COPY --from=gather-app /cmd/app/app /app
+FROM appcontainer AS srl
+COPY --from=gather-sweet-reel /cmd/app/app /app
 USER app
 CMD [ "./app" ]

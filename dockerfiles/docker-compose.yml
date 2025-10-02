@@ -7,10 +7,10 @@ services:
       fs_test_net:
         ipv4_address: "172.16.244.7"
 
-  sr_database:
+  srl_database:
     image: ${POSTGRES_CONTAINER_IMAGE}
     container_name: ${COMPOSE_PROJECT_NAME:-test}_database
-    hostname: sr_database
+    hostname: srl_database
     environment:
       "POSTGRES_DB": "postgres"
       "POSTGRES_USER": "root_admin"
@@ -33,7 +33,7 @@ services:
       timeout: 4s
       retries: 30
 
-  sr_redis:
+  srl_redis:
     hostname: redis
     image: ${REDIS_CONTAINER_IMAGE}
     container_name: ${COMPOSE_PROJECT_NAME:-test}-redis
@@ -53,6 +53,78 @@ services:
       interval: 5s
       timeout: 4s
       retries: 30
+
+  srl_kafka:
+    hostname: kafka
+    image: ${KAFKA_CONTAINER_IMAGE}
+    container_name: ${COMPOSE_PROJECT_NAME:-test}-kafka
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT_HOST://localhost:9092,PLAINTEXT://kafka:19092'
+      KAFKA_LISTENERS: 'PLAINTEXT_HOST://0.0.0.0:9092,PLAINTEXT://0.0.0.0:19092,CONTROLLER://0.0.0.0:9093'
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka:9093'
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      CLUSTER_ID: '4L6g3nShT-eMCtK--X86sw'
+    ports:
+      - "9092:9092"
+    networks:
+      fs_test_net:
+        ipv4_address: "172.16.244.61"
+    depends_on:
+      phase_one_leader:
+        condition: service_completed_successfully
+    healthcheck:
+      test: [ "CMD-SHELL", "/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092" ]
+      start_period: 90s
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  phase_two_leader:
+    image: ${ALPINE_CONTAINER_IMAGE}
+    container_name: ${COMPOSE_PROJECT_NAME:-test}_phase_two_leader
+    entrypoint: echo "Phase Two Leader Launch - Core Services" && exit 0
+    networks:
+      fs_test_net:
+        ipv4_address: "172.16.244.7"
+    depends_on:
+      srl_database:
+        condition: service_healthy
+      srl_redis:
+        condition: service_healthy
+      srl_kafka:
+        condition: service_healthy
+
+  video_processing:
+    image: srl:latest
+    container_name: ${COMPOSE_PROJECT_NAME:-test}_video_processing
+    hostname: video_processing
+    environment:
+      "SWEET_REEL_SERVICE": "video_processing"
+      "VIDEO_PROCESSING_ID": "00000000-0000-0000-0000-000000000055"
+      "VIDEO_PROCESSING_SECRETS_TOKEN_SIGNING_KEY": "secr3t_p0ck3r"
+      "VIDEO_PROCESSING_GRPC_PORT": 50055
+      "VIDEO_PROCESSING_KAFKA_BROKERS": "kafka:9092"
+    ports:
+      - 50055:50055 # GRPC port
+    networks:
+      fs_test_net:
+        ipv4_address: "172.16.244.25"
+    healthcheck:
+      test: [ "CMD-SHELL", "/app check http localhost:5052/healthz" ]
+      start_period: 90s
+      interval: 5s
+      timeout: 4s
+      retries: 30
+    depends_on:
+      phase_two_leader:
+        condition: service_completed_successfully 
 
 networks:
   fs_test_net:

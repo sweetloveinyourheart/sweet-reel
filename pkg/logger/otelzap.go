@@ -386,7 +386,7 @@ func (s *SugaredLogger) Desugar() *Logger {
 // forgiving: a separate error is logged, but the key-value pair is skipped
 // and execution continues. Passing an orphaned key triggers similar behavior:
 // panics in development and errors in production.
-func (s *SugaredLogger) With(args ...interface{}) *SugaredLogger {
+func (s *SugaredLogger) With(args ...any) *SugaredLogger {
 	return &SugaredLogger{
 		SugaredLogger: s.SugaredLogger.With(args...),
 		skipCaller:    s.skipCaller,
@@ -403,50 +403,50 @@ func (s *SugaredLogger) Ctx(ctx context.Context) SugaredLoggerWithCtx {
 }
 
 // Debugf uses fmt.Sprintf to log a templated message.
-func (s *SugaredLogger) DebugfContext(ctx context.Context, template string, args ...interface{}) {
+func (s *SugaredLogger) DebugfContext(ctx context.Context, template string, args ...any) {
 	s.logArgs(ctx, zap.DebugLevel, template, args)
 	s.Debugf(template, args...)
 }
 
 // Infof uses fmt.Sprintf to log a templated message.
-func (s *SugaredLogger) InfofContext(ctx context.Context, template string, args ...interface{}) {
+func (s *SugaredLogger) InfofContext(ctx context.Context, template string, args ...any) {
 	s.logArgs(ctx, zap.InfoLevel, template, args)
 	s.Infof(template, args...)
 }
 
 // Warnf uses fmt.Sprintf to log a templated message.
-func (s *SugaredLogger) WarnfContext(ctx context.Context, template string, args ...interface{}) {
+func (s *SugaredLogger) WarnfContext(ctx context.Context, template string, args ...any) {
 	s.logArgs(ctx, zap.WarnLevel, template, args)
 	s.Warnf(template, args...)
 }
 
 // Errorf uses fmt.Sprintf to log a templated message.
-func (s *SugaredLogger) ErrorfContext(ctx context.Context, template string, args ...interface{}) {
+func (s *SugaredLogger) ErrorfContext(ctx context.Context, template string, args ...any) {
 	s.logArgs(ctx, zap.ErrorLevel, template, args)
 	s.Errorf(template, args...)
 }
 
 // DPanicf uses fmt.Sprintf to log a templated message. In development, the
 // logger then panics. (See DPanicLevel for details.)
-func (s *SugaredLogger) DPanicfContext(ctx context.Context, template string, args ...interface{}) {
+func (s *SugaredLogger) DPanicfContext(ctx context.Context, template string, args ...any) {
 	s.logArgs(ctx, zap.DPanicLevel, template, args)
 	s.DPanicf(template, args...)
 }
 
 // Panicf uses fmt.Sprintf to log a templated message, then panics.
-func (s *SugaredLogger) PanicfContext(ctx context.Context, template string, args ...interface{}) {
+func (s *SugaredLogger) PanicfContext(ctx context.Context, template string, args ...any) {
 	s.logArgs(ctx, zap.PanicLevel, template, args)
 	s.Panicf(template, args...)
 }
 
 // Fatalf uses fmt.Sprintf to log a templated message, then calls os.Exit.
-func (s *SugaredLogger) FatalfContext(ctx context.Context, template string, args ...interface{}) {
+func (s *SugaredLogger) FatalfContext(ctx context.Context, template string, args ...any) {
 	s.logArgs(ctx, zap.FatalLevel, template, args)
 	s.Fatalf(template, args...)
 }
 
 func (s *SugaredLogger) logArgs(
-	ctx context.Context, lvl zapcore.Level, template string, args []interface{},
+	ctx context.Context, lvl zapcore.Level, template string, args []any,
 ) {
 	if lvl < s.l.minLevel {
 		return
@@ -465,7 +465,7 @@ func (s *SugaredLogger) logArgs(
 // Debugw logs a message with some additional context. The variadic key-value
 // pairs are treated as they are in With.
 func (s *SugaredLogger) DebugwContext(
-	ctx context.Context, msg string, keysAndValues ...interface{},
+	ctx context.Context, msg string, keysAndValues ...any,
 ) {
 	keysAndValues = s.logKVs(ctx, zap.DebugLevel, msg, keysAndValues)
 	s.Debugw(msg, keysAndValues...)
@@ -474,7 +474,7 @@ func (s *SugaredLogger) DebugwContext(
 // Infow logs a message with some additional context. The variadic key-value
 // pairs are treated as they are in With.
 func (s *SugaredLogger) InfowContext(
-	ctx context.Context, msg string, keysAndValues ...interface{},
+	ctx context.Context, msg string, keysAndValues ...any,
 ) {
 	keysAndValues = s.logKVs(ctx, zap.InfoLevel, msg, keysAndValues)
 	s.Infow(msg, keysAndValues...)
@@ -483,7 +483,7 @@ func (s *SugaredLogger) InfowContext(
 // Warnw logs a message with some additional context. The variadic key-value
 // pairs are treated as they are in With.
 func (s *SugaredLogger) WarnwContext(
-	ctx context.Context, msg string, keysAndValues ...interface{},
+	ctx context.Context, msg string, keysAndValues ...any,
 ) {
 	keysAndValues = s.logKVs(ctx, zap.WarnLevel, msg, keysAndValues)
 	s.Warnw(msg, keysAndValues...)
@@ -492,7 +492,7 @@ func (s *SugaredLogger) WarnwContext(
 // Errorw logs a message with some additional context. The variadic key-value
 // pairs are treated as they are in With.
 func (s *SugaredLogger) ErrorwContext(
-	ctx context.Context, msg string, keysAndValues ...interface{},
+	ctx context.Context, msg string, keysAndValues ...any,
 ) {
 	keysAndValues = s.logKVs(ctx, zap.ErrorLevel, msg, keysAndValues)
 	s.Errorw(msg, keysAndValues...)
@@ -502,7 +502,7 @@ func (s *SugaredLogger) ErrorwContext(
 // logger then panics. (See DPanicLevel for details.) The variadic key-value
 // pairs are treated as they are in With.
 func (s *SugaredLogger) DPanicwContext(
-	ctx context.Context, msg string, keysAndValues ...interface{},
+	ctx context.Context, msg string, keysAndValues ...any,
 ) {
 	keysAndValues = s.logKVs(ctx, zap.DPanicLevel, msg, keysAndValues)
 	s.DPanicw(msg, keysAndValues...)
@@ -511,7 +511,7 @@ func (s *SugaredLogger) DPanicwContext(
 // Panicw logs a message with some additional context, then panics. The
 // variadic key-value pairs are treated as they are in With.
 func (s *SugaredLogger) PanicwContext(
-	ctx context.Context, msg string, keysAndValues ...interface{},
+	ctx context.Context, msg string, keysAndValues ...any,
 ) {
 	keysAndValues = s.logKVs(ctx, zap.PanicLevel, msg, keysAndValues)
 	s.Panicw(msg, keysAndValues...)
@@ -520,15 +520,15 @@ func (s *SugaredLogger) PanicwContext(
 // Fatalw logs a message with some additional context, then calls os.Exit. The
 // variadic key-value pairs are treated as they are in With.
 func (s *SugaredLogger) FatalwContext(
-	ctx context.Context, msg string, keysAndValues ...interface{},
+	ctx context.Context, msg string, keysAndValues ...any,
 ) {
 	keysAndValues = s.logKVs(ctx, zap.FatalLevel, msg, keysAndValues)
 	s.Fatalw(msg, keysAndValues...)
 }
 
 func (s *SugaredLogger) logKVs(
-	ctx context.Context, lvl zapcore.Level, msg string, kvs []interface{},
-) []interface{} {
+	ctx context.Context, lvl zapcore.Level, msg string, kvs []any,
+) []any {
 	if lvl < s.l.minLevel {
 		return kvs
 	}
@@ -583,44 +583,44 @@ func (s SugaredLoggerWithCtx) Desugar() LoggerWithCtx {
 }
 
 // Debugf uses fmt.Sprintf to log a templated message.
-func (s SugaredLoggerWithCtx) Debugf(template string, args ...interface{}) {
+func (s SugaredLoggerWithCtx) Debugf(template string, args ...any) {
 	s.s.logArgs(s.ctx, zap.DebugLevel, template, args)
 	s.s.skipCaller.Debugf(template, args...)
 }
 
 // Infof uses fmt.Sprintf to log a templated message.
-func (s SugaredLoggerWithCtx) Infof(template string, args ...interface{}) {
+func (s SugaredLoggerWithCtx) Infof(template string, args ...any) {
 	s.s.logArgs(s.ctx, zap.InfoLevel, template, args)
 	s.s.skipCaller.Infof(template, args...)
 }
 
 // Warnf uses fmt.Sprintf to log a templated message.
-func (s SugaredLoggerWithCtx) Warnf(template string, args ...interface{}) {
+func (s SugaredLoggerWithCtx) Warnf(template string, args ...any) {
 	s.s.logArgs(s.ctx, zap.WarnLevel, template, args)
 	s.s.skipCaller.Warnf(template, args...)
 }
 
 // Errorf uses fmt.Sprintf to log a templated message.
-func (s SugaredLoggerWithCtx) Errorf(template string, args ...interface{}) {
+func (s SugaredLoggerWithCtx) Errorf(template string, args ...any) {
 	s.s.logArgs(s.ctx, zap.ErrorLevel, template, args)
 	s.s.skipCaller.Errorf(template, args...)
 }
 
 // DPanicf uses fmt.Sprintf to log a templated message. In development, the
 // logger then panics. (See DPanicLevel for details.)
-func (s SugaredLoggerWithCtx) DPanicf(template string, args ...interface{}) {
+func (s SugaredLoggerWithCtx) DPanicf(template string, args ...any) {
 	s.s.logArgs(s.ctx, zap.DPanicLevel, template, args)
 	s.s.skipCaller.DPanicf(template, args...)
 }
 
 // Panicf uses fmt.Sprintf to log a templated message, then panics.
-func (s SugaredLoggerWithCtx) Panicf(template string, args ...interface{}) {
+func (s SugaredLoggerWithCtx) Panicf(template string, args ...any) {
 	s.s.logArgs(s.ctx, zap.PanicLevel, template, args)
 	s.s.skipCaller.Panicf(template, args...)
 }
 
 // Fatalf uses fmt.Sprintf to log a templated message, then calls os.Exit.
-func (s SugaredLoggerWithCtx) Fatalf(template string, args ...interface{}) {
+func (s SugaredLoggerWithCtx) Fatalf(template string, args ...any) {
 	s.s.logArgs(s.ctx, zap.FatalLevel, template, args)
 	s.s.skipCaller.Fatalf(template, args...)
 }
@@ -631,28 +631,28 @@ func (s SugaredLoggerWithCtx) Fatalf(template string, args ...interface{}) {
 // When debug-level logging is disabled, this is much faster than
 //
 //	s.With(keysAndValues).Debug(msg)
-func (s SugaredLoggerWithCtx) Debugw(msg string, keysAndValues ...interface{}) {
+func (s SugaredLoggerWithCtx) Debugw(msg string, keysAndValues ...any) {
 	keysAndValues = s.s.logKVs(s.ctx, zap.DebugLevel, msg, keysAndValues)
 	s.s.skipCaller.Debugw(msg, keysAndValues...)
 }
 
 // Infow logs a message with some additional context. The variadic key-value
 // pairs are treated as they are in With.
-func (s SugaredLoggerWithCtx) Infow(msg string, keysAndValues ...interface{}) {
+func (s SugaredLoggerWithCtx) Infow(msg string, keysAndValues ...any) {
 	keysAndValues = s.s.logKVs(s.ctx, zap.InfoLevel, msg, keysAndValues)
 	s.s.skipCaller.Infow(msg, keysAndValues...)
 }
 
 // Warnw logs a message with some additional context. The variadic key-value
 // pairs are treated as they are in With.
-func (s SugaredLoggerWithCtx) Warnw(msg string, keysAndValues ...interface{}) {
+func (s SugaredLoggerWithCtx) Warnw(msg string, keysAndValues ...any) {
 	keysAndValues = s.s.logKVs(s.ctx, zap.WarnLevel, msg, keysAndValues)
 	s.s.skipCaller.Warnw(msg, keysAndValues...)
 }
 
 // Errorw logs a message with some additional context. The variadic key-value
 // pairs are treated as they are in With.
-func (s SugaredLoggerWithCtx) Errorw(msg string, keysAndValues ...interface{}) {
+func (s SugaredLoggerWithCtx) Errorw(msg string, keysAndValues ...any) {
 	keysAndValues = s.s.logKVs(s.ctx, zap.ErrorLevel, msg, keysAndValues)
 	s.s.skipCaller.Errorw(msg, keysAndValues...)
 }
@@ -660,21 +660,21 @@ func (s SugaredLoggerWithCtx) Errorw(msg string, keysAndValues ...interface{}) {
 // DPanicw logs a message with some additional context. In development, the
 // logger then panics. (See DPanicLevel for details.) The variadic key-value
 // pairs are treated as they are in With.
-func (s SugaredLoggerWithCtx) DPanicw(msg string, keysAndValues ...interface{}) {
+func (s SugaredLoggerWithCtx) DPanicw(msg string, keysAndValues ...any) {
 	keysAndValues = s.s.logKVs(s.ctx, zap.DPanicLevel, msg, keysAndValues)
 	s.s.skipCaller.DPanicw(msg, keysAndValues...)
 }
 
 // Panicw logs a message with some additional context, then panics. The
 // variadic key-value pairs are treated as they are in With.
-func (s SugaredLoggerWithCtx) Panicw(msg string, keysAndValues ...interface{}) {
+func (s SugaredLoggerWithCtx) Panicw(msg string, keysAndValues ...any) {
 	keysAndValues = s.s.logKVs(s.ctx, zap.PanicLevel, msg, keysAndValues)
 	s.s.skipCaller.Panicw(msg, keysAndValues...)
 }
 
 // Fatalw logs a message with some additional context, then calls os.Exit. The
 // variadic key-value pairs are treated as they are in With.
-func (s SugaredLoggerWithCtx) Fatalw(msg string, keysAndValues ...interface{}) {
+func (s SugaredLoggerWithCtx) Fatalw(msg string, keysAndValues ...any) {
 	keysAndValues = s.s.logKVs(s.ctx, zap.FatalLevel, msg, keysAndValues)
 	s.s.skipCaller.Fatalw(msg, keysAndValues...)
 }
@@ -895,7 +895,7 @@ func (t *bufferArrayEncoder) AppendObject(v zapcore.ObjectMarshaler) error {
 	return err
 }
 
-func (t *bufferArrayEncoder) AppendReflected(v interface{}) error {
+func (t *bufferArrayEncoder) AppendReflected(v any) error {
 	t.stringsSlice = append(t.stringsSlice, fmt.Sprintf("%v", v))
 	return nil
 }

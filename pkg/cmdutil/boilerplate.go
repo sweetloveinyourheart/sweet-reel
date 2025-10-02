@@ -112,6 +112,32 @@ func BoilerplateFlagsDB(command *cobra.Command, serviceType string, envPrefix st
 	_ = command.MarkPersistentFlagRequired("db-url")
 }
 
+func BoilerplateFlagsKafka(command *cobra.Command, serviceType string, envPrefix string) {
+	_, serviceKey := st(serviceType)
+
+	// Kafka broker configuration
+	config.StringDefault(command, fmt.Sprintf("%s.kafka.brokers", serviceKey), "kafka-brokers", "localhost:9092", "Kafka broker addresses (comma-separated)", fmt.Sprintf("%s_KAFKA_BROKERS", envPrefix))
+
+	// Producer settings
+	config.Int32Default(command, fmt.Sprintf("%s.kafka.retry_max", serviceKey), "kafka-retry-max", 3, "Maximum number of retries for failed requests", fmt.Sprintf("%s_KAFKA_RETRY_MAX", envPrefix))
+	config.Int64Default(command, fmt.Sprintf("%s.kafka.retry_backoff_ms", serviceKey), "kafka-retry-backoff-ms", 100, "Backoff time between retries in milliseconds", fmt.Sprintf("%s_KAFKA_RETRY_BACKOFF_MS", envPrefix))
+	config.StringDefault(command, fmt.Sprintf("%s.kafka.required_acks", serviceKey), "kafka-required-acks", "all", "Required acknowledgments (none, leader, all)", fmt.Sprintf("%s_KAFKA_REQUIRED_ACKS", envPrefix))
+	config.StringDefault(command, fmt.Sprintf("%s.kafka.compression", serviceKey), "kafka-compression", "snappy", "Compression codec (none, gzip, snappy, lz4, zstd)", fmt.Sprintf("%s_KAFKA_COMPRESSION", envPrefix))
+	config.Int64Default(command, fmt.Sprintf("%s.kafka.flush_frequency_ms", serviceKey), "kafka-flush-frequency-ms", 500, "Frequency of flushing messages in milliseconds", fmt.Sprintf("%s_KAFKA_FLUSH_FREQUENCY_MS", envPrefix))
+	config.Int32Default(command, fmt.Sprintf("%s.kafka.flush_messages", serviceKey), "kafka-flush-messages", 100, "Number of messages to buffer before flushing", fmt.Sprintf("%s_KAFKA_FLUSH_MESSAGES", envPrefix))
+	config.Int32Default(command, fmt.Sprintf("%s.kafka.flush_bytes", serviceKey), "kafka-flush-bytes", 16384, "Number of bytes to buffer before flushing", fmt.Sprintf("%s_KAFKA_FLUSH_BYTES", envPrefix))
+	config.BoolDefault(command, fmt.Sprintf("%s.kafka.idempotent_writes", serviceKey), "kafka-idempotent-writes", true, "Enable idempotent writes", fmt.Sprintf("%s_KAFKA_IDEMPOTENT_WRITES", envPrefix))
+
+	// Security settings
+	config.StringDefault(command, fmt.Sprintf("%s.kafka.security_protocol", serviceKey), "kafka-security-protocol", "PLAINTEXT", "Security protocol (PLAINTEXT, SSL, SASL_PLAINTEXT, SASL_SSL)", fmt.Sprintf("%s_KAFKA_SECURITY_PROTOCOL", envPrefix))
+	config.StringDefault(command, fmt.Sprintf("%s.kafka.sasl_mechanism", serviceKey), "kafka-sasl-mechanism", "", "SASL mechanism (PLAIN, SCRAM-SHA-256, SCRAM-SHA-512)", fmt.Sprintf("%s_KAFKA_SASL_MECHANISM", envPrefix))
+	config.StringDefault(command, fmt.Sprintf("%s.kafka.sasl_username", serviceKey), "kafka-sasl-username", "", "SASL username for authentication", fmt.Sprintf("%s_KAFKA_SASL_USERNAME", envPrefix))
+	config.StringDefault(command, fmt.Sprintf("%s.kafka.sasl_password", serviceKey), "kafka-sasl-password", "", "SASL password for authentication", fmt.Sprintf("%s_KAFKA_SASL_PASSWORD", envPrefix))
+	config.BoolDefault(command, fmt.Sprintf("%s.kafka.tls_enabled", serviceKey), "kafka-tls-enabled", false, "Enable TLS encryption", fmt.Sprintf("%s_KAFKA_TLS_ENABLED", envPrefix))
+
+	_ = command.MarkPersistentFlagRequired("kafka-brokers")
+}
+
 func BoilerplateSecureFlags(command *cobra.Command, serviceType string) {
 	_, serviceKey := st(serviceType)
 
@@ -120,6 +146,9 @@ func BoilerplateSecureFlags(command *cobra.Command, serviceType string) {
 		fmt.Sprintf("%s.db.read.url", serviceKey),
 		fmt.Sprintf("%s.db.migrations.url", serviceKey),
 		fmt.Sprintf("%s.secrets.token_signing_key", serviceKey),
+		fmt.Sprintf("%s.kafka.brokers", serviceKey),
+		fmt.Sprintf("%s.kafka.sasl_username", serviceKey),
+		fmt.Sprintf("%s.kafka.sasl_password", serviceKey),
 	)
 }
 
@@ -152,11 +181,12 @@ func (a *AppRun) Run() {
 	signalMonitor := make(chan os.Signal, 1)
 	signal.Notify(signalMonitor, os.Interrupt, syscall.SIGTERM)
 
-	a.wg.Go(func() {
+	a.wg.Add(1)
+	go func() {
 		<-signalMonitor
 		a.cancel()
 		a.wg.Done()
-	})
+	}()
 
 	a.readyChan <- true
 
