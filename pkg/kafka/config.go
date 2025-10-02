@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/IBM/sarama"
+
 	"github.com/sweetloveinyourheart/sweet-reel/pkg/config"
 )
 
