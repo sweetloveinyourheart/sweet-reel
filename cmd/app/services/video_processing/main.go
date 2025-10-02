@@ -53,6 +53,11 @@ func Command(rootCmd *cobra.Command) *cobra.Command {
 
 	// config options
 	config.Int64Default(dataProviderCommand, fmt.Sprintf("%s.grpc.port", serviceType), "grpc-port", DEFAULT_VIDEO_PROCESSING_GRPC_PORT, "GRPC Port to listen on", "VIDEO_PROCESSING_GRPC_PORT")
+	config.String(dataProviderCommand, fmt.Sprintf("%s.aws.s3.region", serviceType), "aws_s3_region", "s3 region", "VIDEO_PROCESSING_AWS_S3_REGION")
+	config.String(dataProviderCommand, fmt.Sprintf("%s.aws.s3.access.id", serviceType), "aws_s3_access_id", "s3 access id", "VIDEO_PROCESSING_AWS_S3_ACCESS_ID")
+	config.String(dataProviderCommand, fmt.Sprintf("%s.aws.s3.secret", serviceType), "aws_s3_secret", "s3 secret", "VIDEO_PROCESSING_AWS_S3_SECRET")
+	config.String(dataProviderCommand, fmt.Sprintf("%s.aws.s3.bucket", serviceType), "s3_bucket", "s3 bucket", "VIDEO_PROCESSING_AWS_S3_BUCKET")
+	config.StringDefault(dataProviderCommand, fmt.Sprintf("%s.minio.url", serviceType), "minio-url", "", "MINIO URL", "VIDEO_PROCESSING_MINIO_URL")
 
 	cmdutil.BoilerplateFlagsCore(dataProviderCommand, serviceType, envPrefix)
 	cmdutil.BoilerplateFlagsKafka(dataProviderCommand, serviceType, envPrefix)

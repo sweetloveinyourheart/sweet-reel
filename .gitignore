@@ -34,3 +34,6 @@ go.work.sum
 
 # OS files
 .DS_Store
+
+# Generated data
+minio_data*

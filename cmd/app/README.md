@@ -76,6 +76,9 @@ app video_processing [flags]
 ### Options
 
 ```
+      --aws_s3_access_id string          s3 access id
+      --aws_s3_region string             s3 region
+      --aws_s3_secret string             s3 secret
       --grpc-port int                    GRPC Port to listen on (default 50055)
   -h, --help                             help for video_processing
       --id string                        Unique identifier for this services
@@ -93,11 +96,16 @@ app video_processing [flags]
       --kafka-sasl-username string       SASL username for authentication
       --kafka-security-protocol string   Security protocol (PLAINTEXT, SSL, SASL_PLAINTEXT, SASL_SSL) (default "PLAINTEXT")
       --kafka-tls-enabled                Enable TLS encryption
+      --minio-url string                 MINIO URL
+      --s3_bucket string                 s3 bucket
       --token-signing-key string         Signing key used for service to service tokens
 ```
 
 ### Environment Variables
 
+- VIDEO_PROCESSING_AWS_S3_ACCESS_ID :: `video_processing.aws.s3.access.id` s3 access id
+- VIDEO_PROCESSING_AWS_S3_REGION :: `video_processing.aws.s3.region` s3 region
+- VIDEO_PROCESSING_AWS_S3_SECRET :: `video_processing.aws.s3.secret` s3 secret
 - VIDEO_PROCESSING_GRPC_PORT :: `video_processing.grpc.port` GRPC Port to listen on
 - VIDEO_PROCESSING_ID :: `video.processing.id` Unique identifier for this services
 - VIDEO_PROCESSING_KAFKA_BROKERS :: `video.processing.kafka.brokers` Kafka broker addresses (comma-separated)
@@ -114,6 +122,8 @@ app video_processing [flags]
 - VIDEO_PROCESSING_KAFKA_SASL_USERNAME :: `video.processing.kafka.sasl_username` SASL username for authentication
 - VIDEO_PROCESSING_KAFKA_SECURITY_PROTOCOL :: `video.processing.kafka.security_protocol` Security protocol (PLAINTEXT, SSL, SASL_PLAINTEXT, SASL_SSL)
 - VIDEO_PROCESSING_KAFKA_TLS_ENABLED :: `video.processing.kafka.tls_enabled` Enable TLS encryption
+- VIDEO_PROCESSING_MINIO_URL :: `video_processing.minio.url` MINIO URL
+- VIDEO_PROCESSING_AWS_S3_BUCKET :: `video_processing.aws.s3.bucket` s3 bucket
 - VIDEO_PROCESSING_SECRETS_TOKEN_SIGNING_KEY :: `video.processing.secrets.token_signing_key` Signing key used for service to service tokens
 ```
 
