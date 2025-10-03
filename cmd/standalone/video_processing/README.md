@@ -107,24 +107,24 @@ app video_processing [flags]
 - VIDEO_PROCESSING_AWS_S3_REGION :: `video_processing.aws.s3.region` s3 region
 - VIDEO_PROCESSING_AWS_S3_SECRET :: `video_processing.aws.s3.secret` s3 secret
 - VIDEO_PROCESSING_GRPC_PORT :: `video_processing.grpc.port` GRPC Port to listen on
-- VIDEO_PROCESSING_ID :: `video.processing.id` Unique identifier for this services
-- VIDEO_PROCESSING_KAFKA_BROKERS :: `video.processing.kafka.brokers` Kafka broker addresses (comma-separated)
-- VIDEO_PROCESSING_KAFKA_COMPRESSION :: `video.processing.kafka.compression` Compression codec (none, gzip, snappy, lz4, zstd)
-- VIDEO_PROCESSING_KAFKA_FLUSH_BYTES :: `video.processing.kafka.flush_bytes` Number of bytes to buffer before flushing
-- VIDEO_PROCESSING_KAFKA_FLUSH_FREQUENCY_MS :: `video.processing.kafka.flush_frequency_ms` Frequency of flushing messages in milliseconds
-- VIDEO_PROCESSING_KAFKA_FLUSH_MESSAGES :: `video.processing.kafka.flush_messages` Number of messages to buffer before flushing
-- VIDEO_PROCESSING_KAFKA_IDEMPOTENT_WRITES :: `video.processing.kafka.idempotent_writes` Enable idempotent writes
-- VIDEO_PROCESSING_KAFKA_REQUIRED_ACKS :: `video.processing.kafka.required_acks` Required acknowledgments (none, leader, all)
-- VIDEO_PROCESSING_KAFKA_RETRY_BACKOFF_MS :: `video.processing.kafka.retry_backoff_ms` Backoff time between retries in milliseconds
-- VIDEO_PROCESSING_KAFKA_RETRY_MAX :: `video.processing.kafka.retry_max` Maximum number of retries for failed requests
-- VIDEO_PROCESSING_KAFKA_SASL_MECHANISM :: `video.processing.kafka.sasl_mechanism` SASL mechanism (PLAIN, SCRAM-SHA-256, SCRAM-SHA-512)
-- VIDEO_PROCESSING_KAFKA_SASL_PASSWORD :: `video.processing.kafka.sasl_password` SASL password for authentication
-- VIDEO_PROCESSING_KAFKA_SASL_USERNAME :: `video.processing.kafka.sasl_username` SASL username for authentication
-- VIDEO_PROCESSING_KAFKA_SECURITY_PROTOCOL :: `video.processing.kafka.security_protocol` Security protocol (PLAINTEXT, SSL, SASL_PLAINTEXT, SASL_SSL)
-- VIDEO_PROCESSING_KAFKA_TLS_ENABLED :: `video.processing.kafka.tls_enabled` Enable TLS encryption
+- VIDEO_PROCESSING_ID :: `video_processing.id` Unique identifier for this services
+- VIDEO_PROCESSING_KAFKA_BROKERS :: `video_processing.kafka.brokers` Kafka broker addresses (comma-separated)
+- VIDEO_PROCESSING_KAFKA_COMPRESSION :: `video_processing.kafka.compression` Compression codec (none, gzip, snappy, lz4, zstd)
+- VIDEO_PROCESSING_KAFKA_FLUSH_BYTES :: `video_processing.kafka.flush_bytes` Number of bytes to buffer before flushing
+- VIDEO_PROCESSING_KAFKA_FLUSH_FREQUENCY_MS :: `video_processing.kafka.flush_frequency_ms` Frequency of flushing messages in milliseconds
+- VIDEO_PROCESSING_KAFKA_FLUSH_MESSAGES :: `video_processing.kafka.flush_messages` Number of messages to buffer before flushing
+- VIDEO_PROCESSING_KAFKA_IDEMPOTENT_WRITES :: `video_processing.kafka.idempotent_writes` Enable idempotent writes
+- VIDEO_PROCESSING_KAFKA_REQUIRED_ACKS :: `video_processing.kafka.required_acks` Required acknowledgments (none, leader, all)
+- VIDEO_PROCESSING_KAFKA_RETRY_BACKOFF_MS :: `video_processing.kafka.retry_backoff_ms` Backoff time between retries in milliseconds
+- VIDEO_PROCESSING_KAFKA_RETRY_MAX :: `video_processing.kafka.retry_max` Maximum number of retries for failed requests
+- VIDEO_PROCESSING_KAFKA_SASL_MECHANISM :: `video_processing.kafka.sasl_mechanism` SASL mechanism (PLAIN, SCRAM-SHA-256, SCRAM-SHA-512)
+- VIDEO_PROCESSING_KAFKA_SASL_PASSWORD :: `video_processing.kafka.sasl_password` SASL password for authentication
+- VIDEO_PROCESSING_KAFKA_SASL_USERNAME :: `video_processing.kafka.sasl_username` SASL username for authentication
+- VIDEO_PROCESSING_KAFKA_SECURITY_PROTOCOL :: `video_processing.kafka.security_protocol` Security protocol (PLAINTEXT, SSL, SASL_PLAINTEXT, SASL_SSL)
+- VIDEO_PROCESSING_KAFKA_TLS_ENABLED :: `video_processing.kafka.tls_enabled` Enable TLS encryption
 - VIDEO_PROCESSING_MINIO_URL :: `video_processing.minio.url` MINIO URL
 - VIDEO_PROCESSING_AWS_S3_BUCKET :: `video_processing.aws.s3.bucket` s3 bucket
-- VIDEO_PROCESSING_SECRETS_TOKEN_SIGNING_KEY :: `video.processing.secrets.token_signing_key` Signing key used for service to service tokens
+- VIDEO_PROCESSING_SECRETS_TOKEN_SIGNING_KEY :: `video_processing.secrets.token_signing_key` Signing key used for service to service tokens
 ```
 
 ### Options inherited from parent commands

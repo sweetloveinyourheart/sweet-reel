@@ -30,8 +30,7 @@ type AppRun struct {
 
 func st(s string) (serviceType string, serviceKey string) {
 	serviceType = strings.ToLower(s)
-	serviceKey = strings.ReplaceAll(serviceType, "_", "-")
-	serviceKey = strings.ReplaceAll(serviceKey, "-", ".")
+	serviceKey = strings.ReplaceAll(serviceType, "-", ".")
 	return
 }
 
@@ -134,6 +133,7 @@ func BoilerplateFlagsKafka(command *cobra.Command, serviceType string, envPrefix
 	config.StringDefault(command, fmt.Sprintf("%s.kafka.sasl_username", serviceKey), "kafka-sasl-username", "", "SASL username for authentication", fmt.Sprintf("%s_KAFKA_SASL_USERNAME", envPrefix))
 	config.StringDefault(command, fmt.Sprintf("%s.kafka.sasl_password", serviceKey), "kafka-sasl-password", "", "SASL password for authentication", fmt.Sprintf("%s_KAFKA_SASL_PASSWORD", envPrefix))
 	config.BoolDefault(command, fmt.Sprintf("%s.kafka.tls_enabled", serviceKey), "kafka-tls-enabled", false, "Enable TLS encryption", fmt.Sprintf("%s_KAFKA_TLS_ENABLED", envPrefix))
+	config.Int32Default(command, fmt.Sprintf("%s.kafka.max_open_requests", serviceKey), "kafka-tls-enabled", 1, "Enable TLS encryption", fmt.Sprintf("%s_KAFKA_MAX_OPEN_REQUESTS", envPrefix))
 
 	_ = command.MarkPersistentFlagRequired("kafka-brokers")
 }

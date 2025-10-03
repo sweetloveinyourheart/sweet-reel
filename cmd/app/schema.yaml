@@ -62,105 +62,105 @@
     usage: Unique identifier for this services
     default: ""
     valueType: string
-    path: video.processing.id
+    path: video_processing.id
     env:
     - VIDEO_PROCESSING_ID
   - name: kafka-brokers
     usage: Kafka broker addresses (comma-separated)
     default: localhost:9092
     valueType: string
-    path: video.processing.kafka.brokers
+    path: video_processing.kafka.brokers
     env:
     - VIDEO_PROCESSING_KAFKA_BROKERS
   - name: kafka-compression
     usage: Compression codec (none, gzip, snappy, lz4, zstd)
     default: snappy
     valueType: string
-    path: video.processing.kafka.compression
+    path: video_processing.kafka.compression
     env:
     - VIDEO_PROCESSING_KAFKA_COMPRESSION
   - name: kafka-flush-bytes
     usage: Number of bytes to buffer before flushing
     default: 16384
     valueType: int32
-    path: video.processing.kafka.flush_bytes
+    path: video_processing.kafka.flush_bytes
     env:
     - VIDEO_PROCESSING_KAFKA_FLUSH_BYTES
   - name: kafka-flush-frequency-ms
     usage: Frequency of flushing messages in milliseconds
     default: 500
     valueType: int64
-    path: video.processing.kafka.flush_frequency_ms
+    path: video_processing.kafka.flush_frequency_ms
     env:
     - VIDEO_PROCESSING_KAFKA_FLUSH_FREQUENCY_MS
   - name: kafka-flush-messages
     usage: Number of messages to buffer before flushing
     default: 100
     valueType: int32
-    path: video.processing.kafka.flush_messages
+    path: video_processing.kafka.flush_messages
     env:
     - VIDEO_PROCESSING_KAFKA_FLUSH_MESSAGES
   - name: kafka-idempotent-writes
     usage: Enable idempotent writes
     default: true
     valueType: bool
-    path: video.processing.kafka.idempotent_writes
+    path: video_processing.kafka.idempotent_writes
     env:
     - VIDEO_PROCESSING_KAFKA_IDEMPOTENT_WRITES
   - name: kafka-required-acks
     usage: Required acknowledgments (none, leader, all)
     default: all
     valueType: string
-    path: video.processing.kafka.required_acks
+    path: video_processing.kafka.required_acks
     env:
     - VIDEO_PROCESSING_KAFKA_REQUIRED_ACKS
   - name: kafka-retry-backoff-ms
     usage: Backoff time between retries in milliseconds
     default: 100
     valueType: int64
-    path: video.processing.kafka.retry_backoff_ms
+    path: video_processing.kafka.retry_backoff_ms
     env:
     - VIDEO_PROCESSING_KAFKA_RETRY_BACKOFF_MS
   - name: kafka-retry-max
     usage: Maximum number of retries for failed requests
     default: 3
     valueType: int32
-    path: video.processing.kafka.retry_max
+    path: video_processing.kafka.retry_max
     env:
     - VIDEO_PROCESSING_KAFKA_RETRY_MAX
   - name: kafka-sasl-mechanism
     usage: SASL mechanism (PLAIN, SCRAM-SHA-256, SCRAM-SHA-512)
     default: ""
     valueType: string
-    path: video.processing.kafka.sasl_mechanism
+    path: video_processing.kafka.sasl_mechanism
     env:
     - VIDEO_PROCESSING_KAFKA_SASL_MECHANISM
   - name: kafka-sasl-password
     usage: SASL password for authentication
     default: ""
     valueType: string
-    path: video.processing.kafka.sasl_password
+    path: video_processing.kafka.sasl_password
     env:
     - VIDEO_PROCESSING_KAFKA_SASL_PASSWORD
   - name: kafka-sasl-username
     usage: SASL username for authentication
     default: ""
     valueType: string
-    path: video.processing.kafka.sasl_username
+    path: video_processing.kafka.sasl_username
     env:
     - VIDEO_PROCESSING_KAFKA_SASL_USERNAME
   - name: kafka-security-protocol
     usage: Security protocol (PLAINTEXT, SSL, SASL_PLAINTEXT, SASL_SSL)
     default: PLAINTEXT
     valueType: string
-    path: video.processing.kafka.security_protocol
+    path: video_processing.kafka.security_protocol
     env:
     - VIDEO_PROCESSING_KAFKA_SECURITY_PROTOCOL
   - name: kafka-tls-enabled
     usage: Enable TLS encryption
     default: false
     valueType: bool
-    path: video.processing.kafka.tls_enabled
+    path: video_processing.kafka.tls_enabled
     env:
     - VIDEO_PROCESSING_KAFKA_TLS_ENABLED
   - name: minio-url
@@ -181,7 +181,7 @@
     usage: Signing key used for service to service tokens
     default: ""
     valueType: string
-    path: video.processing.secrets.token_signing_key
+    path: video_processing.secrets.token_signing_key
     env:
     - VIDEO_PROCESSING_SECRETS_TOKEN_SIGNING_KEY
   - name: healthcheck-host

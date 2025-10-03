@@ -26,6 +26,7 @@ type Config struct {
 	SASLUsername     string
 	SASLPassword     string
 	TLSEnabled       bool
+	MaxOpenRequests  int
 }
 
 // DefaultConfig returns a default configuration for Kafka
@@ -41,6 +42,7 @@ func DefaultConfig() *Config {
 		FlushBytes:       16384, // 16KB
 		IdempotentWrites: true,
 		SecurityProtocol: "PLAINTEXT",
+		MaxOpenRequests:  1,
 	}
 }
 
@@ -96,6 +98,7 @@ func ServiceConfig(serviceType string) *Config {
 	cfg.SASLUsername = config.Instance().GetString(fmt.Sprintf("%s.kafka.sasl_username", serviceType))
 	cfg.SASLPassword = config.Instance().GetString(fmt.Sprintf("%s.kafka.sasl_password", serviceType))
 	cfg.TLSEnabled = config.Instance().GetBool(fmt.Sprintf("%s.kafka.tls_enabled", serviceType))
+	cfg.MaxOpenRequests = int(config.Instance().GetInt32(fmt.Sprintf("%s.kafka.max_open_requests", serviceType)))
 
 	return cfg
 }
@@ -125,6 +128,8 @@ func (c *Config) ToSaramaConfig() *sarama.Config {
 	config.Version = sarama.V3_6_0_0
 
 	// Security settings
+	config.Net.MaxOpenRequests = c.MaxOpenRequests
+
 	if c.SecurityProtocol == "SASL_PLAINTEXT" || c.SecurityProtocol == "SASL_SSL" {
 		config.Net.SASL.Enable = true
 		config.Net.SASL.User = c.SASLUsername
