@@ -108,8 +108,8 @@
     env:
     - VIDEO_PROCESSING_KAFKA_IDEMPOTENT_WRITES
   - name: kafka-max-open-requests
-    usage: Enable TLS encryption
-    default: 20
+    usage: Max open requests
+    default: 1
     valueType: int32
     path: video_processing.kafka.max_open_requests
     env:

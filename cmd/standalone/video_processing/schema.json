@@ -151,8 +151,8 @@
       },
       {
         "name": "kafka-max-open-requests",
-        "usage": "Enable TLS encryption",
-        "default": 20,
+        "usage": "Max open requests",
+        "default": 1,
         "valueType": "int32",
         "path": "video_processing.kafka.max_open_requests",
         "env": [
