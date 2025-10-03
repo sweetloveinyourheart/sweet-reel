@@ -13,6 +13,7 @@ import (
 	"github.com/sweetloveinyourheart/sweet-reel/pkg/logger"
 	"github.com/sweetloveinyourheart/sweet-reel/pkg/storage"
 	"github.com/sweetloveinyourheart/sweet-reel/pkg/storage/s3"
+	videoprocessing "github.com/sweetloveinyourheart/sweet-reel/services/video_processing"
 )
 
 const DEFAULT_VIDEO_PROCESSING_GRPC_PORT = 50055
@@ -31,6 +32,10 @@ func Command(rootCmd *cobra.Command) *cobra.Command {
 			}
 
 			if err := setupDependencies(app.Ctx()); err != nil {
+				logger.GlobalSugared().Fatal(err)
+			}
+
+			if err := videoprocessing.InitializeRepos(app.Ctx()); err != nil {
 				logger.GlobalSugared().Fatal(err)
 			}
 

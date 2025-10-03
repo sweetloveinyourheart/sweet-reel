@@ -22,10 +22,10 @@ type Config struct {
 }
 
 func ServiceConfig(serviceType string) *Config {
-	id := config.Instance().GetString(fmt.Sprintf("%s.clientserver.aws.s3.access.id", serviceType))
-	s3Region := config.Instance().GetString(fmt.Sprintf("%s.clientserver.aws.s3.region", serviceType))
-	secret := config.Instance().GetString(fmt.Sprintf("%s.clientserver.aws.s3.secret", serviceType))
-	minioURL := config.Instance().GetString(fmt.Sprintf("%s.clientserver.minio.url", serviceType))
+	id := config.Instance().GetString(fmt.Sprintf("%s.aws.s3.access.id", serviceType))
+	s3Region := config.Instance().GetString(fmt.Sprintf("%s.aws.s3.region", serviceType))
+	secret := config.Instance().GetString(fmt.Sprintf("%s.aws.s3.secret", serviceType))
+	minioURL := config.Instance().GetString(fmt.Sprintf("%s.minio.url", serviceType))
 
 	return &Config{
 		Region:   s3Region,

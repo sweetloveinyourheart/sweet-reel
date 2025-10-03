@@ -128,6 +128,8 @@ services:
         condition: service_healthy
       srl_kafka:
         condition: service_healthy
+      srl_minio_mock_s3:
+        condition: service_healthy
 
   video_processing:
     image: srl:latest
