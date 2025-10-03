@@ -10,6 +10,7 @@ import (
 
 	"github.com/sweetloveinyourheart/sweet-reel/pkg/kafka"
 	"github.com/sweetloveinyourheart/sweet-reel/pkg/logger"
+	"github.com/sweetloveinyourheart/sweet-reel/pkg/storage"
 	"github.com/sweetloveinyourheart/sweet-reel/services/video_processing/models"
 )
 
@@ -22,17 +23,25 @@ const (
 type VideoSplitterProcessManager struct {
 	ctx   context.Context
 	queue chan lo.Tuple2[context.Context, *kafka.ConsumedMessage]
+
+	storageClient storage.Storage
 }
 
 func NewVideoSplitterProcessManager(ctx context.Context) (*VideoSplitterProcessManager, error) {
-	vsp := &VideoSplitterProcessManager{
-		ctx:   ctx,
-		queue: make(chan lo.Tuple2[context.Context, *kafka.ConsumedMessage], BatchSize*2),
+	storageClient, err := do.Invoke[storage.Storage](nil)
+	if err != nil {
+		return nil, err
 	}
 
 	kafkaClient, err := do.Invoke[*kafka.Client](nil)
 	if err != nil {
 		return nil, err
+	}
+
+	vsp := &VideoSplitterProcessManager{
+		ctx:           ctx,
+		queue:         make(chan lo.Tuple2[context.Context, *kafka.ConsumedMessage], BatchSize*2),
+		storageClient: storageClient,
 	}
 
 	go func() {
@@ -84,11 +93,18 @@ func (vsp *VideoSplitterProcessManager) HandleMessage(ctx context.Context, messa
 	}
 
 	var msg models.VideoSplitterMessage
-	if err := message.ValueAsJSON(&message); err != nil {
+	if err := message.ValueAsJSON(&msg); err != nil {
 		return err
 	}
 
-	logger.Global().InfoContext(ctx, "JSON message", zap.Any("message_body", msg))
+	bytes, err := vsp.storageClient.Download(msg.Metadata.Key, msg.Metadata.Bucket)
+	if err != nil {
+		return err
+	}
+
+	// TODO: Handle splitter logic
+	logger.Global().Info("Download successfully")
+	_ = bytes
 
 	return nil
 }
