@@ -150,6 +150,16 @@
         ]
       },
       {
+        "name": "kafka-max-open-requests",
+        "usage": "Enable TLS encryption",
+        "default": 20,
+        "valueType": "int32",
+        "path": "video_processing.kafka.max_open_requests",
+        "env": [
+          "VIDEO_PROCESSING_KAFKA_MAX_OPEN_REQUESTS"
+        ]
+      },
+      {
         "name": "kafka-required-acks",
         "usage": "Required acknowledgments (none, leader, all)",
         "default": "all",

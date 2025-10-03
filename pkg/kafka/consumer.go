@@ -161,6 +161,7 @@ func (c *Consumer) Start(ctx context.Context) error {
 			logger.Global().ErrorContext(ctx, "Consumer group error", zap.Error(err))
 		}
 	}()
+
 	// Start consuming
 	handler := &ConsumerGroupHandler{consumer: c}
 	c.wg.Add(1)

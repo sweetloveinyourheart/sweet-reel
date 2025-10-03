@@ -88,6 +88,7 @@ app video_processing [flags]
       --kafka-flush-frequency-ms int     Frequency of flushing messages in milliseconds (default 500)
       --kafka-flush-messages int32       Number of messages to buffer before flushing (default 100)
       --kafka-idempotent-writes          Enable idempotent writes (default true)
+      --kafka-max-open-requests int32    Enable TLS encryption (default 20)
       --kafka-required-acks string       Required acknowledgments (none, leader, all) (default "all")
       --kafka-retry-backoff-ms int       Backoff time between retries in milliseconds (default 100)
       --kafka-retry-max int32            Maximum number of retries for failed requests (default 3)
@@ -114,6 +115,7 @@ app video_processing [flags]
 - VIDEO_PROCESSING_KAFKA_FLUSH_FREQUENCY_MS :: `video_processing.kafka.flush_frequency_ms` Frequency of flushing messages in milliseconds
 - VIDEO_PROCESSING_KAFKA_FLUSH_MESSAGES :: `video_processing.kafka.flush_messages` Number of messages to buffer before flushing
 - VIDEO_PROCESSING_KAFKA_IDEMPOTENT_WRITES :: `video_processing.kafka.idempotent_writes` Enable idempotent writes
+- VIDEO_PROCESSING_KAFKA_MAX_OPEN_REQUESTS :: `video_processing.kafka.max_open_requests` Enable TLS encryption
 - VIDEO_PROCESSING_KAFKA_REQUIRED_ACKS :: `video_processing.kafka.required_acks` Required acknowledgments (none, leader, all)
 - VIDEO_PROCESSING_KAFKA_RETRY_BACKOFF_MS :: `video_processing.kafka.retry_backoff_ms` Backoff time between retries in milliseconds
 - VIDEO_PROCESSING_KAFKA_RETRY_MAX :: `video_processing.kafka.retry_max` Maximum number of retries for failed requests
