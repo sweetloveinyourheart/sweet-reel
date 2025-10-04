@@ -132,7 +132,7 @@ services:
         condition: service_healthy
 
   video_processing:
-    image: srl:latest
+    image: srl-ffmpeg:latest
     container_name: ${COMPOSE_PROJECT_NAME:-test}_video_processing
     hostname: video_processing
     environment:
@@ -159,7 +159,7 @@ services:
       retries: 30
     depends_on:
       phase_two_leader:
-        condition: service_completed_successfully 
+        condition: service_completed_successfully
 
 networks:
   fs_test_net:

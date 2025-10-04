@@ -9,6 +9,7 @@ build: # Build everything
 
 build-containers:
 	@make app-docker optionalReproFlag=$(optionalReproFlag)
+	@make ffmpeg-docker optionalReproFlag=$(optionalReproFlag)
 
 # Base makefile target for building a binary
 GOOS_OVERRIDE ?= GOOS=linux
@@ -30,9 +31,23 @@ build-docker:
 	--build-arg GO_CONTAINER_IMAGE=$(GO_CONTAINER_IMAGE) \
 	$(additionalDockerArgs)
 
+build-docker-ffmpeg:
+	@DOCKER_BUILDKIT=1 docker build $(buildPlatform) \
+	--file Dockerfile.ffmpeg \
+	--target srl-ffmpeg \
+	--quiet \
+	. \
+	-t srl-ffmpeg:latest \
+	--build-arg ALPINE_CONTAINER_IMAGE=$(ALPINE_CONTAINER_IMAGE) \
+	$(additionalDockerArgs)
+
 app-build:
 	@make build-binary extraArgs=$(extraArgs) directory=cmd/app executablePath=cmd/app/app
 
 app-docker:
 	@make app-build $(optionalReproFlag) extraArgs=$(extraArgs)
 	@make build-docker buildPlatform=$(buildPlatorm) target=srl
+
+ffmpeg-docker:
+	@make app-build $(optionalReproFlag) extraArgs=$(extraArgs)
+	@make build-docker-ffmpeg buildPlatform=$(buildPlatorm) target=srl-ffmpeg

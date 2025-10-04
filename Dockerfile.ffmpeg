@@ -1,0 +1,91 @@
+ARG ALPINE_CONTAINER_IMAGE=alpine:3.20.3
+
+#=========================
+# Build the FFmpeg container.
+# Patch the alpine image.
+#=========================
+FROM ${ALPINE_CONTAINER_IMAGE} AS ffmpegcontainer
+
+# Add unprivileged user. "app" is the user that will run the app.
+RUN addgroup -S app
+RUN adduser -S -G app app
+
+# Install FFmpeg and related tools
+RUN apk add --no-cache \
+    ffmpeg \
+    ffmpeg-dev \
+    ffmpeg-libs \
+    x264 \
+    x264-dev \
+    x264-libs \
+    x265 \
+    x265-dev \
+    x265-libs \
+    libvpx \
+    libvpx-dev \
+    opus \
+    opus-dev \
+    libtheora \
+    libtheora-dev \
+    libvorbis \
+    libvorbis-dev \
+    freetype \
+    freetype-dev \
+    fontconfig \
+    fontconfig-dev \
+    libass \
+    libass-dev \
+    fdk-aac \
+    fdk-aac-dev \
+    lame \
+    lame-dev \
+    lame-libs \
+    libogg \
+    libogg-dev \
+    libwebp \
+    libwebp-dev
+
+# Remove unnecessary accounts
+RUN sed -i -r "/^(root|nobody|app)/!d" /etc/group \
+    && sed -i -r "/^(root|nobody|app)/!d" /etc/passwd
+
+# Remove init scripts since we do not use them.
+RUN rm -fr /etc/init.d /lib/rc /etc/conf.d /etc/inittab /etc/runlevels /etc/rc.conf /etc/logrotate.d
+
+# Remove root home dir
+RUN rm -fr /root
+
+# Remove any symlinks that we broke during previous steps
+RUN find /bin /etc /lib /sbin /usr -xdev -type l -exec test ! -e {} \; -delete
+
+# Create working directory for video processing
+RUN mkdir -p /tmp/video_processing && chown -R app:app /tmp/video_processing
+
+# Create directory for FFmpeg tools
+RUN mkdir -p /usr/local/bin && chown -R app:app /usr/local/bin
+
+#===========================================================
+# Base container for gathering files and setting permissions
+#===========================================================
+FROM ${ALPINE_CONTAINER_IMAGE} AS gather-files-base
+
+# Add unprivileged user. "app" is the user that will run the app.
+RUN addgroup -S app
+RUN adduser -S -G app app
+
+#=======================================================
+# SWEET REEL - Gather, set permissions, and build the FFmpeg app image
+#=======================================================
+FROM gather-files-base AS gather-sweet-reel-ffmpeg
+COPY cmd/app/app /cmd/app/app
+RUN chown -R app:app /cmd/app/app
+
+FROM ffmpegcontainer AS srl-ffmpeg
+COPY --from=gather-sweet-reel-ffmpeg /cmd/app/app /app
+
+# Verify FFmpeg installation
+RUN ffmpeg -version && ffprobe -version
+
+USER app
+WORKDIR /tmp/video_processing
+CMD [ "/app" ]
