@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/cockroachdb/errors"
+	"github.com/gofrs/uuid"
 	"github.com/samber/do"
 	"github.com/samber/lo"
 	"go.uber.org/zap"
@@ -17,16 +18,18 @@ import (
 	"github.com/sweetloveinyourheart/sweet-reel/pkg/kafka"
 	"github.com/sweetloveinyourheart/sweet-reel/pkg/logger"
 	"github.com/sweetloveinyourheart/sweet-reel/pkg/storage"
-	"github.com/sweetloveinyourheart/sweet-reel/services/video_processing/models"
+	"github.com/sweetloveinyourheart/sweet-reel/pkg/storage/s3"
 )
 
 const (
 	BatchSize                 = 1024
-	KafkaVideoProcessingGroup = "video_processing"
-	KafkaVideoSplitterTopic   = "video_splitter"
+	KafkaVideoProcessingGroup = "video-processing"
+	KafkaVideoUploadedTopic   = "video-uploaded"
+
+	S3VideoProcessedBucket = "video-processed"
 )
 
-type VideoSplitterProcessManager struct {
+type VideoProcessManager struct {
 	ctx   context.Context
 	queue chan lo.Tuple2[context.Context, *kafka.ConsumedMessage]
 
@@ -34,7 +37,7 @@ type VideoSplitterProcessManager struct {
 	ff            ffmpeg.FFmpegInterface
 }
 
-func NewVideoSplitterProcessManager(ctx context.Context) (*VideoSplitterProcessManager, error) {
+func NewVideoProcessManager(ctx context.Context) (*VideoProcessManager, error) {
 	storageClient, err := do.Invoke[storage.Storage](nil)
 	if err != nil {
 		return nil, err
@@ -45,7 +48,7 @@ func NewVideoSplitterProcessManager(ctx context.Context) (*VideoSplitterProcessM
 		return nil, err
 	}
 
-	vsp := &VideoSplitterProcessManager{
+	vsp := &VideoProcessManager{
 		ctx:           ctx,
 		queue:         make(chan lo.Tuple2[context.Context, *kafka.ConsumedMessage], BatchSize*2),
 		storageClient: storageClient,
@@ -60,13 +63,13 @@ func NewVideoSplitterProcessManager(ctx context.Context) (*VideoSplitterProcessM
 					msg.ValueAsString()))
 
 			switch msg.Topic {
-			case KafkaVideoSplitterTopic:
+			case KafkaVideoUploadedTopic:
 				vsp.queue <- lo.T2(ctx, msg)
 			}
 
 			return nil
 		}
-		consumer, err := kafkaClient.CreateConsumer(KafkaVideoProcessingGroup, []string{KafkaVideoSplitterTopic}, messageHandler)
+		consumer, err := kafkaClient.CreateConsumer(KafkaVideoProcessingGroup, []string{KafkaVideoUploadedTopic}, messageHandler)
 		if err != nil {
 			logger.Global().ErrorContext(ctx, "failed to create consumer", zap.Error(err))
 			return
@@ -98,40 +101,45 @@ func NewVideoSplitterProcessManager(ctx context.Context) (*VideoSplitterProcessM
 	return vsp, nil
 }
 
-func (vsp *VideoSplitterProcessManager) HandleMessage(ctx context.Context, message *kafka.ConsumedMessage) (err error) {
+func (vsp *VideoProcessManager) HandleMessage(ctx context.Context, message *kafka.ConsumedMessage) (err error) {
 	if message == nil {
 		return errors.Errorf("message is nil")
 	}
 
-	var msg models.VideoSplitterMessage
+	var msg s3.S3EventMessage
 	if err := message.ValueAsJSON(&msg); err != nil {
 		return err
 	}
 
-	bytes, err := vsp.storageClient.Download(msg.Metadata.Key, msg.Metadata.Bucket)
+	bucket, key := s3.ExtractBucketAndKeyFromEventMessage(msg.Key)
+	bytes, err := vsp.storageClient.Download(key, bucket)
 	if err != nil {
 		return err
 	}
 
 	// Process video using FFmpeg wrapper
-	if err := vsp.processVideo(ctx, &msg, bytes); err != nil {
+	videoID := uuid.FromStringOrNil(s3.ExtractFileIDFromKey(msg.Key))
+	if videoID == uuid.Nil {
+		return errors.Errorf("invalid video id")
+	}
+
+	if err := vsp.processVideo(ctx, videoID, bytes); err != nil {
 		return errors.Wrap(err, "failed to process video")
 	}
 
 	logger.Global().InfoContext(ctx, "Video processing completed successfully",
-		zap.String("video_id", msg.VideoID.String()),
-		zap.String("key", msg.Metadata.Key))
+		zap.String("key", msg.Key))
 
 	return nil
 }
 
 // processVideo handles the actual video processing using FFmpeg
-func (vsp *VideoSplitterProcessManager) processVideo(ctx context.Context, msg *models.VideoSplitterMessage, videoData []byte) error {
+func (vsp *VideoProcessManager) processVideo(ctx context.Context, videoID uuid.UUID, videoData []byte) error {
 	if err := vsp.ff.IsAvailable(ctx); err != nil {
 		return errors.Wrap(err, "FFmpeg not available")
 	}
 
-	tempDir := fmt.Sprintf("/tmp/video_processing_%s", msg.VideoID.String())
+	tempDir := fmt.Sprintf("/tmp/video_processing_%s", videoID)
 	if err := os.MkdirAll(tempDir, 0755); err != nil {
 		return errors.Wrap(err, "failed to create temp directory")
 	}
@@ -202,7 +210,7 @@ func (vsp *VideoSplitterProcessManager) processVideo(ctx context.Context, msg *m
 	progressCallback := func(progress ffmpeg.ProgressInfo) {
 		if int(progress.Percentage)%10 == 0 { // Log every 10%
 			logger.Global().InfoContext(ctx, "Video processing progress",
-				zap.String("video_id", msg.VideoID.String()),
+				zap.String("video_id", videoID.String()),
 				zap.Float64("percentage", progress.Percentage),
 				zap.String("speed", progress.Speed),
 				zap.Duration("current", progress.Current),
@@ -213,7 +221,7 @@ func (vsp *VideoSplitterProcessManager) processVideo(ctx context.Context, msg *m
 	// Start video segmentation
 	startTime := time.Now()
 	logger.Global().InfoContext(ctx, "Starting video segmentation",
-		zap.String("video_id", msg.VideoID.String()),
+		zap.String("video_id", videoID.String()),
 		zap.Int("quality_levels", len(qualities)))
 
 	if err := vsp.ff.SegmentVideoMultiQuality(ctx, inputPath, hlsOutputDir, qualities, progressCallback); err != nil {
@@ -222,7 +230,7 @@ func (vsp *VideoSplitterProcessManager) processVideo(ctx context.Context, msg *m
 
 	processingTime := time.Since(startTime)
 	logger.Global().InfoContext(ctx, "Video segmentation completed",
-		zap.String("video_id", msg.VideoID.String()),
+		zap.String("video_id", videoID.String()),
 		zap.Duration("processing_time", processingTime))
 
 	// Create thumbnail
@@ -234,7 +242,7 @@ func (vsp *VideoSplitterProcessManager) processVideo(ctx context.Context, msg *m
 	}
 
 	// Upload processed files back to storage
-	if err := vsp.uploadProcessedFiles(ctx, msg, hlsOutputDir, thumbnailPath); err != nil {
+	if err := vsp.uploadProcessedFiles(ctx, videoID, hlsOutputDir, thumbnailPath); err != nil {
 		return errors.Wrap(err, "failed to upload processed files")
 	}
 
@@ -242,7 +250,7 @@ func (vsp *VideoSplitterProcessManager) processVideo(ctx context.Context, msg *m
 }
 
 // uploadProcessedFiles uploads the HLS segments and thumbnail to storage
-func (vsp *VideoSplitterProcessManager) uploadProcessedFiles(ctx context.Context, msg *models.VideoSplitterMessage, hlsDir, thumbnailPath string) error {
+func (vsp *VideoProcessManager) uploadProcessedFiles(ctx context.Context, videoID uuid.UUID, hlsDir, thumbnailPath string) error {
 	// Walk through HLS directory and upload all files
 	err := filepath.Walk(hlsDir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -265,12 +273,12 @@ func (vsp *VideoSplitterProcessManager) uploadProcessedFiles(ctx context.Context
 			return errors.Wrapf(err, "failed to get relative path for: %s", path)
 		}
 
-		storageKey := fmt.Sprintf("processed/%s/hls/%s", msg.VideoID.String(), relPath)
+		storageKey := fmt.Sprintf("%s/hls/%s", videoID.String(), relPath)
 
 		// Upload to storage
 		fileReader := bytes.NewReader(fileData)
 		mimeType := ffmpeg.GetMimeType(path)
-		if err := vsp.storageClient.Upload(storageKey, msg.Metadata.Bucket, fileReader, mimeType); err != nil {
+		if err := vsp.storageClient.Upload(storageKey, S3VideoProcessedBucket, fileReader, mimeType); err != nil {
 			return errors.Wrapf(err, "failed to upload file: %s", storageKey)
 		}
 
@@ -292,9 +300,9 @@ func (vsp *VideoSplitterProcessManager) uploadProcessedFiles(ctx context.Context
 			if err != nil {
 				logger.Global().WarnContext(ctx, "Failed to read thumbnail", zap.Error(err))
 			} else {
-				thumbnailKey := fmt.Sprintf("processed/%s/thumbnail.jpg", msg.VideoID.String())
+				thumbnailKey := fmt.Sprintf("%s/thumbnail.jpg", videoID.String())
 				thumbnailReader := bytes.NewReader(thumbnailData)
-				if err := vsp.storageClient.Upload(thumbnailKey, msg.Metadata.Bucket, thumbnailReader, "image/jpeg"); err != nil {
+				if err := vsp.storageClient.Upload(thumbnailKey, S3VideoProcessedBucket, thumbnailReader, "image/jpeg"); err != nil {
 					logger.Global().WarnContext(ctx, "Failed to upload thumbnail", zap.Error(err))
 				} else {
 					logger.Global().InfoContext(ctx, "Thumbnail uploaded",
@@ -305,7 +313,7 @@ func (vsp *VideoSplitterProcessManager) uploadProcessedFiles(ctx context.Context
 	}
 
 	logger.Global().InfoContext(ctx, "All processed files uploaded successfully",
-		zap.String("video_id", msg.VideoID.String()))
+		zap.String("video_id", videoID.String()))
 
 	return nil
 }
