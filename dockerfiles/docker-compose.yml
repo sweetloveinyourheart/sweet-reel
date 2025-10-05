@@ -26,7 +26,11 @@ services:
     environment:
       - MINIO_ROOT_USER=sweetreel
       - MINIO_ROOT_PASSWORD=sweetreel4000
-      - MINIO_DEFAULT_BUCKETS=video_processing
+      - MINIO_DEFAULT_BUCKETS=video-uploaded,video-processed
+      - MINIO_NOTIFY_KAFKA_ENABLE_1=on
+      - MINIO_NOTIFY_KAFKA_BUCKETS_1=video-uploaded
+      - MINIO_NOTIFY_KAFKA_BROKERS_1=kafka:9092
+      - MINIO_NOTIFY_KAFKA_TOPIC_1=video-uploaded
     entrypoint: bash /create_buckets.sh
     healthcheck:
       test: [ "CMD", "mc", "ready", "local" ]
@@ -132,7 +136,7 @@ services:
         condition: service_healthy
 
   video_processing:
-    image: srl:latest
+    image: srl-ffmpeg:latest
     container_name: ${COMPOSE_PROJECT_NAME:-test}_video_processing
     hostname: video_processing
     environment:
@@ -159,7 +163,7 @@ services:
       retries: 30
     depends_on:
       phase_two_leader:
-        condition: service_completed_successfully 
+        condition: service_completed_successfully
 
 networks:
   fs_test_net:

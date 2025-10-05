@@ -7,7 +7,7 @@ import (
 )
 
 func InitializeRepos(ctx context.Context) error {
-	_, err := processing.NewVideoSplitterProcessManager(ctx)
+	_, err := processing.NewVideoProcessManager(ctx)
 	if err != nil {
 		return err
 	}
