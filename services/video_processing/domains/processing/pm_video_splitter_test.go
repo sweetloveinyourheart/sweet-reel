@@ -2,14 +2,13 @@ package processing
 
 import (
 	"context"
-	"fmt"
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"testing"
 
 	"github.com/cockroachdb/errors"
 	"github.com/gofrs/uuid"
-	"github.com/samber/lo"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
@@ -19,227 +18,259 @@ import (
 	"github.com/sweetloveinyourheart/sweet-reel/services/video_processing/models"
 )
 
-// testVideoSplitterProcessManager is a test version that allows mocking FFmpeg
-type testVideoSplitterProcessManager struct {
-	*VideoSplitterProcessManager
-	ffmpegInstance *mockPkg.MockFFmpeg
-}
-
-func (t *testVideoSplitterProcessManager) processVideo(ctx context.Context, msg *models.VideoSplitterMessage, videoData []byte) error {
-	// Check if FFmpeg is available
-	if err := t.ffmpegInstance.IsAvailable(ctx); err != nil {
-		return errors.Wrap(err, "FFmpeg not available")
-	}
-
-	// Create temporary directory for processing
-	tempDir := fmt.Sprintf("/tmp/video_processing_%s", msg.VideoID.String())
-	if err := os.MkdirAll(tempDir, 0755); err != nil {
-		return errors.Wrap(err, "failed to create temp directory")
-	}
-	defer os.RemoveAll(tempDir) // Clean up temp directory
-
-	// Write video data to temporary file
-	inputPath := filepath.Join(tempDir, "input.mp4")
-	if err := os.WriteFile(inputPath, videoData, 0644); err != nil {
-		return errors.Wrap(err, "failed to write input file")
-	}
-
-	// Probe the input file to get information
-	_, err := t.ffmpegInstance.ProbeFile(ctx, inputPath)
-	if err != nil {
-		return errors.Wrap(err, "failed to probe input file")
-	}
-
-	// Create output directory for HLS segments
-	hlsOutputDir := filepath.Join(tempDir, "hls")
-	if err := os.MkdirAll(hlsOutputDir, 0755); err != nil {
-		return errors.Wrap(err, "failed to create HLS output directory")
-	}
-
-	// Define multiple quality levels for adaptive streaming
-	qualities := []ffmpeg.SegmentationOptions{
-		{
-			SegmentDuration: "6",
-			PlaylistType:    "vod",
-			PlaylistName:    "playlist.m3u8",
-			SegmentPrefix:   "segment",
-			SegmentFormat:   "ts",
-			VideoCodec:      "libx264",
-			VideoBitrate:    "800k",
-			AudioCodec:      "aac",
-			AudioBitrate:    "96k",
-			Resolution:      "854x480", // 480p
-		},
-	}
-
-	// Progress callback to monitor processing
-	progressCallback := func(progress ffmpeg.ProgressInfo) {
-		// Mock progress callback for testing
-	}
-
-	// Start video segmentation
-	if err := t.ffmpegInstance.SegmentVideoMultiQuality(ctx, inputPath, hlsOutputDir, qualities, progressCallback); err != nil {
-		return errors.Wrap(err, "failed to segment video")
-	}
-
-	// Create thumbnail
-	thumbnailPath := filepath.Join(tempDir, "thumbnail.jpg")
-	if err := t.ffmpegInstance.CreateThumbnail(ctx, inputPath, thumbnailPath, "00:00:05", 320, 240); err != nil {
-		// Don't fail on thumbnail creation error in tests
-	}
-
-	// Skip upload in tests
-	return nil
-}
-
-func TestVideoSplitterProcessManager_processVideo(t *testing.T) {
+func TestVideoSplitterProcessManager_HandleMessage(t *testing.T) {
 	tests := []struct {
-		name        string
-		setupMocks  func(*mockPkg.MockStorage, *mockPkg.MockFFmpeg)
-		videoData   []byte
-		message     *models.VideoSplitterMessage
-		expectError bool
+		name              string
+		setupStorageMocks func(*mockPkg.MockStorage)
+		setupFfmpegMocks  func(*mockPkg.MockFFmpeg)
+		message           *kafka.ConsumedMessage
+		expectError       bool
+		errorMsg          string
 	}{
 		{
-			name: "successful video processing",
-			setupMocks: func(storage *mockPkg.MockStorage, ffmpegMock *mockPkg.MockFFmpeg) {
-				ffmpegMock.On("IsAvailable", mock.Anything).Return(nil)
-				ffmpegMock.On("ProbeFile", mock.Anything, mock.Anything).Return(&ffmpeg.ProbeInfo{
+			name: "successful message handling",
+			setupStorageMocks: func(storage *mockPkg.MockStorage) {
+				storage.On("Download", "original/video.mp4", "videos").Return([]byte("fake video data"), nil)
+				// Mock successful uploads for HLS files and thumbnail
+				storage.On("Upload", mock.AnythingOfType("string"), "videos", mock.Anything, mock.AnythingOfType("string")).Return(nil).Maybe()
+			},
+			setupFfmpegMocks: func(ff *mockPkg.MockFFmpeg) {
+				// Mock FFmpeg availability check
+				ff.On("IsAvailable", mock.Anything).Return(nil)
+
+				// Mock probe file to return valid video information
+				probeInfo := &ffmpeg.ProbeInfo{
 					Format: ffmpeg.FormatInfo{
-						FormatName: "mp4",
-						Duration:   "60.0",
-						Size:       "10485760", // 10 MB
+						FormatName: "mov,mp4,m4a,3gp,3g2,mj2",
+						Duration:   "120.000000",
+						Size:       "1048576",
 					},
 					Streams: []ffmpeg.StreamInfo{
 						{
+							Index:     0,
 							CodecType: "video",
-						},
-						{
-							CodecType: "audio",
+							CodecName: "h264",
+							Width:     1920,
+							Height:    1080,
+							Duration:  "120.000000",
 						},
 					},
-				}, nil)
-				ffmpegMock.On("SegmentVideoMultiQuality", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
-				ffmpegMock.On("CreateThumbnail", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
+				}
+				ff.On("ProbeFile", mock.Anything, mock.AnythingOfType("string")).Return(probeInfo, nil)
+
+				// Mock successful video segmentation
+				ff.On("SegmentVideoMultiQuality", mock.Anything, mock.AnythingOfType("string"), mock.AnythingOfType("string"), mock.AnythingOfType("[]ffmpeg.SegmentationOptions"), mock.AnythingOfType("ffmpeg.ProgressCallback")).Return(nil)
+
+				// Mock successful thumbnail creation
+				ff.On("CreateThumbnail", mock.Anything, mock.AnythingOfType("string"), mock.AnythingOfType("string"), "00:00:05", 320, 240).Return(nil)
 			},
-			videoData: []byte("fake video data"),
-			message: &models.VideoSplitterMessage{
-				VideoID: uuid.Must(uuid.NewV7()),
-				Metadata: models.VideoSplitterMetadata{
-					Key:    "original/video.mp4",
-					Bucket: "videos",
-				},
+			message: &kafka.ConsumedMessage{
+				Topic: KafkaVideoSplitterTopic,
+				Key:   "test-key",
+				Value: func() []byte {
+					msg := models.VideoSplitterMessage{
+						VideoID: uuid.Must(uuid.NewV7()),
+						Metadata: models.VideoSplitterMetadata{
+							Key:    "original/video.mp4",
+							Bucket: "videos",
+						},
+					}
+					data, _ := json.Marshal(msg)
+					return data
+				}(),
 			},
 			expectError: false,
 		},
 		{
+			name:              "nil message",
+			setupStorageMocks: func(storage *mockPkg.MockStorage) {},
+			setupFfmpegMocks:  func(ff *mockPkg.MockFFmpeg) {},
+			message:           nil,
+			expectError:       true,
+			errorMsg:          "message is nil",
+		},
+		{
+			name:              "invalid JSON message",
+			setupStorageMocks: func(storage *mockPkg.MockStorage) {},
+			setupFfmpegMocks:  func(ff *mockPkg.MockFFmpeg) {},
+			message: &kafka.ConsumedMessage{
+				Topic: KafkaVideoSplitterTopic,
+				Key:   "test-key",
+				Value: []byte("invalid json"),
+			},
+			expectError: true,
+		},
+		{
+			name: "storage download failure",
+			setupStorageMocks: func(storage *mockPkg.MockStorage) {
+				storage.On("Download", "original/video.mp4", "videos").Return([]byte(nil), errors.New("download failed"))
+			},
+			setupFfmpegMocks: func(ff *mockPkg.MockFFmpeg) {},
+			message: &kafka.ConsumedMessage{
+				Topic: KafkaVideoSplitterTopic,
+				Key:   "test-key",
+				Value: func() []byte {
+					msg := models.VideoSplitterMessage{
+						VideoID: uuid.Must(uuid.NewV7()),
+						Metadata: models.VideoSplitterMetadata{
+							Key:    "original/video.mp4",
+							Bucket: "videos",
+						},
+					}
+					data, _ := json.Marshal(msg)
+					return data
+				}(),
+			},
+			expectError: true,
+			errorMsg:    "download failed",
+		},
+		{
 			name: "ffmpeg not available",
-			setupMocks: func(storage *mockPkg.MockStorage, ffmpegMock *mockPkg.MockFFmpeg) {
-				ffmpegMock.On("IsAvailable", mock.Anything).Return(errors.New("ffmpeg not installed"))
+			setupStorageMocks: func(storage *mockPkg.MockStorage) {
+				storage.On("Download", "original/video.mp4", "videos").Return([]byte("fake video data"), nil)
 			},
-			videoData: []byte("fake video data"),
-			message: &models.VideoSplitterMessage{
-				VideoID: uuid.Must(uuid.NewV7()),
-				Metadata: models.VideoSplitterMetadata{
-					Key:    "original/video.mp4",
-					Bucket: "videos",
-				},
+			setupFfmpegMocks: func(ff *mockPkg.MockFFmpeg) {
+				ff.On("IsAvailable", mock.Anything).Return(errors.New("ffmpeg not found"))
 			},
-			expectError: true,
-		},
-		{
-			name: "probing file fails",
-			setupMocks: func(storage *mockPkg.MockStorage, ffmpegMock *mockPkg.MockFFmpeg) {
-				ffmpegMock.On("IsAvailable", mock.Anything).Return(nil)
-				ffmpegMock.On("ProbeFile", mock.Anything, mock.Anything).Return(&ffmpeg.ProbeInfo{}, errors.New("probe failed"))
-			},
-			videoData: []byte("fake video data"),
-			message: &models.VideoSplitterMessage{
-				VideoID: uuid.Must(uuid.NewV7()),
-				Metadata: models.VideoSplitterMetadata{
-					Key:    "original/video.mp4",
-					Bucket: "videos",
-				},
+			message: &kafka.ConsumedMessage{
+				Topic: KafkaVideoSplitterTopic,
+				Key:   "test-key",
+				Value: func() []byte {
+					msg := models.VideoSplitterMessage{
+						VideoID: uuid.Must(uuid.NewV7()),
+						Metadata: models.VideoSplitterMetadata{
+							Key:    "original/video.mp4",
+							Bucket: "videos",
+						},
+					}
+					data, _ := json.Marshal(msg)
+					return data
+				}(),
 			},
 			expectError: true,
+			errorMsg:    "FFmpeg not available",
 		},
 		{
-			name: "segmentation fails",
-			setupMocks: func(storage *mockPkg.MockStorage, ffmpegMock *mockPkg.MockFFmpeg) {
-				ffmpegMock.On("IsAvailable", mock.Anything).Return(nil)
-				ffmpegMock.On("ProbeFile", mock.Anything, mock.Anything).Return(&ffmpeg.ProbeInfo{
+			name: "probe file failure",
+			setupStorageMocks: func(storage *mockPkg.MockStorage) {
+				storage.On("Download", "original/video.mp4", "videos").Return([]byte("fake video data"), nil)
+			},
+			setupFfmpegMocks: func(ff *mockPkg.MockFFmpeg) {
+				ff.On("IsAvailable", mock.Anything).Return(nil)
+				ff.On("ProbeFile", mock.Anything, mock.AnythingOfType("string")).Return((*ffmpeg.ProbeInfo)(nil), errors.New("probe failed"))
+			},
+			message: &kafka.ConsumedMessage{
+				Topic: KafkaVideoSplitterTopic,
+				Key:   "test-key",
+				Value: func() []byte {
+					msg := models.VideoSplitterMessage{
+						VideoID: uuid.Must(uuid.NewV7()),
+						Metadata: models.VideoSplitterMetadata{
+							Key:    "original/video.mp4",
+							Bucket: "videos",
+						},
+					}
+					data, _ := json.Marshal(msg)
+					return data
+				}(),
+			},
+			expectError: true,
+			errorMsg:    "failed to probe input file",
+		},
+		{
+			name: "video segmentation failure",
+			setupStorageMocks: func(storage *mockPkg.MockStorage) {
+				storage.On("Download", "original/video.mp4", "videos").Return([]byte("fake video data"), nil)
+			},
+			setupFfmpegMocks: func(ff *mockPkg.MockFFmpeg) {
+				ff.On("IsAvailable", mock.Anything).Return(nil)
+
+				probeInfo := &ffmpeg.ProbeInfo{
 					Format: ffmpeg.FormatInfo{
-						FormatName: "mp4",
-						Duration:   "60.0",
-						Size:       "10485760", // 10 MB
+						FormatName: "mov,mp4,m4a,3gp,3g2,mj2",
+						Duration:   "120.000000",
+						Size:       "1048576",
 					},
 					Streams: []ffmpeg.StreamInfo{
 						{
+							Index:     0,
 							CodecType: "video",
+							CodecName: "h264",
+							Width:     1920,
+							Height:    1080,
+							Duration:  "120.000000",
 						},
 					},
-				}, nil)
-				ffmpegMock.On("SegmentVideoMultiQuality", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(errors.New("segmentation failed"))
+				}
+				ff.On("ProbeFile", mock.Anything, mock.AnythingOfType("string")).Return(probeInfo, nil)
+				ff.On("SegmentVideoMultiQuality", mock.Anything, mock.AnythingOfType("string"), mock.AnythingOfType("string"), mock.AnythingOfType("[]ffmpeg.SegmentationOptions"), mock.AnythingOfType("ffmpeg.ProgressCallback")).Return(errors.New("segmentation failed"))
 			},
-			videoData: []byte("fake video data"),
-			message: &models.VideoSplitterMessage{
-				VideoID: uuid.Must(uuid.NewV7()),
-				Metadata: models.VideoSplitterMetadata{
-					Key:    "original/video.mp4",
-					Bucket: "videos",
-				},
+			message: &kafka.ConsumedMessage{
+				Topic: KafkaVideoSplitterTopic,
+				Key:   "test-key",
+				Value: func() []byte {
+					msg := models.VideoSplitterMessage{
+						VideoID: uuid.Must(uuid.NewV7()),
+						Metadata: models.VideoSplitterMetadata{
+							Key:    "original/video.mp4",
+							Bucket: "videos",
+						},
+					}
+					data, _ := json.Marshal(msg)
+					return data
+				}(),
 			},
 			expectError: true,
+			errorMsg:    "failed to segment video",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// Create mock dependencies
+			// Create mock storage and ffmpeg
 			mockStorage := new(mockPkg.MockStorage)
-			ffmpegMock := new(mockPkg.MockFFmpeg)
+			mockFf := new(mockPkg.MockFFmpeg)
 
 			// Setup mocks
-			tt.setupMocks(mockStorage, ffmpegMock)
+			tt.setupStorageMocks(mockStorage)
+			tt.setupFfmpegMocks(mockFf)
 
-			// Create the test process manager
-			testVsp := &testVideoSplitterProcessManager{
-				VideoSplitterProcessManager: &VideoSplitterProcessManager{
-					ctx:           context.Background(),
-					storageClient: mockStorage,
-					queue:         make(chan lo.Tuple2[context.Context, *kafka.ConsumedMessage], BatchSize*2),
-				},
-				ffmpegInstance: ffmpegMock,
+			vsp := &VideoSplitterProcessManager{
+				ctx:           context.Background(),
+				storageClient: mockStorage,
+				ff:            mockFf,
 			}
 
 			// Run the test
-			err := testVsp.processVideo(context.Background(), tt.message, tt.videoData)
+			err := vsp.HandleMessage(context.Background(), tt.message)
 
 			// Verify the results
 			if tt.expectError {
 				require.Error(t, err)
+				if tt.errorMsg != "" {
+					require.Contains(t, err.Error(), tt.errorMsg)
+				}
 			} else {
 				require.NoError(t, err)
 			}
 
 			// Verify all mocks
 			mockStorage.AssertExpectations(t)
-			ffmpegMock.AssertExpectations(t)
-
-			// Clean up any temporary directories that might have been created
-			tempDir := fmt.Sprintf("/tmp/video_processing_%s", tt.message.VideoID.String())
-			os.RemoveAll(tempDir)
+			mockFf.AssertExpectations(t)
 		})
 	}
 }
 
 func TestVideoSplitterProcessManager_uploadProcessedFiles(t *testing.T) {
 	tests := []struct {
-		name        string
-		setupMocks  func(*mockPkg.MockStorage)
-		setupFiles  func(hlsDir, thumbnailPath string) error
-		message     *models.VideoSplitterMessage
-		expectError bool
+		name                string
+		setupMocks          func(*mockPkg.MockStorage)
+		setupFiles          func(hlsDir, thumbnailPath string) error
+		message             *models.VideoSplitterMessage
+		expectError         bool
+		errorMsg            string
+		skipDirectoryCreate bool // For cases where we don't want to create the HLS directory
+		lenientMockCheck    bool // For cases where mock assertions should be more lenient
 	}{
 		{
 			name: "successful file upload",
@@ -316,6 +347,115 @@ func TestVideoSplitterProcessManager_uploadProcessedFiles(t *testing.T) {
 				},
 			},
 			expectError: true,
+			errorMsg:    "upload failed",
+		},
+		{
+			name: "non-existent HLS directory",
+			setupMocks: func(storage *mockPkg.MockStorage) {
+				// No mocks needed as this should fail before reaching storage
+			},
+			setupFiles: func(hlsDir, thumbnailPath string) error {
+				// Don't create the HLS directory
+				return nil
+			},
+			message: &models.VideoSplitterMessage{
+				VideoID: uuid.Must(uuid.NewV7()),
+				Metadata: models.VideoSplitterMetadata{
+					Key:    "original/video.mp4",
+					Bucket: "videos",
+				},
+			},
+			expectError:         true,
+			errorMsg:            "no such file or directory",
+			skipDirectoryCreate: true,
+		},
+		{
+			name: "partial upload failure with specific file",
+			setupMocks: func(storage *mockPkg.MockStorage) {
+				// First file succeeds
+				storage.On("Upload", mock.MatchedBy(func(key string) bool {
+					return filepath.Base(key) == "master.m3u8"
+				}), "videos", mock.Anything, mock.Anything).Return(nil).Once()
+
+				// Second file fails
+				storage.On("Upload", mock.MatchedBy(func(key string) bool {
+					return filepath.Base(key) == "playlist.m3u8"
+				}), "videos", mock.Anything, mock.Anything).Return(errors.New("network error")).Once()
+			},
+			setupFiles: func(hlsDir, thumbnailPath string) error {
+				testFiles := []string{
+					"master.m3u8",
+					"playlist.m3u8",
+				}
+
+				for _, file := range testFiles {
+					filePath := filepath.Join(hlsDir, file)
+					if err := os.WriteFile(filePath, []byte("test content"), 0644); err != nil {
+						return err
+					}
+				}
+				return nil
+			},
+			message: &models.VideoSplitterMessage{
+				VideoID: uuid.Must(uuid.NewV7()),
+				Metadata: models.VideoSplitterMetadata{
+					Key:    "original/video.mp4",
+					Bucket: "videos",
+				},
+			},
+			expectError: true,
+			errorMsg:    "network error",
+		},
+		{
+			name: "thumbnail upload failure (should not fail the whole process)",
+			setupMocks: func(storage *mockPkg.MockStorage) {
+				// HLS files upload successfully
+				storage.On("Upload", mock.MatchedBy(func(key string) bool {
+					return filepath.Base(key) == "master.m3u8"
+				}), "videos", mock.Anything, mock.Anything).Return(nil)
+
+				// Thumbnail upload fails (but this should not cause the method to fail)
+				storage.On("Upload", mock.MatchedBy(func(key string) bool {
+					return filepath.Base(key) == "thumbnail.jpg"
+				}), "videos", mock.Anything, "image/jpeg").Return(errors.New("thumbnail upload failed"))
+			},
+			setupFiles: func(hlsDir, thumbnailPath string) error {
+				// Create HLS file
+				filePath := filepath.Join(hlsDir, "master.m3u8")
+				if err := os.WriteFile(filePath, []byte("test content"), 0644); err != nil {
+					return err
+				}
+
+				// Create thumbnail
+				return os.WriteFile(thumbnailPath, []byte("thumbnail data"), 0644)
+			},
+			message: &models.VideoSplitterMessage{
+				VideoID: uuid.Must(uuid.NewV7()),
+				Metadata: models.VideoSplitterMetadata{
+					Key:    "original/video.mp4",
+					Bucket: "videos",
+				},
+			},
+			expectError:      false, // Thumbnail failure should not fail the whole process
+			lenientMockCheck: true,  // Don't strictly check mocks for this case
+		},
+		{
+			name: "empty HLS directory",
+			setupMocks: func(storage *mockPkg.MockStorage) {
+				// No upload calls expected for empty directory
+			},
+			setupFiles: func(hlsDir, thumbnailPath string) error {
+				// Create empty HLS directory
+				return nil
+			},
+			message: &models.VideoSplitterMessage{
+				VideoID: uuid.Must(uuid.NewV7()),
+				Metadata: models.VideoSplitterMetadata{
+					Key:    "original/video.mp4",
+					Bucket: "videos",
+				},
+			},
+			expectError: false, // Empty directory should not cause error
 		},
 	}
 
@@ -324,7 +464,12 @@ func TestVideoSplitterProcessManager_uploadProcessedFiles(t *testing.T) {
 			// Create temporary test directories
 			tempDir := t.TempDir()
 			hlsDir := filepath.Join(tempDir, "hls")
-			require.NoError(t, os.MkdirAll(hlsDir, 0755))
+
+			// Only create HLS directory if the test expects it
+			if !tt.skipDirectoryCreate {
+				require.NoError(t, os.MkdirAll(hlsDir, 0755))
+			}
+
 			thumbnailPath := filepath.Join(tempDir, "thumbnail.jpg")
 
 			// Create mock storage
@@ -349,12 +494,17 @@ func TestVideoSplitterProcessManager_uploadProcessedFiles(t *testing.T) {
 			// Verify the results
 			if tt.expectError {
 				require.Error(t, err)
+				if tt.errorMsg != "" {
+					require.Contains(t, err.Error(), tt.errorMsg)
+				}
 			} else {
 				require.NoError(t, err)
 			}
 
-			// Verify all mocks
-			mockStorage.AssertExpectations(t)
+			// Verify all mocks (with more lenient assertion for special cases)
+			if !tt.lenientMockCheck {
+				mockStorage.AssertExpectations(t)
+			}
 		})
 	}
 }

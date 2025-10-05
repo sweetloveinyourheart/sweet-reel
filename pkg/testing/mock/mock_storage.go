@@ -4,7 +4,11 @@ import (
 	"io"
 
 	"github.com/stretchr/testify/mock"
+	"github.com/sweetloveinyourheart/sweet-reel/pkg/storage"
 )
+
+// Ensure that MockStorage implements storage.Storag
+var _ storage.Storage = (*MockStorage)(nil)
 
 // MockStorage is a mock of the storage.Storage interface
 type MockStorage struct {

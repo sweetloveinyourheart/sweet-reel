@@ -31,6 +31,7 @@ type VideoSplitterProcessManager struct {
 	queue chan lo.Tuple2[context.Context, *kafka.ConsumedMessage]
 
 	storageClient storage.Storage
+	ff            ffmpeg.FFmpegInterface
 }
 
 func NewVideoSplitterProcessManager(ctx context.Context) (*VideoSplitterProcessManager, error) {
@@ -48,6 +49,7 @@ func NewVideoSplitterProcessManager(ctx context.Context) (*VideoSplitterProcessM
 		ctx:           ctx,
 		queue:         make(chan lo.Tuple2[context.Context, *kafka.ConsumedMessage], BatchSize*2),
 		storageClient: storageClient,
+		ff:            ffmpeg.New(),
 	}
 
 	go func() {
@@ -126,8 +128,7 @@ func (vsp *VideoSplitterProcessManager) HandleMessage(ctx context.Context, messa
 // processVideo handles the actual video processing using FFmpeg
 func (vsp *VideoSplitterProcessManager) processVideo(ctx context.Context, msg *models.VideoSplitterMessage, videoData []byte) error {
 	// Create FFmpeg instance
-	ff := ffmpeg.New() // Check if FFmpeg is available
-	if err := ff.IsAvailable(ctx); err != nil {
+	if err := vsp.ff.IsAvailable(ctx); err != nil {
 		return errors.Wrap(err, "FFmpeg not available")
 	}
 
@@ -145,7 +146,7 @@ func (vsp *VideoSplitterProcessManager) processVideo(ctx context.Context, msg *m
 	}
 
 	// Probe the input file to get information
-	probeInfo, err := ff.ProbeFile(ctx, inputPath)
+	probeInfo, err := vsp.ff.ProbeFile(ctx, inputPath)
 	if err != nil {
 		return errors.Wrap(err, "failed to probe input file")
 	}
@@ -220,7 +221,7 @@ func (vsp *VideoSplitterProcessManager) processVideo(ctx context.Context, msg *m
 		zap.String("video_id", msg.VideoID.String()),
 		zap.Int("quality_levels", len(qualities)))
 
-	if err := ff.SegmentVideoMultiQuality(ctx, inputPath, hlsOutputDir, qualities, progressCallback); err != nil {
+	if err := vsp.ff.SegmentVideoMultiQuality(ctx, inputPath, hlsOutputDir, qualities, progressCallback); err != nil {
 		return errors.Wrap(err, "failed to segment video")
 	}
 
@@ -231,7 +232,7 @@ func (vsp *VideoSplitterProcessManager) processVideo(ctx context.Context, msg *m
 
 	// Create thumbnail
 	thumbnailPath := filepath.Join(tempDir, "thumbnail.jpg")
-	if err := ff.CreateThumbnail(ctx, inputPath, thumbnailPath, "00:00:05", 320, 240); err != nil {
+	if err := vsp.ff.CreateThumbnail(ctx, inputPath, thumbnailPath, "00:00:05", 320, 240); err != nil {
 		logger.Global().WarnContext(ctx, "Failed to create thumbnail", zap.Error(err))
 	} else {
 		logger.Global().InfoContext(ctx, "Thumbnail created", zap.String("path", thumbnailPath))
