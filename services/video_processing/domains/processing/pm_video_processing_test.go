@@ -15,7 +15,7 @@ import (
 
 	"github.com/sweetloveinyourheart/sweet-reel/pkg/ffmpeg"
 	"github.com/sweetloveinyourheart/sweet-reel/pkg/kafka"
-	"github.com/sweetloveinyourheart/sweet-reel/pkg/storage/s3"
+	"github.com/sweetloveinyourheart/sweet-reel/pkg/s3"
 	mockPkg "github.com/sweetloveinyourheart/sweet-reel/pkg/testing/mock"
 )
 

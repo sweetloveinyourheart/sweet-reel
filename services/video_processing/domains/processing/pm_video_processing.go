@@ -17,8 +17,7 @@ import (
 	"github.com/sweetloveinyourheart/sweet-reel/pkg/ffmpeg"
 	"github.com/sweetloveinyourheart/sweet-reel/pkg/kafka"
 	"github.com/sweetloveinyourheart/sweet-reel/pkg/logger"
-	"github.com/sweetloveinyourheart/sweet-reel/pkg/storage"
-	"github.com/sweetloveinyourheart/sweet-reel/pkg/storage/s3"
+	"github.com/sweetloveinyourheart/sweet-reel/pkg/s3"
 )
 
 const (
@@ -33,12 +32,12 @@ type VideoProcessManager struct {
 	ctx   context.Context
 	queue chan lo.Tuple2[context.Context, *kafka.ConsumedMessage]
 
-	storageClient storage.Storage
+	storageClient s3.S3Storage
 	ff            ffmpeg.FFmpegInterface
 }
 
 func NewVideoProcessManager(ctx context.Context) (*VideoProcessManager, error) {
-	storageClient, err := do.Invoke[storage.Storage](nil)
+	storageClient, err := do.Invoke[s3.S3Storage](nil)
 	if err != nil {
 		return nil, err
 	}

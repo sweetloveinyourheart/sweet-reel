@@ -13,14 +13,22 @@ import (
 	"github.com/sweetloveinyourheart/sweet-reel/pkg/logger"
 )
 
+type S3Storage interface {
+	Download(key string, bucket string) ([]byte, error)
+	Upload(key string, bucket string, file io.Reader, mimeType string) error
+	GenerateUploadPublicUri(key string, bucket string, expirationSeconds uint32) (string, error)
+	GenerateDownloadPublicUri(key string, bucket string, expirationSeconds uint32) (string, error)
+	Delete(key string, bucket string) error
+}
+
 type s3Client struct {
 	client *s3.Client
 }
 
-func CreateS3Client(ctx context.Context, config *Config) *s3Client {
+func CreateS3Client(ctx context.Context, config *Config) (*s3Client, error) {
 	cfg, err := config.ToS3Config(ctx)
 	if err != nil {
-		logger.GlobalSugared().Fatal(err)
+		return nil, err
 	}
 
 	var client *s3.Client
@@ -35,7 +43,7 @@ func CreateS3Client(ctx context.Context, config *Config) *s3Client {
 
 	return &s3Client{
 		client: client,
-	}
+	}, nil
 }
 
 func (s s3Client) Upload(key string, bucket string, file io.Reader, mimeType string) error {

@@ -9,7 +9,6 @@ type S3EventMessage struct {
 	Records   []S3Record `json:"Records"`
 }
 
-// S3Record represents an individual S3 event record
 type S3Record struct {
 	EventVersion      string              `json:"eventVersion"`
 	EventSource       string              `json:"eventSource"`
@@ -23,19 +22,16 @@ type S3Record struct {
 	Source            S3Source            `json:"source"`
 }
 
-// S3UserIdentity represents the user identity information
 type S3UserIdentity struct {
 	PrincipalID string `json:"principalId"`
 }
 
-// S3RequestParameters represents the request parameters
 type S3RequestParameters struct {
 	PrincipalID     string `json:"principalId"`
 	Region          string `json:"region"`
 	SourceIPAddress string `json:"sourceIPAddress"`
 }
 
-// S3ResponseElements represents the response elements
 type S3ResponseElements struct {
 	XAmzID2              string `json:"x-amz-id-2"`
 	XAmzRequestID        string `json:"x-amz-request-id"`
@@ -43,7 +39,6 @@ type S3ResponseElements struct {
 	XMinioOriginEndpoint string `json:"x-minio-origin-endpoint"`
 }
 
-// S3Details represents the S3-specific details
 type S3Details struct {
 	S3SchemaVersion string   `json:"s3SchemaVersion"`
 	ConfigurationID string   `json:"configurationId"`
@@ -51,14 +46,12 @@ type S3Details struct {
 	Object          S3Object `json:"object"`
 }
 
-// S3Bucket represents the S3 bucket information
 type S3Bucket struct {
 	Name          string         `json:"name"`
 	OwnerIdentity S3UserIdentity `json:"ownerIdentity"`
 	ARN           string         `json:"arn"`
 }
 
-// S3Object represents the S3 object information
 type S3Object struct {
 	Key          string            `json:"key"`
 	Size         int64             `json:"size"`
@@ -68,7 +61,6 @@ type S3Object struct {
 	Sequencer    string            `json:"sequencer"`
 }
 
-// S3Source represents the source information
 type S3Source struct {
 	Host      string `json:"host"`
 	Port      string `json:"port"`
