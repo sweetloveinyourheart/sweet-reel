@@ -127,19 +127,16 @@ func (vsp *VideoSplitterProcessManager) HandleMessage(ctx context.Context, messa
 
 // processVideo handles the actual video processing using FFmpeg
 func (vsp *VideoSplitterProcessManager) processVideo(ctx context.Context, msg *models.VideoSplitterMessage, videoData []byte) error {
-	// Create FFmpeg instance
 	if err := vsp.ff.IsAvailable(ctx); err != nil {
 		return errors.Wrap(err, "FFmpeg not available")
 	}
 
-	// Create temporary directory for processing
 	tempDir := fmt.Sprintf("/tmp/video_processing_%s", msg.VideoID.String())
 	if err := os.MkdirAll(tempDir, 0755); err != nil {
 		return errors.Wrap(err, "failed to create temp directory")
 	}
-	defer os.RemoveAll(tempDir) // Clean up temp directory
+	defer os.RemoveAll(tempDir)
 
-	// Write video data to temporary file
 	inputPath := filepath.Join(tempDir, "input.mp4")
 	if err := os.WriteFile(inputPath, videoData, 0644); err != nil {
 		return errors.Wrap(err, "failed to write input file")
@@ -157,7 +154,6 @@ func (vsp *VideoSplitterProcessManager) processVideo(ctx context.Context, msg *m
 		zap.String("size", probeInfo.Format.Size),
 		zap.Int("streams", len(probeInfo.Streams)))
 
-	// Create output directory for HLS segments
 	hlsOutputDir := filepath.Join(tempDir, "hls")
 	if err := os.MkdirAll(hlsOutputDir, 0755); err != nil {
 		return errors.Wrap(err, "failed to create HLS output directory")
@@ -203,7 +199,6 @@ func (vsp *VideoSplitterProcessManager) processVideo(ctx context.Context, msg *m
 		},
 	}
 
-	// Progress callback to monitor processing
 	progressCallback := func(progress ffmpeg.ProgressInfo) {
 		if int(progress.Percentage)%10 == 0 { // Log every 10%
 			logger.Global().InfoContext(ctx, "Video processing progress",
@@ -255,7 +250,7 @@ func (vsp *VideoSplitterProcessManager) uploadProcessedFiles(ctx context.Context
 		}
 
 		if info.IsDir() {
-			return nil // Skip directories
+			return nil
 		}
 
 		// Read file content
