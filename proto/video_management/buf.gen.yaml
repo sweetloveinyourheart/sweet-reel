@@ -1,0 +1,19 @@
+version: v1
+plugins:
+  - name: go
+    out: code/video_management/go
+    opt:
+      - paths=source_relative
+  - name: connect-go
+    out: code/video_management/go
+    opt:
+      - paths=source_relative
+  - name: go-grpc
+    out: code/video_management/go
+    opt:
+      - paths=source_relative
+      - require_unimplemented_servers=false
+  - name: doc
+    out: ../docs/api/video_management
+    opt:
+      - markdown,video_management.md
