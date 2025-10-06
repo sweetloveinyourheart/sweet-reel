@@ -11,7 +11,6 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
-	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -27,7 +26,7 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type VideoManagementClient interface {
-	PresignedUrl(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*PresignedUrlResponse, error)
+	PresignedUrl(ctx context.Context, in *PresignedUrlRequest, opts ...grpc.CallOption) (*PresignedUrlResponse, error)
 }
 
 type videoManagementClient struct {
@@ -38,7 +37,7 @@ func NewVideoManagementClient(cc grpc.ClientConnInterface) VideoManagementClient
 	return &videoManagementClient{cc}
 }
 
-func (c *videoManagementClient) PresignedUrl(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*PresignedUrlResponse, error) {
+func (c *videoManagementClient) PresignedUrl(ctx context.Context, in *PresignedUrlRequest, opts ...grpc.CallOption) (*PresignedUrlResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(PresignedUrlResponse)
 	err := c.cc.Invoke(ctx, VideoManagement_PresignedUrl_FullMethodName, in, out, cOpts...)
@@ -52,7 +51,7 @@ func (c *videoManagementClient) PresignedUrl(ctx context.Context, in *emptypb.Em
 // All implementations should embed UnimplementedVideoManagementServer
 // for forward compatibility.
 type VideoManagementServer interface {
-	PresignedUrl(context.Context, *emptypb.Empty) (*PresignedUrlResponse, error)
+	PresignedUrl(context.Context, *PresignedUrlRequest) (*PresignedUrlResponse, error)
 }
 
 // UnimplementedVideoManagementServer should be embedded to have
@@ -62,7 +61,7 @@ type VideoManagementServer interface {
 // pointer dereference when methods are called.
 type UnimplementedVideoManagementServer struct{}
 
-func (UnimplementedVideoManagementServer) PresignedUrl(context.Context, *emptypb.Empty) (*PresignedUrlResponse, error) {
+func (UnimplementedVideoManagementServer) PresignedUrl(context.Context, *PresignedUrlRequest) (*PresignedUrlResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method PresignedUrl not implemented")
 }
 func (UnimplementedVideoManagementServer) testEmbeddedByValue() {}
@@ -86,7 +85,7 @@ func RegisterVideoManagementServer(s grpc.ServiceRegistrar, srv VideoManagementS
 }
 
 func _VideoManagement_PresignedUrl_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(emptypb.Empty)
+	in := new(PresignedUrlRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -98,7 +97,7 @@ func _VideoManagement_PresignedUrl_Handler(srv interface{}, ctx context.Context,
 		FullMethod: VideoManagement_PresignedUrl_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(VideoManagementServer).PresignedUrl(ctx, req.(*emptypb.Empty))
+		return srv.(VideoManagementServer).PresignedUrl(ctx, req.(*PresignedUrlRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }

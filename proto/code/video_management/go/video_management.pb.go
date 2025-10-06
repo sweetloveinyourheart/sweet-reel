@@ -9,7 +9,6 @@ package grpc
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	emptypb "google.golang.org/protobuf/types/known/emptypb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -27,8 +26,6 @@ type PresignedUrlRequest struct {
 	Title         string                 `protobuf:"bytes,1,opt,name=title,proto3" json:"title,omitempty"`
 	Description   string                 `protobuf:"bytes,2,opt,name=description,proto3" json:"description,omitempty"`
 	FileName      string                 `protobuf:"bytes,3,opt,name=file_name,json=fileName,proto3" json:"file_name,omitempty"`
-	FileSize      int64                  `protobuf:"varint,4,opt,name=file_size,json=fileSize,proto3" json:"file_size,omitempty"`
-	MimeType      string                 `protobuf:"bytes,5,opt,name=mime_type,json=mimeType,proto3" json:"mime_type,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -84,24 +81,11 @@ func (x *PresignedUrlRequest) GetFileName() string {
 	return ""
 }
 
-func (x *PresignedUrlRequest) GetFileSize() int64 {
-	if x != nil {
-		return x.FileSize
-	}
-	return 0
-}
-
-func (x *PresignedUrlRequest) GetMimeType() string {
-	if x != nil {
-		return x.MimeType
-	}
-	return ""
-}
-
 type PresignedUrlResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	VideoId       string                 `protobuf:"bytes,1,opt,name=video_id,json=videoId,proto3" json:"video_id,omitempty"`
 	PresignedUrl  string                 `protobuf:"bytes,2,opt,name=presigned_url,json=presignedUrl,proto3" json:"presigned_url,omitempty"`
+	ExpiresIn     int32                  `protobuf:"varint,3,opt,name=expires_in,json=expiresIn,proto3" json:"expires_in,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -150,22 +134,29 @@ func (x *PresignedUrlResponse) GetPresignedUrl() string {
 	return ""
 }
 
+func (x *PresignedUrlResponse) GetExpiresIn() int32 {
+	if x != nil {
+		return x.ExpiresIn
+	}
+	return 0
+}
+
 var File_video_management_proto protoreflect.FileDescriptor
 
 const file_video_management_proto_rawDesc = "" +
 	"\n" +
-	"\x16video_management.proto\x12:com.sweetloveinyourheart.srl.videomanagement.dataproviders\x1a\x1bgoogle/protobuf/empty.proto\"\xa4\x01\n" +
+	"\x16video_management.proto\x12:com.sweetloveinyourheart.srl.videomanagement.dataproviders\"j\n" +
 	"\x13PresignedUrlRequest\x12\x14\n" +
 	"\x05title\x18\x01 \x01(\tR\x05title\x12 \n" +
 	"\vdescription\x18\x02 \x01(\tR\vdescription\x12\x1b\n" +
-	"\tfile_name\x18\x03 \x01(\tR\bfileName\x12\x1b\n" +
-	"\tfile_size\x18\x04 \x01(\x03R\bfileSize\x12\x1b\n" +
-	"\tmime_type\x18\x05 \x01(\tR\bmimeType\"V\n" +
+	"\tfile_name\x18\x03 \x01(\tR\bfileName\"u\n" +
 	"\x14PresignedUrlResponse\x12\x19\n" +
 	"\bvideo_id\x18\x01 \x01(\tR\avideoId\x12#\n" +
-	"\rpresigned_url\x18\x02 \x01(\tR\fpresignedUrl2\x8b\x01\n" +
-	"\x0fVideoManagement\x12x\n" +
-	"\fPresignedUrl\x12\x16.google.protobuf.Empty\x1aP.com.sweetloveinyourheart.srl.videomanagement.dataproviders.PresignedUrlResponseBPZNgithub.com/sweetloveinyourheart/sweet-reel/proto/code/video_management/go;grpcb\x06proto3"
+	"\rpresigned_url\x18\x02 \x01(\tR\fpresignedUrl\x12\x1d\n" +
+	"\n" +
+	"expires_in\x18\x03 \x01(\x05R\texpiresIn2\xc5\x01\n" +
+	"\x0fVideoManagement\x12\xb1\x01\n" +
+	"\fPresignedUrl\x12O.com.sweetloveinyourheart.srl.videomanagement.dataproviders.PresignedUrlRequest\x1aP.com.sweetloveinyourheart.srl.videomanagement.dataproviders.PresignedUrlResponseBPZNgithub.com/sweetloveinyourheart/sweet-reel/proto/code/video_management/go;grpcb\x06proto3"
 
 var (
 	file_video_management_proto_rawDescOnce sync.Once
@@ -183,10 +174,9 @@ var file_video_management_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_video_management_proto_goTypes = []any{
 	(*PresignedUrlRequest)(nil),  // 0: com.sweetloveinyourheart.srl.videomanagement.dataproviders.PresignedUrlRequest
 	(*PresignedUrlResponse)(nil), // 1: com.sweetloveinyourheart.srl.videomanagement.dataproviders.PresignedUrlResponse
-	(*emptypb.Empty)(nil),        // 2: google.protobuf.Empty
 }
 var file_video_management_proto_depIdxs = []int32{
-	2, // 0: com.sweetloveinyourheart.srl.videomanagement.dataproviders.VideoManagement.PresignedUrl:input_type -> google.protobuf.Empty
+	0, // 0: com.sweetloveinyourheart.srl.videomanagement.dataproviders.VideoManagement.PresignedUrl:input_type -> com.sweetloveinyourheart.srl.videomanagement.dataproviders.PresignedUrlRequest
 	1, // 1: com.sweetloveinyourheart.srl.videomanagement.dataproviders.VideoManagement.PresignedUrl:output_type -> com.sweetloveinyourheart.srl.videomanagement.dataproviders.PresignedUrlResponse
 	1, // [1:2] is the sub-list for method output_type
 	0, // [0:1] is the sub-list for method input_type

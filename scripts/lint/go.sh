@@ -8,7 +8,7 @@ arg1=$1  # 'fix-goimports' = Fix the malformed goimports
 
 set -e
 
-runGoImports="go run golang.org/x/tools/cmd/goimports"
+runGoImports="goimports"
 
 function checkForMalformedFile() {
     if [ -n "$1" ]; then
@@ -37,7 +37,7 @@ function fixBadImports() {
     local badImports=$1
     for file in $badImports; do
         if ! $(isGeneratedFile "$file"); then
-            $runGoImports --local "github.com/sweetloveinyourheart/sweet-reel" -w $file
+            $runGoImports -local "github.com/sweetloveinyourheart/sweet-reel" -w $file
         fi
     done
 }

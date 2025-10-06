@@ -31,8 +31,6 @@
 | title | [string](#string) |  |  |
 | description | [string](#string) |  |  |
 | file_name | [string](#string) |  |  |
-| file_size | [int64](#int64) |  |  |
-| mime_type | [string](#string) |  |  |
 
 
 
@@ -49,6 +47,7 @@
 | ----- | ---- | ----- | ----------- |
 | video_id | [string](#string) |  |  |
 | presigned_url | [string](#string) |  |  |
+| expires_in | [int32](#int32) |  |  |
 
 
 
@@ -68,7 +67,7 @@
 
 | Method Name | Request Type | Response Type | Description |
 | ----------- | ------------ | ------------- | ------------|
-| PresignedUrl | [.google.protobuf.Empty](#google-protobuf-Empty) | [PresignedUrlResponse](#com-sweetloveinyourheart-srl-videomanagement-dataproviders-PresignedUrlResponse) |  |
+| PresignedUrl | [PresignedUrlRequest](#com-sweetloveinyourheart-srl-videomanagement-dataproviders-PresignedUrlRequest) | [PresignedUrlResponse](#com-sweetloveinyourheart-srl-videomanagement-dataproviders-PresignedUrlResponse) |  |
 
  
 

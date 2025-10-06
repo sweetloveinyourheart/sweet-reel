@@ -4,15 +4,22 @@ import (
 	"context"
 	"fmt"
 
+	"connectrpc.com/connect"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/samber/do"
 	"github.com/spf13/cobra"
 
 	"github.com/sweetloveinyourheart/sweet-reel/pkg/cmdutil"
 	"github.com/sweetloveinyourheart/sweet-reel/pkg/config"
+	"github.com/sweetloveinyourheart/sweet-reel/pkg/db"
+	"github.com/sweetloveinyourheart/sweet-reel/pkg/grpc"
+	"github.com/sweetloveinyourheart/sweet-reel/pkg/interceptors"
 	"github.com/sweetloveinyourheart/sweet-reel/pkg/kafka"
 	"github.com/sweetloveinyourheart/sweet-reel/pkg/logger"
 	"github.com/sweetloveinyourheart/sweet-reel/pkg/s3"
+	"github.com/sweetloveinyourheart/sweet-reel/proto/code/video_management/go/grpcconnect"
 	videomanagement "github.com/sweetloveinyourheart/sweet-reel/services/video_management"
+	"github.com/sweetloveinyourheart/sweet-reel/services/video_management/actions"
 )
 
 const DEFAULT_VIDEO_MANAGEMENT_GRPC_PORT = 50060
@@ -41,6 +48,10 @@ func Command(rootCmd *cobra.Command) *cobra.Command {
 				logger.GlobalSugared().Fatal(err)
 			}
 
+			if err := setupGrpcServer(app.Ctx()); err != nil {
+				logger.GlobalSugared().Fatal(err)
+			}
+
 			app.Run()
 		},
 		Args: func(cmd *cobra.Command, args []string) error {
@@ -62,12 +73,36 @@ func Command(rootCmd *cobra.Command) *cobra.Command {
 
 	// config options
 	config.Int64Default(videoManagementCommand, fmt.Sprintf("%s.grpc.port", serviceType), "grpc-port", DEFAULT_VIDEO_MANAGEMENT_GRPC_PORT, "GRPC Port to listen on", "VIDEO_MANAGEMENT_GRPC_PORT")
+	config.String(videoManagementCommand, fmt.Sprintf("%s.aws.s3.region", serviceType), "aws_s3_region", "s3 region", "VIDEO_MANAGEMENT_AWS_S3_REGION")
+	config.String(videoManagementCommand, fmt.Sprintf("%s.aws.s3.access.id", serviceType), "aws_s3_access_id", "s3 access id", "VIDEO_MANAGEMENT_AWS_S3_ACCESS_ID")
+	config.String(videoManagementCommand, fmt.Sprintf("%s.aws.s3.secret", serviceType), "aws_s3_secret", "s3 secret", "VIDEO_MANAGEMENT_AWS_S3_SECRET")
+	config.String(videoManagementCommand, fmt.Sprintf("%s.aws.s3.bucket", serviceType), "s3_bucket", "s3 bucket", "VIDEO_MANAGEMENT_AWS_S3_BUCKET")
+	config.StringDefault(videoManagementCommand, fmt.Sprintf("%s.minio.url", serviceType), "minio-url", "", "MINIO URL", "VIDEO_MANAGEMENT_MINIO_URL")
 
 	cmdutil.BoilerplateFlagsCore(videoManagementCommand, serviceType, envPrefix)
 	cmdutil.BoilerplateFlagsDB(videoManagementCommand, serviceType, envPrefix)
 	cmdutil.BoilerplateSecureFlags(videoManagementCommand, serviceType)
 
 	return videoManagementCommand
+}
+
+func setupGrpcServer(ctx context.Context) error {
+	signingKey := config.Instance().GetString(fmt.Sprintf("%s.secrets.token_signing_key", serviceType))
+	actions := actions.NewActions(ctx, signingKey)
+
+	opt := connect.WithInterceptors(
+		interceptors.CommonConnectInterceptors(
+			serviceType,
+			signingKey,
+			interceptors.ConnectServerAuthHandler(signingKey),
+		)...,
+	)
+	path, handler := grpcconnect.NewVideoManagementHandler(actions, opt)
+	port := config.Instance().GetUint64(fmt.Sprintf("%s.grpc.port", serviceType))
+
+	go grpc.ServeBuf(ctx, path, handler, port, serviceType)
+
+	return nil
 }
 
 func setupDependencies(ctx context.Context) error {
@@ -80,6 +115,15 @@ func setupDependencies(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+
+	dbConn, err := initDBConnection(ctx)
+	if err != nil {
+		return err
+	}
+
+	do.Provide(nil, func(i *do.Injector) (*pgxpool.Pool, error) {
+		return dbConn, nil
+	})
 
 	do.Provide(nil, func(i *do.Injector) (*kafka.Client, error) {
 		return kafkaClient, nil
@@ -118,4 +162,20 @@ func initS3Client(ctx context.Context) (s3.S3Storage, error) {
 	}
 
 	return s3Client, nil
+}
+
+func initDBConnection(ctx context.Context) (*pgxpool.Pool, error) {
+	dbConn, err := db.NewDbWithWait(config.Instance().GetString("dataprovider.db.url"), db.DBOptions{
+		TimeoutSec:      config.Instance().GetInt("dataprovider.db.postgres.timeout"),
+		MaxOpenConns:    config.Instance().GetInt("dataprovider.db.postgres.max_open_connections"),
+		MaxIdleConns:    config.Instance().GetInt("dataprovider.db.postgres.max_idle_connections"),
+		ConnMaxLifetime: config.Instance().GetInt("dataprovider.db.postgres.max_lifetime"),
+		ConnMaxIdleTime: config.Instance().GetInt("dataprovider.db.postgres.max_idletime"),
+		EnableTracing:   config.Instance().GetBool("dataprovider.db.tracing"),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return dbConn, nil
 }

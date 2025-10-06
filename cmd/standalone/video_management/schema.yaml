@@ -30,6 +30,27 @@
       - SWEET_REEL_HEALTHCHECK_WEB_PORT
     defaultDatabaseName: ""
   config:
+  - name: aws_s3_access_id
+    usage: s3 access id
+    default: ""
+    valueType: string
+    path: video_management.aws.s3.access.id
+    env:
+    - VIDEO_MANAGEMENT_AWS_S3_ACCESS_ID
+  - name: aws_s3_region
+    usage: s3 region
+    default: ""
+    valueType: string
+    path: video_management.aws.s3.region
+    env:
+    - VIDEO_MANAGEMENT_AWS_S3_REGION
+  - name: aws_s3_secret
+    usage: s3 secret
+    default: ""
+    valueType: string
+    path: video_management.aws.s3.secret
+    env:
+    - VIDEO_MANAGEMENT_AWS_S3_SECRET
   - name: db-migrations-url
     usage: Database connection migrations URL
     default: ""
@@ -100,6 +121,20 @@
     path: video_management.id
     env:
     - VIDEO_MANAGEMENT_ID
+  - name: minio-url
+    usage: MINIO URL
+    default: ""
+    valueType: string
+    path: video_management.minio.url
+    env:
+    - VIDEO_MANAGEMENT_MINIO_URL
+  - name: s3_bucket
+    usage: s3 bucket
+    default: ""
+    valueType: string
+    path: video_management.aws.s3.bucket
+    env:
+    - VIDEO_MANAGEMENT_AWS_S3_BUCKET
   - name: token-signing-key
     usage: Signing key used for service to service tokens
     default: ""

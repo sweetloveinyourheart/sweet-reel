@@ -9,7 +9,6 @@ import (
 	context "context"
 	errors "errors"
 	_go "github.com/sweetloveinyourheart/sweet-reel/proto/code/video_management/go"
-	emptypb "google.golang.org/protobuf/types/known/emptypb"
 	http "net/http"
 	strings "strings"
 )
@@ -42,7 +41,7 @@ const (
 // VideoManagementClient is a client for the
 // com.sweetloveinyourheart.srl.videomanagement.dataproviders.VideoManagement service.
 type VideoManagementClient interface {
-	PresignedUrl(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[_go.PresignedUrlResponse], error)
+	PresignedUrl(context.Context, *connect.Request[_go.PresignedUrlRequest]) (*connect.Response[_go.PresignedUrlResponse], error)
 }
 
 // NewVideoManagementClient constructs a client for the
@@ -57,7 +56,7 @@ func NewVideoManagementClient(httpClient connect.HTTPClient, baseURL string, opt
 	baseURL = strings.TrimRight(baseURL, "/")
 	videoManagementMethods := _go.File_video_management_proto.Services().ByName("VideoManagement").Methods()
 	return &videoManagementClient{
-		presignedUrl: connect.NewClient[emptypb.Empty, _go.PresignedUrlResponse](
+		presignedUrl: connect.NewClient[_go.PresignedUrlRequest, _go.PresignedUrlResponse](
 			httpClient,
 			baseURL+VideoManagementPresignedUrlProcedure,
 			connect.WithSchema(videoManagementMethods.ByName("PresignedUrl")),
@@ -68,19 +67,19 @@ func NewVideoManagementClient(httpClient connect.HTTPClient, baseURL string, opt
 
 // videoManagementClient implements VideoManagementClient.
 type videoManagementClient struct {
-	presignedUrl *connect.Client[emptypb.Empty, _go.PresignedUrlResponse]
+	presignedUrl *connect.Client[_go.PresignedUrlRequest, _go.PresignedUrlResponse]
 }
 
 // PresignedUrl calls
 // com.sweetloveinyourheart.srl.videomanagement.dataproviders.VideoManagement.PresignedUrl.
-func (c *videoManagementClient) PresignedUrl(ctx context.Context, req *connect.Request[emptypb.Empty]) (*connect.Response[_go.PresignedUrlResponse], error) {
+func (c *videoManagementClient) PresignedUrl(ctx context.Context, req *connect.Request[_go.PresignedUrlRequest]) (*connect.Response[_go.PresignedUrlResponse], error) {
 	return c.presignedUrl.CallUnary(ctx, req)
 }
 
 // VideoManagementHandler is an implementation of the
 // com.sweetloveinyourheart.srl.videomanagement.dataproviders.VideoManagement service.
 type VideoManagementHandler interface {
-	PresignedUrl(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[_go.PresignedUrlResponse], error)
+	PresignedUrl(context.Context, *connect.Request[_go.PresignedUrlRequest]) (*connect.Response[_go.PresignedUrlResponse], error)
 }
 
 // NewVideoManagementHandler builds an HTTP handler from the service implementation. It returns the
@@ -109,6 +108,6 @@ func NewVideoManagementHandler(svc VideoManagementHandler, opts ...connect.Handl
 // UnimplementedVideoManagementHandler returns CodeUnimplemented from all methods.
 type UnimplementedVideoManagementHandler struct{}
 
-func (UnimplementedVideoManagementHandler) PresignedUrl(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[_go.PresignedUrlResponse], error) {
+func (UnimplementedVideoManagementHandler) PresignedUrl(context.Context, *connect.Request[_go.PresignedUrlRequest]) (*connect.Response[_go.PresignedUrlResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("com.sweetloveinyourheart.srl.videomanagement.dataproviders.VideoManagement.PresignedUrl is not implemented"))
 }
