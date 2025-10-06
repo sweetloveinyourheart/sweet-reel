@@ -38,3 +38,4 @@ go.work.sum
 # Generated data
 minio_data*
 tests/*
+.gobincache
