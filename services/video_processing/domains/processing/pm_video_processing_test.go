@@ -33,7 +33,7 @@ func TestVideoProcessManager_HandleMessage(t *testing.T) {
 		{
 			name: "successful message handling",
 			setupStorageMocks: func(storage *mockPkg.MockStorage) {
-				storage.On("Download", fmt.Sprintf("original/%s.mp4", videoID), "video-uploaded").Return([]byte("fake video data"), nil)
+				storage.On("Download", fmt.Sprintf("%s.mp4", videoID), "video-uploaded").Return([]byte("fake video data"), nil)
 				// Mock successful uploads for HLS files and thumbnail
 				storage.On("Upload", mock.AnythingOfType("string"), "video-uploaded", mock.Anything, mock.AnythingOfType("string")).Return(nil).Maybe()
 			},
@@ -72,7 +72,7 @@ func TestVideoProcessManager_HandleMessage(t *testing.T) {
 				Key:   "test-key",
 				Value: func() []byte {
 					msg := s3.S3EventMessage{
-						Key: fmt.Sprintf("original/%s.mp4", videoID),
+						Key: fmt.Sprintf("video-uploaded/%s.mp4", videoID),
 					}
 					data, _ := json.Marshal(msg)
 					return data
@@ -91,7 +91,7 @@ func TestVideoProcessManager_HandleMessage(t *testing.T) {
 		{
 			name: "invalid video id",
 			setupStorageMocks: func(storage *mockPkg.MockStorage) {
-				storage.On("Download", fmt.Sprintf("original/%s.mp4", "fake-video-id"), "video-uploaded").Return([]byte("fake video data"), nil)
+				storage.On("Download", fmt.Sprintf("%s.mp4", "fake-video-id"), "video-uploaded").Return([]byte("fake video data"), nil)
 			},
 			setupFfmpegMocks: func(ff *mockPkg.MockFFmpeg) {},
 			message: &kafka.ConsumedMessage{
@@ -99,7 +99,7 @@ func TestVideoProcessManager_HandleMessage(t *testing.T) {
 				Key:   "test-key",
 				Value: func() []byte {
 					msg := s3.S3EventMessage{
-						Key: fmt.Sprintf("original/%s.mp4", "fake-video-id"),
+						Key: fmt.Sprintf("video-uploaded/%s.mp4", "fake-video-id"),
 					}
 					data, _ := json.Marshal(msg)
 					return data
@@ -122,7 +122,7 @@ func TestVideoProcessManager_HandleMessage(t *testing.T) {
 		{
 			name: "storage download failure",
 			setupStorageMocks: func(storage *mockPkg.MockStorage) {
-				storage.On("Download", fmt.Sprintf("original/%s.mp4", videoID), "video-uploaded").Return([]byte(nil), errors.New("download failed"))
+				storage.On("Download", fmt.Sprintf("%s.mp4", videoID), "video-uploaded").Return([]byte(nil), errors.New("download failed"))
 			},
 			setupFfmpegMocks: func(ff *mockPkg.MockFFmpeg) {},
 			message: &kafka.ConsumedMessage{
@@ -130,7 +130,7 @@ func TestVideoProcessManager_HandleMessage(t *testing.T) {
 				Key:   "test-key",
 				Value: func() []byte {
 					msg := s3.S3EventMessage{
-						Key: fmt.Sprintf("original/%s.mp4", videoID),
+						Key: fmt.Sprintf("video-uploaded/%s.mp4", videoID),
 					}
 					data, _ := json.Marshal(msg)
 					return data
@@ -142,7 +142,7 @@ func TestVideoProcessManager_HandleMessage(t *testing.T) {
 		{
 			name: "ffmpeg not available",
 			setupStorageMocks: func(storage *mockPkg.MockStorage) {
-				storage.On("Download", fmt.Sprintf("original/%s.mp4", videoID), "video-uploaded").Return([]byte("fake video data"), nil)
+				storage.On("Download", fmt.Sprintf("%s.mp4", videoID), "video-uploaded").Return([]byte("fake video data"), nil)
 			},
 			setupFfmpegMocks: func(ff *mockPkg.MockFFmpeg) {
 				ff.On("IsAvailable", mock.Anything).Return(errors.New("ffmpeg not found"))
@@ -152,7 +152,7 @@ func TestVideoProcessManager_HandleMessage(t *testing.T) {
 				Key:   "test-key",
 				Value: func() []byte {
 					msg := s3.S3EventMessage{
-						Key: fmt.Sprintf("original/%s.mp4", videoID),
+						Key: fmt.Sprintf("video-uploaded/%s.mp4", videoID),
 					}
 					data, _ := json.Marshal(msg)
 					return data
@@ -164,7 +164,7 @@ func TestVideoProcessManager_HandleMessage(t *testing.T) {
 		{
 			name: "probe file failure",
 			setupStorageMocks: func(storage *mockPkg.MockStorage) {
-				storage.On("Download", fmt.Sprintf("original/%s.mp4", videoID), "video-uploaded").Return([]byte("fake video data"), nil)
+				storage.On("Download", fmt.Sprintf("%s.mp4", videoID), "video-uploaded").Return([]byte("fake video data"), nil)
 			},
 			setupFfmpegMocks: func(ff *mockPkg.MockFFmpeg) {
 				ff.On("IsAvailable", mock.Anything).Return(nil)
@@ -175,7 +175,7 @@ func TestVideoProcessManager_HandleMessage(t *testing.T) {
 				Key:   "test-key",
 				Value: func() []byte {
 					msg := s3.S3EventMessage{
-						Key: fmt.Sprintf("original/%s.mp4", videoID),
+						Key: fmt.Sprintf("video-uploaded/%s.mp4", videoID),
 					}
 					data, _ := json.Marshal(msg)
 					return data
@@ -187,7 +187,7 @@ func TestVideoProcessManager_HandleMessage(t *testing.T) {
 		{
 			name: "video segmentation failure",
 			setupStorageMocks: func(storage *mockPkg.MockStorage) {
-				storage.On("Download", fmt.Sprintf("original/%s.mp4", videoID), "video-uploaded").Return([]byte("fake video data"), nil)
+				storage.On("Download", fmt.Sprintf("%s.mp4", videoID), "video-uploaded").Return([]byte("fake video data"), nil)
 			},
 			setupFfmpegMocks: func(ff *mockPkg.MockFFmpeg) {
 				ff.On("IsAvailable", mock.Anything).Return(nil)
@@ -217,7 +217,7 @@ func TestVideoProcessManager_HandleMessage(t *testing.T) {
 				Key:   "test-key",
 				Value: func() []byte {
 					msg := s3.S3EventMessage{
-						Key: fmt.Sprintf("original/%s.mp4", videoID),
+						Key: fmt.Sprintf("video-uploaded/%s.mp4", videoID),
 					}
 					data, _ := json.Marshal(msg)
 					return data
