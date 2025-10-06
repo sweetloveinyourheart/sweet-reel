@@ -165,13 +165,13 @@ func initS3Client(ctx context.Context) (s3.S3Storage, error) {
 }
 
 func initDBConnection() (*pgxpool.Pool, error) {
-	dbConn, err := db.NewDbWithWait(config.Instance().GetString("dataprovider.db.url"), db.DBOptions{
-		TimeoutSec:      config.Instance().GetInt("dataprovider.db.postgres.timeout"),
-		MaxOpenConns:    config.Instance().GetInt("dataprovider.db.postgres.max_open_connections"),
-		MaxIdleConns:    config.Instance().GetInt("dataprovider.db.postgres.max_idle_connections"),
-		ConnMaxLifetime: config.Instance().GetInt("dataprovider.db.postgres.max_lifetime"),
-		ConnMaxIdleTime: config.Instance().GetInt("dataprovider.db.postgres.max_idletime"),
-		EnableTracing:   config.Instance().GetBool("dataprovider.db.tracing"),
+	dbConn, err := db.NewDbWithWait(config.Instance().GetString(fmt.Sprintf("%s.db.url", serviceType)), db.DBOptions{
+		TimeoutSec:      config.Instance().GetInt(fmt.Sprintf("%s.db.postgres.timeout", serviceType)),
+		MaxOpenConns:    config.Instance().GetInt(fmt.Sprintf("%s.db.postgres.max_open_connections", serviceType)),
+		MaxIdleConns:    config.Instance().GetInt(fmt.Sprintf("%s.db.postgres.max_idle_connections", serviceType)),
+		ConnMaxLifetime: config.Instance().GetInt(fmt.Sprintf("%s.db.postgres.max_lifetime", serviceType)),
+		ConnMaxIdleTime: config.Instance().GetInt(fmt.Sprintf("%s.db.postgres.max_idletime", serviceType)),
+		EnableTracing:   config.Instance().GetBool(fmt.Sprintf("%s.db.tracing", serviceType)),
 	})
 	if err != nil {
 		return nil, err
