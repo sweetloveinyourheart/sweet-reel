@@ -116,7 +116,7 @@ func setupDependencies(ctx context.Context) error {
 		return err
 	}
 
-	dbConn, err := initDBConnection(ctx)
+	dbConn, err := initDBConnection()
 	if err != nil {
 		return err
 	}
@@ -164,7 +164,7 @@ func initS3Client(ctx context.Context) (s3.S3Storage, error) {
 	return s3Client, nil
 }
 
-func initDBConnection(ctx context.Context) (*pgxpool.Pool, error) {
+func initDBConnection() (*pgxpool.Pool, error) {
 	dbConn, err := db.NewDbWithWait(config.Instance().GetString("dataprovider.db.url"), db.DBOptions{
 		TimeoutSec:      config.Instance().GetInt("dataprovider.db.postgres.timeout"),
 		MaxOpenConns:    config.Instance().GetInt("dataprovider.db.postgres.max_open_connections"),
