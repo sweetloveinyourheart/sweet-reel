@@ -1,0 +1,466 @@
+package actions_test
+
+import (
+	"context"
+	"errors"
+	"fmt"
+	"testing"
+	"time"
+
+	"connectrpc.com/connect"
+	"github.com/gofrs/uuid"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+
+	"github.com/sweetloveinyourheart/sweet-reel/pkg/grpc"
+	"github.com/sweetloveinyourheart/sweet-reel/pkg/s3"
+	proto "github.com/sweetloveinyourheart/sweet-reel/proto/code/video_management/go"
+	"github.com/sweetloveinyourheart/sweet-reel/services/video_management/actions"
+	"github.com/sweetloveinyourheart/sweet-reel/services/video_management/models"
+)
+
+func (as *ActionsSuite) TestActions_PresignedUrl_Success() {
+	as.setupEnvironment()
+
+	// Setup test data
+	userID := uuid.Must(uuid.NewV7())
+	title := "Test Video"
+	description := "Test video description"
+	fileName := "test-video.mp4"
+	expectedURL := "https://s3.example.com/presigned-url"
+
+	// Setup context with auth token
+	ctx := context.WithValue(context.Background(), grpc.AuthToken, userID)
+
+	// Setup mock expectations
+	as.mockS3.On("GenerateUploadPublicUri",
+		mock.MatchedBy(func(key string) bool {
+			// Key should contain the folder structure and extension
+			return key != "" &&
+				key[:len("raw/")] == "raw/" &&
+				key[len(key)-4:] == ".mp4"
+		}),
+		actions.VideoUploadedBucket,
+		uint32(s3.UrlExpirationSeconds)).Return(expectedURL, nil)
+
+	as.mockVideoRepository.On("CreateVideo", ctx, mock.MatchedBy(func(video *models.Video) bool {
+		return video.Title == title &&
+			video.Description != nil && *video.Description == description &&
+			video.Status == models.VideoStatusReady &&
+			video.UploaderID == userID &&
+			video.ID != uuid.Nil
+	})).Return(nil)
+
+	// Setup request
+	request := &connect.Request[proto.PresignedUrlRequest]{
+		Msg: &proto.PresignedUrlRequest{
+			Title:       title,
+			Description: description,
+			FileName:    fileName,
+		},
+	}
+
+	// Execute
+	actionsInstance := actions.NewActions(ctx, "test-token")
+	response, err := actionsInstance.PresignedUrl(ctx, request)
+
+	// Assertions
+	assert.NoError(as.T(), err)
+	assert.NotNil(as.T(), response)
+	assert.NotEmpty(as.T(), response.Msg.VideoId)
+	assert.Equal(as.T(), expectedURL, response.Msg.PresignedUrl)
+	assert.Equal(as.T(), int32(s3.UrlExpirationSeconds), response.Msg.ExpiresIn)
+
+	// Verify the video ID is a valid UUID
+	_, err = uuid.FromString(response.Msg.VideoId)
+	assert.NoError(as.T(), err)
+
+	// Verify all mocks were called as expected
+	as.mockS3.AssertExpectations(as.T())
+	as.mockVideoRepository.AssertExpectations(as.T())
+}
+
+func (as *ActionsSuite) TestActions_PresignedUrl_Success_WithoutDescription() {
+	as.setupEnvironment()
+
+	// Setup test data
+	userID := uuid.Must(uuid.NewV7())
+	title := "Test Video Without Description"
+	fileName := "test-video.mp4"
+	expectedURL := "https://s3.example.com/presigned-url"
+
+	// Setup context with auth token
+	ctx := context.WithValue(context.Background(), grpc.AuthToken, userID)
+
+	// Setup mock expectations
+	as.mockS3.On("GenerateUploadPublicUri",
+		mock.AnythingOfType("string"),
+		actions.VideoUploadedBucket,
+		uint32(s3.UrlExpirationSeconds)).Return(expectedURL, nil)
+
+	as.mockVideoRepository.On("CreateVideo", ctx, mock.MatchedBy(func(video *models.Video) bool {
+		return video.Title == title &&
+			video.Description == nil &&
+			video.Status == models.VideoStatusReady &&
+			video.UploaderID == userID
+	})).Return(nil)
+
+	// Setup request without description
+	request := &connect.Request[proto.PresignedUrlRequest]{
+		Msg: &proto.PresignedUrlRequest{
+			Title:    title,
+			FileName: fileName,
+		},
+	}
+
+	// Execute
+	actionsInstance := actions.NewActions(ctx, "test-token")
+	response, err := actionsInstance.PresignedUrl(ctx, request)
+
+	// Assertions
+	assert.NoError(as.T(), err)
+	assert.NotNil(as.T(), response)
+	assert.NotEmpty(as.T(), response.Msg.VideoId)
+	assert.Equal(as.T(), expectedURL, response.Msg.PresignedUrl)
+
+	// Verify all mocks were called as expected
+	as.mockS3.AssertExpectations(as.T())
+	as.mockVideoRepository.AssertExpectations(as.T())
+}
+
+func (as *ActionsSuite) TestActions_PresignedUrl_UnauthenticatedError() {
+	as.setupEnvironment()
+
+	// Setup context without auth token
+	ctx := context.Background()
+
+	// Setup request
+	request := &connect.Request[proto.PresignedUrlRequest]{
+		Msg: &proto.PresignedUrlRequest{
+			Title:    "Test Video",
+			FileName: "test-video.mp4",
+		},
+	}
+
+	// Execute
+	actionsInstance := actions.NewActions(ctx, "test-token")
+	response, err := actionsInstance.PresignedUrl(ctx, request)
+
+	// Assertions
+	assert.Error(as.T(), err)
+	assert.Nil(as.T(), response)
+
+	// Verify error is unauthenticated
+	var connectErr *connect.Error
+	assert.True(as.T(), errors.As(err, &connectErr))
+	assert.Equal(as.T(), connect.CodeUnauthenticated, connectErr.Code())
+
+	// Verify no mocks were called
+	as.mockS3.AssertNotCalled(as.T(), "GenerateUploadPublicUri")
+	as.mockVideoRepository.AssertNotCalled(as.T(), "CreateVideo")
+}
+
+func (as *ActionsSuite) TestActions_PresignedUrl_InvalidFileName_NoExtension() {
+	as.setupEnvironment()
+
+	// Setup test data
+	userID := uuid.Must(uuid.NewV7())
+	ctx := context.WithValue(context.Background(), grpc.AuthToken, userID)
+
+	// Setup request with filename without extension
+	request := &connect.Request[proto.PresignedUrlRequest]{
+		Msg: &proto.PresignedUrlRequest{
+			Title:    "Test Video",
+			FileName: "test-video", // No extension
+		},
+	}
+
+	// Execute
+	actionsInstance := actions.NewActions(ctx, "test-token")
+	response, err := actionsInstance.PresignedUrl(ctx, request)
+
+	// Assertions
+	assert.Error(as.T(), err)
+	assert.Nil(as.T(), response)
+
+	// Verify error is invalid argument
+	var connectErr *connect.Error
+	assert.True(as.T(), errors.As(err, &connectErr))
+	assert.Equal(as.T(), connect.CodeInvalidArgument, connectErr.Code())
+
+	// Verify no mocks were called
+	as.mockS3.AssertNotCalled(as.T(), "GenerateUploadPublicUri")
+	as.mockVideoRepository.AssertNotCalled(as.T(), "CreateVideo")
+}
+
+func (as *ActionsSuite) TestActions_PresignedUrl_InvalidFileName_Empty() {
+	as.setupEnvironment()
+
+	// Setup test data
+	userID := uuid.Must(uuid.NewV7())
+	ctx := context.WithValue(context.Background(), grpc.AuthToken, userID)
+
+	// Setup request with empty filename
+	request := &connect.Request[proto.PresignedUrlRequest]{
+		Msg: &proto.PresignedUrlRequest{
+			Title:    "Test Video",
+			FileName: "",
+		},
+	}
+
+	// Execute
+	actionsInstance := actions.NewActions(ctx, "test-token")
+	response, err := actionsInstance.PresignedUrl(ctx, request)
+
+	// Assertions
+	assert.Error(as.T(), err)
+	assert.Nil(as.T(), response)
+
+	// Verify error is invalid argument
+	var connectErr *connect.Error
+	assert.True(as.T(), errors.As(err, &connectErr))
+	assert.Equal(as.T(), connect.CodeInvalidArgument, connectErr.Code())
+
+	// Verify no mocks were called
+	as.mockS3.AssertNotCalled(as.T(), "GenerateUploadPublicUri")
+	as.mockVideoRepository.AssertNotCalled(as.T(), "CreateVideo")
+}
+
+func (as *ActionsSuite) TestActions_PresignedUrl_VideoValidationError() {
+	as.setupEnvironment()
+
+	// Setup test data
+	userID := uuid.Must(uuid.NewV7())
+	ctx := context.WithValue(context.Background(), grpc.AuthToken, userID)
+
+	// Setup request with empty title (will cause validation error)
+	request := &connect.Request[proto.PresignedUrlRequest]{
+		Msg: &proto.PresignedUrlRequest{
+			Title:    "", // Empty title will cause validation error
+			FileName: "test-video.mp4",
+		},
+	}
+
+	// Execute
+	actionsInstance := actions.NewActions(ctx, "test-token")
+	response, err := actionsInstance.PresignedUrl(ctx, request)
+
+	// Assertions
+	assert.Error(as.T(), err)
+	assert.Nil(as.T(), response)
+
+	// Verify error is invalid argument
+	var connectErr *connect.Error
+	assert.True(as.T(), errors.As(err, &connectErr))
+	assert.Equal(as.T(), connect.CodeInvalidArgument, connectErr.Code())
+
+	// Verify no mocks were called
+	as.mockS3.AssertNotCalled(as.T(), "GenerateUploadPublicUri")
+	as.mockVideoRepository.AssertNotCalled(as.T(), "CreateVideo")
+}
+
+func (as *ActionsSuite) TestActions_PresignedUrl_S3GenerateUrlError() {
+	as.setupEnvironment()
+
+	// Setup test data
+	userID := uuid.Must(uuid.NewV7())
+	title := "Test Video"
+	fileName := "test-video.mp4"
+	s3Error := errors.New("S3 service unavailable")
+
+	// Setup context with auth token
+	ctx := context.WithValue(context.Background(), grpc.AuthToken, userID)
+
+	// Setup mock expectations - S3 fails
+	as.mockS3.On("GenerateUploadPublicUri",
+		mock.AnythingOfType("string"),
+		actions.VideoUploadedBucket,
+		uint32(s3.UrlExpirationSeconds)).Return("", s3Error)
+
+	// Setup request
+	request := &connect.Request[proto.PresignedUrlRequest]{
+		Msg: &proto.PresignedUrlRequest{
+			Title:    title,
+			FileName: fileName,
+		},
+	}
+
+	// Execute
+	actionsInstance := actions.NewActions(ctx, "test-token")
+	response, err := actionsInstance.PresignedUrl(ctx, request)
+
+	// Assertions
+	assert.Error(as.T(), err)
+	assert.Nil(as.T(), response)
+
+	// Verify error is internal error
+	var connectErr *connect.Error
+	assert.True(as.T(), errors.As(err, &connectErr))
+	assert.Equal(as.T(), connect.CodeInternal, connectErr.Code())
+
+	// Verify S3 was called but video repository was not
+	as.mockS3.AssertExpectations(as.T())
+	as.mockVideoRepository.AssertNotCalled(as.T(), "CreateVideo")
+}
+
+func (as *ActionsSuite) TestActions_PresignedUrl_DatabaseError() {
+	as.setupEnvironment()
+
+	// Setup test data
+	userID := uuid.Must(uuid.NewV7())
+	title := "Test Video"
+	fileName := "test-video.mp4"
+	expectedURL := "https://s3.example.com/presigned-url"
+	dbError := errors.New("database connection failed")
+
+	// Setup context with auth token
+	ctx := context.WithValue(context.Background(), grpc.AuthToken, userID)
+
+	// Setup mock expectations
+	as.mockS3.On("GenerateUploadPublicUri",
+		mock.AnythingOfType("string"),
+		actions.VideoUploadedBucket,
+		uint32(s3.UrlExpirationSeconds)).Return(expectedURL, nil)
+
+	as.mockVideoRepository.On("CreateVideo", ctx, mock.AnythingOfType("*models.Video")).Return(dbError)
+
+	// Setup request
+	request := &connect.Request[proto.PresignedUrlRequest]{
+		Msg: &proto.PresignedUrlRequest{
+			Title:    title,
+			FileName: fileName,
+		},
+	}
+
+	// Execute
+	actionsInstance := actions.NewActions(ctx, "test-token")
+	response, err := actionsInstance.PresignedUrl(ctx, request)
+
+	// Assertions
+	assert.Error(as.T(), err)
+	assert.Nil(as.T(), response)
+
+	// Verify error is internal error
+	var connectErr *connect.Error
+	assert.True(as.T(), errors.As(err, &connectErr))
+	assert.Equal(as.T(), connect.CodeInternal, connectErr.Code())
+
+	// Verify all mocks were called as expected
+	as.mockS3.AssertExpectations(as.T())
+	as.mockVideoRepository.AssertExpectations(as.T())
+}
+
+func (as *ActionsSuite) TestActions_PresignedUrl_KeyGeneration() {
+	as.setupEnvironment()
+
+	// Setup test data
+	userID := uuid.Must(uuid.NewV7())
+	title := "Test Video"
+	fileName := "test-video.mp4"
+	expectedURL := "https://s3.example.com/presigned-url"
+
+	// Setup context with auth token
+	ctx := context.WithValue(context.Background(), grpc.AuthToken, userID)
+
+	// Capture the generated key for validation
+	var capturedKey string
+	as.mockS3.On("GenerateUploadPublicUri",
+		mock.MatchedBy(func(key string) bool {
+			capturedKey = key
+			return true
+		}),
+		actions.VideoUploadedBucket,
+		uint32(s3.UrlExpirationSeconds)).Return(expectedURL, nil)
+
+	as.mockVideoRepository.On("CreateVideo", ctx, mock.AnythingOfType("*models.Video")).Return(nil)
+
+	// Setup request
+	request := &connect.Request[proto.PresignedUrlRequest]{
+		Msg: &proto.PresignedUrlRequest{
+			Title:    title,
+			FileName: fileName,
+		},
+	}
+
+	// Execute
+	actionsInstance := actions.NewActions(ctx, "test-token")
+	response, err := actionsInstance.PresignedUrl(ctx, request)
+
+	// Assertions
+	assert.NoError(as.T(), err)
+	assert.NotNil(as.T(), response)
+
+	// Validate key format: raw/YYYY/MM/DD/{uuid}.mp4
+	assert.Contains(as.T(), capturedKey, "raw/")
+	assert.Contains(as.T(), capturedKey, time.Now().Format("2006/01/02"))
+	assert.Contains(as.T(), capturedKey, ".mp4")
+
+	// Verify all mocks were called as expected
+	as.mockS3.AssertExpectations(as.T())
+	as.mockVideoRepository.AssertExpectations(as.T())
+}
+
+func (as *ActionsSuite) TestActions_PresignedUrl_DifferentFileExtensions() {
+	as.setupEnvironment()
+
+	testCases := []struct {
+		fileName      string
+		expectedExt   string
+		shouldSucceed bool
+	}{
+		{"video.mp4", ".mp4", true},
+		{"video.avi", ".avi", true},
+		{"video.mov", ".mov", true},
+		{"video.mkv", ".mkv", true},
+		{"video.webm", ".webm", true},
+		{"video", "", false},    // No extension
+		{".mp4", ".mp4", false}, // No filename
+	}
+
+	for _, tc := range testCases {
+		as.T().Run(fmt.Sprintf("FileName_%s", tc.fileName), func(t *testing.T) {
+			// Reset mocks for each test case
+			as.mockS3.ExpectedCalls = nil
+			as.mockVideoRepository.ExpectedCalls = nil
+
+			userID := uuid.Must(uuid.NewV7())
+			ctx := context.WithValue(context.Background(), grpc.AuthToken, userID)
+
+			if tc.shouldSucceed {
+				// Setup successful mocks
+				as.mockS3.On("GenerateUploadPublicUri",
+					mock.MatchedBy(func(key string) bool {
+						return key != "" && key[len(key)-len(tc.expectedExt):] == tc.expectedExt
+					}),
+					actions.VideoUploadedBucket,
+					uint32(s3.UrlExpirationSeconds)).Return("https://example.com/url", nil)
+
+				as.mockVideoRepository.On("CreateVideo", ctx, mock.AnythingOfType("*models.Video")).Return(nil)
+			}
+
+			request := &connect.Request[proto.PresignedUrlRequest]{
+				Msg: &proto.PresignedUrlRequest{
+					Title:    "Test Video",
+					FileName: tc.fileName,
+				},
+			}
+
+			actionsInstance := actions.NewActions(ctx, "test-token")
+			response, err := actionsInstance.PresignedUrl(ctx, request)
+
+			if tc.shouldSucceed {
+				assert.NoError(t, err)
+				assert.NotNil(t, response)
+				as.mockS3.AssertExpectations(t)
+				as.mockVideoRepository.AssertExpectations(t)
+			} else {
+				assert.Error(t, err)
+				assert.Nil(t, response)
+
+				var connectErr *connect.Error
+				assert.True(t, errors.As(err, &connectErr))
+				assert.Equal(t, connect.CodeInvalidArgument, connectErr.Code())
+			}
+		})
+	}
+}

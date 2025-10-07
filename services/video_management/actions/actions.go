@@ -3,7 +3,6 @@ package actions
 import (
 	"context"
 
-	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/samber/do"
 
 	"github.com/sweetloveinyourheart/sweet-reel/pkg/interceptors"
@@ -25,12 +24,10 @@ func NewActions(ctx context.Context, signingToken string) *actions {
 		logger.Global().Fatal("unable to get s3 client")
 	}
 
-	dbConn, err := do.Invoke[*pgxpool.Pool](nil)
+	videoRepo, err := do.Invoke[repos.VideoRepositoryInterface](nil)
 	if err != nil {
-		logger.Global().Fatal("unable to get db connection")
+		logger.Global().Fatal("unable to get s3 client")
 	}
-
-	videoRepo := repos.NewVideoRepository(dbConn)
 
 	return &actions{
 		context:     ctx,

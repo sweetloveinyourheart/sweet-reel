@@ -20,6 +20,7 @@ import (
 	"github.com/sweetloveinyourheart/sweet-reel/proto/code/video_management/go/grpcconnect"
 	videomanagement "github.com/sweetloveinyourheart/sweet-reel/services/video_management"
 	"github.com/sweetloveinyourheart/sweet-reel/services/video_management/actions"
+	"github.com/sweetloveinyourheart/sweet-reel/services/video_management/repos"
 )
 
 const DEFAULT_VIDEO_MANAGEMENT_GRPC_PORT = 50060
@@ -121,8 +122,10 @@ func setupDependencies(ctx context.Context) error {
 		return err
 	}
 
-	do.Provide(nil, func(i *do.Injector) (*pgxpool.Pool, error) {
-		return dbConn, nil
+	videoRepo := repos.NewVideoRepository(dbConn)
+
+	do.Provide(nil, func(i *do.Injector) (repos.VideoRepositoryInterface, error) {
+		return videoRepo, nil
 	})
 
 	do.Provide(nil, func(i *do.Injector) (*kafka.Client, error) {
