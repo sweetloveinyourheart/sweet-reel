@@ -15,8 +15,8 @@ function resetFiles() {
 resetFiles "*.pb.go"
 resetFiles "*.connect.go"
 
-goImportsCmd="goimports -local github.com/sweetloveinyourheart/sweet-reel -w ./"
 goGenerateCmd="go generate --tags generate ./..."
+goImportsCmd="go run golang.org/x/tools/cmd/goimports@latest --local "github.com/sweetloveinyourheart/sweet-reel" -w ./"
 
 app_echo "Running goimports..."
 $goImportsCmd

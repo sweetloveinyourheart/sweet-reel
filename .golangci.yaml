@@ -1,14 +1,3 @@
-version: "2"
-
-run:
-  go: '1.25'
-  timeout: 5m
-  allow-parallel-runners: true
-
-output:
-  sort-results: true
-  show-stats: true
-
 linters-settings:
   dupl:
     threshold: 100
@@ -26,7 +15,7 @@ linters-settings:
       - performance
       - style
     disabled-checks:
-      - dupImport
+      - dupImport # https://github.com/go-critic/go-critic/issues/845
       - ifElseChain
       - octalLiteral
       - whyNoLint
@@ -36,15 +25,18 @@ linters-settings:
   gocyclo:
     min-complexity: 15
   godox:
+    # Report any comments starting with keywords, this is useful for TODO or FIXME comments that
+    # might be left in the code accidentally and should be resolved before merging.
+    # Default: ["TODO", "BUG", "FIXME"]
     keywords:
       - TODO
       - BUG
       - FIXME
-      - OPTIMIZE
-      - HACK
+      - OPTIMIZE # marks code that should be optimized before merging
+      - HACK # marks hack-around that should be removed before merging
       - blaarg
   goimports:
-    local-prefixes: github.com/sweetloveinyourheart/sweet-reel
+    local-prefixes: github.com/sweetloveinyourheart/exploding-kittens
   stylecheck:
     checks: ["all", "-ST1003"]
   lll:
@@ -52,45 +44,99 @@ linters-settings:
   misspell:
     locale: US
   nolintlint:
-    allow-unused: false
-    require-explanation: false
-    require-specific: false
+    allow-unused: false # report any unused nolint directives
+    require-explanation: false # don't require an explanation for nolint directives
+    require-specific: false # don't require nolint directives to be specific about which linter is being skipped
   staticcheck:
     checks:
-      - all
-      - '-SA1019'
+      - all # do all static checks
+      - '-SA1019' # allow for use of xerrors
 
 linters:
+  # please, do not use `enable-all`: it's deprecated and will be removed soon.
+  # inverted configuration with `enable-all` and `disable` is not scalable during updates of golangci-lint
   disable-all: true
+ # presets:
+ #   - unused
   enable:
     - bodyclose
+    # depguard
+    #    - dogsled
+    #    - dupl
     - errcheck
+    #    - exportloopref
+    #    - funlen
+    #    - gochecknoinits
+    #    - goconst
+    #    - gocritic
+    #    - gocyclo
     - godox
     - gofmt
+    #    - goimports
+    #    - gomnd
     - goprintffuncname
+    #    - gosec
     - gosimple
     - govet
     - ineffassign
+    #    - lll
+    #    - misspell
     - nakedret
     - nilerr
     - nilnil
     - noctx
     - nolintlint
     - staticcheck
+    #    - structcheck
+    #    - stylecheck
     - typecheck
     - unconvert
+    #    - unparam
     - unused
+  #    - whitespace
+
+  # don't enable:
+  # - asciicheck
+  # - scopelint
+  # - gochecknoglobals
+  # - gocognit
+  # - godot
+  # - goerr113
+  # - interfacer
+  # - maligned
+  # - nestif
+  # - prealloc
+  # - testpackage
+  # - revive
+  # - wsl
 
 issues:
+  # Excluding configuration per-path, per-linter, per-text and per-source
   exclude-rules:
     - path: _test\.go
       linters:
         - gomnd
         - funlen
         - godox
+    - path: tests/gherkin
+      linters:
+        - godox
     - path: _generated\.go
       linters:
         - unused
-
+    # These errors should be addressed in the chat system
+    - path: chat_system
+      linters:
+        - nakedret
+        - unused
+        - errcheck
+        - gofmt
+    - path: itest
+      linters:
+        - nakedret
+        - unused
+        - errcheck
   exclude-dirs:
     - .gobincache
+run:
+  timeout: 5m
