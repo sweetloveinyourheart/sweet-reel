@@ -117,7 +117,8 @@ func (vsp *VideoProcessManager) HandleMessage(ctx context.Context, message *kafk
 	}
 
 	// Process video using FFmpeg wrapper
-	videoID := uuid.FromStringOrNil(s3.ExtractFileIDFromKey(msg.Key))
+	fileName, _ := s3.ExtractFilenameAndExt(msg.Key)
+	videoID := uuid.FromStringOrNil(fileName)
 	if videoID == uuid.Nil {
 		return errors.Errorf("invalid video id")
 	}

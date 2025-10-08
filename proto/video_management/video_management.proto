@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+option go_package = "github.com/sweetloveinyourheart/sweet-reel/proto/code/video_management/go;grpc";
+
+package com.sweetloveinyourheart.srl.videomanagement.dataproviders;
+
+service VideoManagement {
+    rpc PresignedUrl(PresignedUrlRequest) returns(PresignedUrlResponse);
+}
+
+message PresignedUrlRequest {
+    string title = 1;
+    string description = 2;
+    string file_name = 3;
+}
+
+message PresignedUrlResponse {
+    string video_id = 1;
+    string presigned_url = 2;
+    int32 expires_in = 3;
+}

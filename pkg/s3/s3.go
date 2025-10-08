@@ -13,6 +13,8 @@ import (
 	"github.com/sweetloveinyourheart/sweet-reel/pkg/logger"
 )
 
+const UrlExpirationSeconds = 600
+
 type S3Storage interface {
 	Download(key string, bucket string) ([]byte, error)
 	Upload(key string, bucket string, file io.Reader, mimeType string) error

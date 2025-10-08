@@ -1,5 +1,257 @@
 [
   {
+    "name": "video_management",
+    "shortName": "Run as video_management service",
+    "long": "",
+    "ports": null,
+    "healthCheckPorts": [
+      {
+        "name": "healthcheck-grpc",
+        "wireProtocol": "tcp",
+        "protocol": "grpc",
+        "public": false,
+        "defaultRoutes": null,
+        "flagName": "healthcheck-port",
+        "flagUsage": "Port to listen on for services that support a health check",
+        "configName": "healthcheck.port",
+        "defaultValue": 5051,
+        "env": [
+          "SWEET_REEL_HEALTHCHECK_PORT"
+        ]
+      },
+      {
+        "name": "healthcheck-web",
+        "wireProtocol": "tcp",
+        "protocol": "http",
+        "public": false,
+        "defaultRoutes": [
+          "/healthz",
+          "/readyz"
+        ],
+        "flagName": "healthcheck-web-port",
+        "flagUsage": "Port to listen on for services that support a health check",
+        "configName": "healthcheck.web.port",
+        "defaultValue": 5052,
+        "env": [
+          "SWEET_REEL_HEALTHCHECK_WEB_PORT"
+        ]
+      }
+    ],
+    "defaultDatabaseName": "",
+    "Config": [
+      {
+        "name": "aws_s3_access_id",
+        "usage": "s3 access id",
+        "default": "",
+        "valueType": "string",
+        "path": "video_management.aws.s3.access.id",
+        "env": [
+          "VIDEO_MANAGEMENT_AWS_S3_ACCESS_ID"
+        ]
+      },
+      {
+        "name": "aws_s3_region",
+        "usage": "s3 region",
+        "default": "",
+        "valueType": "string",
+        "path": "video_management.aws.s3.region",
+        "env": [
+          "VIDEO_MANAGEMENT_AWS_S3_REGION"
+        ]
+      },
+      {
+        "name": "aws_s3_secret",
+        "usage": "s3 secret",
+        "default": "",
+        "valueType": "string",
+        "path": "video_management.aws.s3.secret",
+        "env": [
+          "VIDEO_MANAGEMENT_AWS_S3_SECRET"
+        ]
+      },
+      {
+        "name": "db-migrations-url",
+        "usage": "Database connection migrations URL",
+        "default": "",
+        "valueType": "string",
+        "path": "video_management.db.migrations.url",
+        "env": [
+          "VIDEO_MANAGEMENT_DB_MIGRATIONS_URL"
+        ]
+      },
+      {
+        "name": "db-postgres-connection-max-idletime",
+        "usage": "Max connection idle time in seconds",
+        "default": 180,
+        "valueType": "int64",
+        "path": "video_management.db.postgres.max_idletime",
+        "env": [
+          "VIDEO_MANAGEMENT_DB_POSTGRES_CONNECTION_MAX_IDLETIME"
+        ]
+      },
+      {
+        "name": "db-postgres-connection-max-lifetime",
+        "usage": "Max connection lifetime in seconds",
+        "default": 300,
+        "valueType": "int64",
+        "path": "video_management.db.postgres.max_lifetime",
+        "env": [
+          "VIDEO_MANAGEMENT_DB_POSTGRES_CONNECTION_MAX_LIFETIME"
+        ]
+      },
+      {
+        "name": "db-postgres-max-idle-connections",
+        "usage": "Maximum number of idle connections",
+        "default": 50,
+        "valueType": "int64",
+        "path": "video_management.db.postgres.max_idle_connections",
+        "env": [
+          "VIDEO_MANAGEMENT_DB_POSTGRES_MAX_IDLE_CONNECTIONS"
+        ]
+      },
+      {
+        "name": "db-postgres-max-open-connections",
+        "usage": "Maximum number of connections",
+        "default": 500,
+        "valueType": "int64",
+        "path": "video_management.db.postgres.max_open_connections",
+        "env": [
+          "VIDEO_MANAGEMENT_DB_POSTGRES_MAX_OPEN_CONNECTIONS"
+        ]
+      },
+      {
+        "name": "db-postgres-timeout",
+        "usage": "Timeout for postgres connection",
+        "default": 60,
+        "valueType": "int64",
+        "path": "video_management.db.postgres.timeout",
+        "env": [
+          "VIDEO_MANAGEMENT_DB_POSTGRES_TIMEOUT"
+        ]
+      },
+      {
+        "name": "db-read-url",
+        "usage": "Database connection readonly URL",
+        "default": "",
+        "valueType": "string",
+        "path": "video_management.db.read.url",
+        "env": [
+          "VIDEO_MANAGEMENT_DB_READ_URL"
+        ]
+      },
+      {
+        "name": "db-url",
+        "usage": "Database connection URL",
+        "default": "",
+        "valueType": "string",
+        "path": "video_management.db.url",
+        "env": [
+          "VIDEO_MANAGEMENT_DB_URL"
+        ]
+      },
+      {
+        "name": "grpc-port",
+        "usage": "GRPC Port to listen on",
+        "default": 50060,
+        "valueType": "int64",
+        "path": "video_management.grpc.port",
+        "env": [
+          "VIDEO_MANAGEMENT_GRPC_PORT"
+        ]
+      },
+      {
+        "name": "id",
+        "usage": "Unique identifier for this services",
+        "default": "",
+        "valueType": "string",
+        "path": "video_management.id",
+        "env": [
+          "VIDEO_MANAGEMENT_ID"
+        ]
+      },
+      {
+        "name": "minio-url",
+        "usage": "MINIO URL",
+        "default": "",
+        "valueType": "string",
+        "path": "video_management.minio.url",
+        "env": [
+          "VIDEO_MANAGEMENT_MINIO_URL"
+        ]
+      },
+      {
+        "name": "s3_bucket",
+        "usage": "s3 bucket",
+        "default": "",
+        "valueType": "string",
+        "path": "video_management.aws.s3.bucket",
+        "env": [
+          "VIDEO_MANAGEMENT_AWS_S3_BUCKET"
+        ]
+      },
+      {
+        "name": "token-signing-key",
+        "usage": "Signing key used for service to service tokens",
+        "default": "",
+        "valueType": "string",
+        "path": "video_management.secrets.token_signing_key",
+        "env": [
+          "VIDEO_MANAGEMENT_SECRETS_TOKEN_SIGNING_KEY"
+        ]
+      },
+      {
+        "name": "healthcheck-host",
+        "usage": "Host to listen on for services that support a health check",
+        "default": "localhost",
+        "valueType": "string",
+        "path": "healthcheck.host",
+        "env": [
+          "SWEET_REEL_HEALTHCHECK_HOST"
+        ]
+      },
+      {
+        "name": "healthcheck-port",
+        "usage": "Port to listen on for services that support a health check",
+        "default": 5051,
+        "valueType": "int",
+        "path": "healthcheck.port",
+        "env": [
+          "SWEET_REEL_HEALTHCHECK_PORT"
+        ]
+      },
+      {
+        "name": "healthcheck-web-port",
+        "usage": "Port to listen on for services that support a health check",
+        "default": 5052,
+        "valueType": "int",
+        "path": "healthcheck.web.port",
+        "env": [
+          "SWEET_REEL_HEALTHCHECK_WEB_PORT"
+        ]
+      },
+      {
+        "name": "log-level",
+        "usage": "log level to use",
+        "default": "info",
+        "valueType": "string",
+        "path": "log.level",
+        "env": [
+          "LOG_LEVEL"
+        ]
+      },
+      {
+        "name": "service",
+        "usage": "which service to run",
+        "default": "",
+        "valueType": "string",
+        "path": "service",
+        "env": [
+          "SWEET_REEL_SERVICE"
+        ]
+      }
+    ]
+  },
+  {
     "name": "video_processing",
     "shortName": "Run as video_processing service",
     "long": "",
