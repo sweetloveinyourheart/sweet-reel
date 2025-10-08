@@ -1,0 +1,96 @@
+version: "2"
+
+run:
+  go: '1.25'
+  timeout: 5m
+  allow-parallel-runners: true
+
+output:
+  sort-results: true
+  show-stats: true
+
+linters-settings:
+  dupl:
+    threshold: 100
+  funlen:
+    lines: 100
+    statements: 50
+  goconst:
+    min-len: 2
+    min-occurrences: 3
+  gocritic:
+    enabled-tags:
+      - diagnostic
+      - experimental
+      - opinionated
+      - performance
+      - style
+    disabled-checks:
+      - dupImport
+      - ifElseChain
+      - octalLiteral
+      - whyNoLint
+      - wrapperFunc
+      - paramTypeCombine
+      - hugeParam
+  gocyclo:
+    min-complexity: 15
+  godox:
+    keywords:
+      - TODO
+      - BUG
+      - FIXME
+      - OPTIMIZE
+      - HACK
+      - blaarg
+  goimports:
+    local-prefixes: github.com/sweetloveinyourheart/sweet-reel
+  stylecheck:
+    checks: ["all", "-ST1003"]
+  lll:
+    line-length: 140
+  misspell:
+    locale: US
+  nolintlint:
+    allow-unused: false
+    require-explanation: false
+    require-specific: false
+  staticcheck:
+    checks:
+      - all
+      - '-SA1019'
+
+linters:
+  disable-all: true
+  enable:
+    - bodyclose
+    - errcheck
+    - godox
+    - gofmt
+    - goprintffuncname
+    - gosimple
+    - govet
+    - ineffassign
+    - nakedret
+    - nilerr
+    - nilnil
+    - noctx
+    - nolintlint
+    - staticcheck
+    - typecheck
+    - unconvert
+    - unused
+
+issues:
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - gomnd
+        - funlen
+        - godox
+    - path: _generated\.go
+      linters:
+        - unused
+
+  exclude-dirs:
+    - .gobincache

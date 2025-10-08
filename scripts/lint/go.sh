@@ -105,6 +105,6 @@ if [ $goImportsExitCode -eq 1 ]; then
 fi
 
 app_echo "Running golangci-lint..."
-go run github.com/golangci/golangci-lint/cmd/golangci-lint@v1.64.5 run --timeout 10m0s ./... || ( app-echo-red "Linting failed." && exit 1 )
+go run github.com/golangci/golangci-lint/cmd/golangci-lint@v1.64.5 run --timeout 10m0s ./... || ( app_echo_red "Linting failed." && exit 1 )
 
 app_echo_green "Linting passed."
