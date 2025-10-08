@@ -1,0 +1,54 @@
+name: Tests - Unit Tests
+
+on:
+  push:
+    branches:
+      - '**'
+      - '!main'
+  
+  pull_request:
+    
+  merge_group:
+
+jobs:
+
+  # --- Linting, Unit Tests, and Coverage ---
+
+  linter:
+    uses: ./.github/workflows/env.yaml
+    with:
+      job-name: linter
+      use-build-cache: true
+      command-to-execute: |
+        make lint
+    secrets: inherit
+
+  ut-services:
+    uses: ./.github/workflows/env.yaml
+    strategy:
+      fail-fast: false
+      matrix:
+        module: [
+          video_management,
+          video_processing,
+        ]
+    with:
+      job-name: ut-${{ matrix.module }}
+      use-build-cache: true
+      retry-on-failure: true
+      command-to-execute: |
+        make cov-${{ matrix.module }} || errorCode=$?
+    secrets: inherit
+
+  report-ut-coverage:
+    if: always()
+    needs: [ 
+      ut-services,
+    ]
+    uses: ./.github/workflows/env.yaml
+    with:
+      job-name: report-ut-coverage
+      pull-previous-logs: true
+      command-to-execute: |
+        make print-coverage
+    secrets: inherit

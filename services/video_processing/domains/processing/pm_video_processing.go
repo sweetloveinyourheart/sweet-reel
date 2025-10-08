@@ -81,7 +81,9 @@ func NewVideoProcessManager(ctx context.Context) (*VideoProcessManager, error) {
 		}
 
 		<-ctx.Done()
-		consumer.Stop()
+		if err := consumer.Stop(); err != nil {
+			logger.Global().ErrorContext(ctx, "failed to stop consumer", zap.Error(err))
+		}
 	}()
 
 	go func() {

@@ -97,7 +97,11 @@ func ExampleUsage() {
 	if err != nil {
 		log.Fatalf("Failed to create consumer: %v", err)
 	}
-	defer consumer.Stop()
+	defer func() {
+		if err := consumer.Stop(); err != nil {
+			log.Printf("Failed to stop consumer: %v", err)
+		}
+	}()
 
 	// Start consuming (this will run in background)
 	if err := consumer.Start(ctx); err != nil {

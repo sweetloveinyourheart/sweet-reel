@@ -8,7 +8,7 @@ arg1=$1  # 'fix-goimports' = Fix the malformed goimports
 
 set -e
 
-runGoImports="goimports"
+runGoImports="go run golang.org/x/tools/cmd/goimports@latest"
 
 function checkForMalformedFile() {
     if [ -n "$1" ]; then
@@ -37,7 +37,7 @@ function fixBadImports() {
     local badImports=$1
     for file in $badImports; do
         if ! $(isGeneratedFile "$file"); then
-            $runGoImports -local "github.com/sweetloveinyourheart/sweet-reel" -w $file
+            $runGoImports --local "github.com/sweetloveinyourheart/sweet-reel" -w $file
         fi
     done
 }
@@ -105,6 +105,6 @@ if [ $goImportsExitCode -eq 1 ]; then
 fi
 
 app_echo "Running golangci-lint..."
-go run github.com/golangci/golangci-lint/cmd/golangci-lint@v1.64.5 run --timeout 10m0s ./... || ( app-echo-red "Linting failed." && exit 1 )
+go run github.com/golangci/golangci-lint/cmd/golangci-lint@latest run --timeout 10m0s ./... || ( app_echo_red "Linting failed." && exit 1 )
 
 app_echo_green "Linting passed."
