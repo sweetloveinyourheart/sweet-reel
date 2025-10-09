@@ -28,6 +28,11 @@ type DbOrTx interface {
 	QueryRow(ctx context.Context, sql string, args ...any) pgx.Row
 }
 
+type ConnPool interface {
+	DbOrTx
+	AcquireFunc(ctx context.Context, f func(*pgxpool.Conn) error) error
+}
+
 func NewDbWithWait(connectionString string, dbOptions DBOptions) (*pgxpool.Pool, error) {
 	ctx := context.Background()
 

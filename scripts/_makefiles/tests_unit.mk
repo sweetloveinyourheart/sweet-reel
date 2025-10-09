@@ -52,3 +52,9 @@ ut-video_processing:
 
 cov-video_processing:
 	@make template-cov package=services/video_processing packageName=video_processing
+
+ut-user:
+	@make template-ut package=services/user packageName=user
+
+cov-user:
+	@make template-cov package=services/user packageName=user

@@ -47,7 +47,7 @@ services:
       "POSTGRES_DB": "postgres"
       "POSTGRES_USER": "root_admin"
       "POSTGRES_PASSWORD": "admin@123"
-      "POSTGRES_MULTIPLE_DATABASES": "video-management:video-management;"
+      "POSTGRES_MULTIPLE_DATABASES": "video-management:video-management;user:user"
     ports:
       - "5432:5432"
     networks:
@@ -204,6 +204,31 @@ services:
     networks:
       fs_test_net:
         ipv4_address: "172.16.244.94"
+    healthcheck:
+      test: [ "CMD-SHELL", "/app check http localhost:5052/healthz" ]
+      start_period: 90s
+      interval: 5s
+      timeout: 4s
+      retries: 30
+    depends_on:
+      phase_two_leader:
+        condition: service_completed_successfully
+
+  user:
+    image: srl:latest
+    container_name: ${COMPOSE_PROJECT_NAME:-test}_user
+    hostname: user
+    environment:
+      "SWEET_REEL_SERVICE": "user"
+      "USER_ID": "00000000-0000-0000-0000-000000000065"
+      "USER_SECRETS_TOKEN_SIGNING_KEY": "secr3t_k3y"
+      "USER_GRPC_PORT": 50065
+      "USER_DB_URL": "postgres://root_admin:admin@123@srl_database:5432/user?sslmode=disable"
+    ports:
+      - 50065:50065 # GRPC port
+    networks:
+      fs_test_net:
+        ipv4_address: "172.16.244.126"
     healthcheck:
       test: [ "CMD-SHELL", "/app check http localhost:5052/healthz" ]
       start_period: 90s

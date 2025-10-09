@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+package com.sweetloveinyourheart.srl.user;
+
+option go_package = "github.com/sweetloveinyourheart/sweet-reel/proto/code/user/go;grpc";
+
+// The UserService manages user profiles and linked OAuth identities.
+service UserService {
+    // Called by AuthService after verifying an OAuth provider token.
+    rpc UpsertOAuthUser(UpsertOAuthUserRequest) returns (UpsertOAuthUserResponse);
+
+    // Fetch user info by ID (used internally by other services).
+    rpc GetUserByID(GetUserByIDRequest) returns (GetUserByIDResponse);
+}
+
+message User {
+    string id = 1;
+    string email = 2;
+    string name = 3;
+    string picture = 4;
+    string created_at = 5;
+    string updated_at = 6;
+}
+
+message UpsertOAuthUserRequest {
+    string provider = 1;          // e.g. "google", "github"
+    string provider_user_id = 2;  // ID from provider (e.g. Google sub)
+    string email = 3;
+    string name = 4;
+    string picture = 5;
+}
+
+message UpsertOAuthUserResponse {
+    User user = 1;
+    bool is_new_user = 2;
+}
+
+message GetUserByIDRequest {
+    string user_id = 1;
+}
+
+message GetUserByIDResponse {
+    User user = 1;
+}

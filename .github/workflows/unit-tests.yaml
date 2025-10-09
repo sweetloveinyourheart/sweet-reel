@@ -31,6 +31,7 @@ jobs:
         module: [
           video_management,
           video_processing,
+          user,
         ]
     with:
       job-name: ut-${{ matrix.module }}
