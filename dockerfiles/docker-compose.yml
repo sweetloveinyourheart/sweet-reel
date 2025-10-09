@@ -135,6 +135,30 @@ services:
       srl_minio_mock_s3:
         condition: service_healthy
 
+  api_gateway:
+    image: srl:latest
+    container_name: ${COMPOSE_PROJECT_NAME:-test}_api_gateway
+    hostname: api_gateway
+    environment:
+      "SWEET_REEL_SERVICE": "api_gateway"
+      "API_GATEWAY_HTTP_PORT": 9000
+      "API_GATEWAY_ID": "00000000-0000-0000-0000-000000000051"
+      "API_GATEWAY_SECRETS_TOKEN_SIGNING_KEY": "secr3t_k3y"
+    ports:
+      - 9000:9000 # HTTP port
+    networks:
+      fs_test_net:
+        ipv4_address: "172.16.244.12"
+    healthcheck:
+      test: [ "CMD-SHELL", "/app check http localhost:5052/healthz" ]
+      start_period: 90s
+      interval: 5s
+      timeout: 4s
+      retries: 30
+    depends_on:
+      phase_two_leader:
+        condition: service_completed_successfully
+
   video_processing:
     image: srl-ffmpeg:latest
     container_name: ${COMPOSE_PROJECT_NAME:-test}_video_processing
