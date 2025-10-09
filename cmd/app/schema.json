@@ -1,5 +1,127 @@
 [
   {
+    "name": "api_gateway",
+    "shortName": "Run as api_gateway service",
+    "long": "",
+    "ports": null,
+    "healthCheckPorts": [
+      {
+        "name": "healthcheck-grpc",
+        "wireProtocol": "tcp",
+        "protocol": "grpc",
+        "public": false,
+        "defaultRoutes": null,
+        "flagName": "healthcheck-port",
+        "flagUsage": "Port to listen on for services that support a health check",
+        "configName": "healthcheck.port",
+        "defaultValue": 5051,
+        "env": [
+          "SWEET_REEL_HEALTHCHECK_PORT"
+        ]
+      },
+      {
+        "name": "healthcheck-web",
+        "wireProtocol": "tcp",
+        "protocol": "http",
+        "public": false,
+        "defaultRoutes": [
+          "/healthz",
+          "/readyz"
+        ],
+        "flagName": "healthcheck-web-port",
+        "flagUsage": "Port to listen on for services that support a health check",
+        "configName": "healthcheck.web.port",
+        "defaultValue": 5052,
+        "env": [
+          "SWEET_REEL_HEALTHCHECK_WEB_PORT"
+        ]
+      }
+    ],
+    "defaultDatabaseName": "",
+    "Config": [
+      {
+        "name": "http-port",
+        "usage": "HTTP Port to listen on",
+        "default": 8080,
+        "valueType": "int64",
+        "path": "api_gateway.http.port",
+        "env": [
+          "API_GATEWAY_HTTP_PORT"
+        ]
+      },
+      {
+        "name": "id",
+        "usage": "Unique identifier for this services",
+        "default": "",
+        "valueType": "string",
+        "path": "api_gateway.id",
+        "env": [
+          "API_GATEWAY_ID"
+        ]
+      },
+      {
+        "name": "token-signing-key",
+        "usage": "Signing key used for service to service tokens",
+        "default": "",
+        "valueType": "string",
+        "path": "api_gateway.secrets.token_signing_key",
+        "env": [
+          "API_GATEWAY_SECRETS_TOKEN_SIGNING_KEY"
+        ]
+      },
+      {
+        "name": "healthcheck-host",
+        "usage": "Host to listen on for services that support a health check",
+        "default": "localhost",
+        "valueType": "string",
+        "path": "healthcheck.host",
+        "env": [
+          "SWEET_REEL_HEALTHCHECK_HOST"
+        ]
+      },
+      {
+        "name": "healthcheck-port",
+        "usage": "Port to listen on for services that support a health check",
+        "default": 5051,
+        "valueType": "int",
+        "path": "healthcheck.port",
+        "env": [
+          "SWEET_REEL_HEALTHCHECK_PORT"
+        ]
+      },
+      {
+        "name": "healthcheck-web-port",
+        "usage": "Port to listen on for services that support a health check",
+        "default": 5052,
+        "valueType": "int",
+        "path": "healthcheck.web.port",
+        "env": [
+          "SWEET_REEL_HEALTHCHECK_WEB_PORT"
+        ]
+      },
+      {
+        "name": "log-level",
+        "usage": "log level to use",
+        "default": "info",
+        "valueType": "string",
+        "path": "log.level",
+        "env": [
+          "LOG_LEVEL"
+        ]
+      },
+      {
+        "name": "service",
+        "usage": "which service to run",
+        "default": "",
+        "valueType": "string",
+        "path": "service",
+        "env": [
+          "SWEET_REEL_SERVICE"
+        ]
+      }
+    ]
+  },
+  {
     "name": "video_management",
     "shortName": "Run as video_management service",
     "long": "",
