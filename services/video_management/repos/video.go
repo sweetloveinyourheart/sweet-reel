@@ -63,13 +63,12 @@ func NewVideoRepository(tx db.DbOrTx) VideoRepositoryInterface {
 
 func (r *VideoRepository) CreateVideo(ctx context.Context, video *models.Video) error {
 	query := `
-		INSERT INTO videos (id, uploader_id, title, description, status, original_file_url, processed_at, created_at, updated_at)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`
+		INSERT INTO videos (id, uploader_id, title, description, status, original_file_url, processed_at)
+		VALUES ($1, $2, $3, $4, $5, $6, $7)`
 
 	_, err := r.Tx.Exec(ctx, query,
 		video.ID, video.UploaderID, video.Title, video.Description,
-		video.Status, video.OriginalFileURL, video.ProcessedAt,
-		video.CreatedAt, video.UpdatedAt)
+		video.Status, video.OriginalFileURL, video.ProcessedAt)
 	return err
 }
 
@@ -119,23 +118,23 @@ func (r *VideoRepository) GetVideosByUploaderID(ctx context.Context, uploaderID 
 func (r *VideoRepository) UpdateVideo(ctx context.Context, video *models.Video) error {
 	query := `
 		UPDATE videos SET uploader_id = $2, title = $3, description = $4, status = $5, 
-		original_file_url = $6, processed_at = $7, updated_at = $8
+		original_file_url = $6, processed_at = $7
 		WHERE id = $1`
 
 	_, err := r.Tx.Exec(ctx, query,
 		video.ID, video.UploaderID, video.Title, video.Description,
-		video.Status, video.OriginalFileURL, video.ProcessedAt, video.UpdatedAt)
+		video.Status, video.OriginalFileURL, video.ProcessedAt)
 	return err
 }
 
 func (r *VideoRepository) UpdateVideoStatus(ctx context.Context, id uuid.UUID, status models.VideoStatus) error {
-	query := `UPDATE videos SET status = $2, updated_at = NOW() WHERE id = $1`
+	query := `UPDATE videos SET status = $2 WHERE id = $1`
 	_, err := r.Tx.Exec(ctx, query, id, status)
 	return err
 }
 
 func (r *VideoRepository) UpdateVideoProcessedAt(ctx context.Context, id uuid.UUID, processedAt time.Time) error {
-	query := `UPDATE videos SET processed_at = $2, updated_at = NOW() WHERE id = $1`
+	query := `UPDATE videos SET processed_at = $2 WHERE id = $1`
 	_, err := r.Tx.Exec(ctx, query, id, processedAt)
 	return err
 }
@@ -176,12 +175,12 @@ func (r *VideoRepository) ListVideos(ctx context.Context, limit, offset int) ([]
 
 func (r *VideoRepository) CreateVideoManifest(ctx context.Context, manifest *models.VideoManifest) error {
 	query := `
-		INSERT INTO video_manifests (id, video_id, manifest_url, size_bytes, created_at)
-		VALUES ($1, $2, $3, $4, $5)`
+		INSERT INTO video_manifests (id, video_id, manifest_url, size_bytes)
+		VALUES ($1, $2, $3, $4)`
 
 	_, err := r.Tx.Exec(ctx, query,
 		manifest.ID, manifest.VideoID, manifest.ManifestURL,
-		manifest.SizeBytes, manifest.CreatedAt)
+		manifest.SizeBytes)
 	return err
 }
 
@@ -221,12 +220,12 @@ func (r *VideoRepository) DeleteVideoManifest(ctx context.Context, id uuid.UUID)
 
 func (r *VideoRepository) CreateVideoVariant(ctx context.Context, variant *models.VideoVariant) error {
 	query := `
-		INSERT INTO video_variants (id, video_id, quality, playlist_url, total_segments, total_duration, created_at)
-		VALUES ($1, $2, $3, $4, $5, $6, $7)`
+		INSERT INTO video_variants (id, video_id, quality, playlist_url, total_segments, total_duration)
+		VALUES ($1, $2, $3, $4, $5, $6)`
 
 	_, err := r.Tx.Exec(ctx, query,
 		variant.ID, variant.VideoID, variant.Quality, variant.PlaylistURL,
-		variant.TotalSegments, variant.TotalDuration, variant.CreatedAt)
+		variant.TotalSegments, variant.TotalDuration)
 	return err
 }
 
@@ -298,8 +297,8 @@ func (r *VideoRepository) DeleteVideoVariantsByVideoID(ctx context.Context, vide
 
 func (r *VideoRepository) CreateVideoThumbnail(ctx context.Context, thumbnail *models.VideoThumbnail) error {
 	query := `
-		INSERT INTO video_thumbnails (id, video_id, file_url, width, height, created_at)
-		VALUES ($1, $2, $3, $4, $5, $6)`
+		INSERT INTO video_thumbnails (id, video_id, file_url, width, height)
+		VALUES ($1, $2, $3, $4, $5)`
 
 	_, err := r.Tx.Exec(ctx, query,
 		thumbnail.ID, thumbnail.VideoID, thumbnail.FileURL,
