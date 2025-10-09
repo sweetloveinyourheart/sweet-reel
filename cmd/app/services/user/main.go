@@ -107,7 +107,7 @@ func setupDependencies(ctx context.Context) error {
 
 	userRepo := repos.NewUserRepository(dbConn)
 
-	do.Provide(nil, func(i *do.Injector) (*pgxpool.Pool, error) {
+	do.Provide(nil, func(i *do.Injector) (db.ConnPool, error) {
 		return dbConn, nil
 	})
 

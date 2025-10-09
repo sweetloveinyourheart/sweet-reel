@@ -3,11 +3,12 @@ package actions_test
 import (
 	"testing"
 
-	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/samber/do"
 	"github.com/stretchr/testify/suite"
 
+	"github.com/sweetloveinyourheart/sweet-reel/pkg/db"
 	testingPkg "github.com/sweetloveinyourheart/sweet-reel/pkg/testing"
+	"github.com/sweetloveinyourheart/sweet-reel/pkg/testing/mock"
 	"github.com/sweetloveinyourheart/sweet-reel/services/user/repos"
 	"github.com/sweetloveinyourheart/sweet-reel/services/user/repos/mocks"
 )
@@ -15,14 +16,17 @@ import (
 type ActionsSuite struct {
 	*testingPkg.Suite
 	mockUserRepository *mocks.MockUserRepository
+	mockConnPool       *mock.MockPgxPool
 }
 
 func (as *ActionsSuite) SetupTest() {
 	as.mockUserRepository = new(mocks.MockUserRepository)
+	as.mockConnPool = new(mock.MockPgxPool)
 }
 
 func (as *ActionsSuite) TearDownTest() {
 	as.mockUserRepository = nil
+	as.mockConnPool = nil
 }
 
 func TestActionsSuite(t *testing.T) {
@@ -38,7 +42,7 @@ func (as *ActionsSuite) setupEnvironment() {
 		return as.mockUserRepository, nil
 	})
 
-	do.Override(nil, func(i *do.Injector) (*pgxpool.Pool, error) {
-		return nil, nil
+	do.Override(nil, func(i *do.Injector) (db.ConnPool, error) {
+		return as.mockConnPool, nil
 	})
 }
