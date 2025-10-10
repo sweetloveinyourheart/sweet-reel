@@ -86,6 +86,121 @@
     path: service
     env:
     - SWEET_REEL_SERVICE
+- name: auth
+  shortName: Run as auth service
+  long: ""
+  service:
+    ports: []
+    healthCheckPorts:
+    - name: healthcheck-grpc
+      wireProtocol: tcp
+      protocol: grpc
+      public: false
+      defaultRoutes: []
+      flagName: healthcheck-port
+      flagUsage: Port to listen on for services that support a health check
+      configName: healthcheck.port
+      defaultValue: 5051
+      env:
+      - SWEET_REEL_HEALTHCHECK_PORT
+    - name: healthcheck-web
+      wireProtocol: tcp
+      protocol: http
+      public: false
+      defaultRoutes:
+      - /healthz
+      - /readyz
+      flagName: healthcheck-web-port
+      flagUsage: Port to listen on for services that support a health check
+      configName: healthcheck.web.port
+      defaultValue: 5052
+      env:
+      - SWEET_REEL_HEALTHCHECK_WEB_PORT
+    defaultDatabaseName: ""
+  config:
+  - name: google-oauth-client-id
+    usage: ""
+    default: ""
+    valueType: string
+    path: auth.google.oauth.client_id
+    env:
+    - AUTH_GOOGLE_OAUTH_CLIENT_ID
+  - name: google-oauth-client-secret
+    usage: ""
+    default: ""
+    valueType: string
+    path: auth.google.oauth.client_secret
+    env:
+    - AUTH_GOOGLE_OAUTH_CLIENT_SECRET
+  - name: google-oauth-redirect-url
+    usage: ""
+    default: ""
+    valueType: string
+    path: auth.google.oauth.redirect_url
+    env:
+    - AUTH_GOOGLE_OAUTH_REDIRECT_URL
+  - name: grpc-port
+    usage: GRPC Port to listen on
+    default: 50060
+    valueType: int64
+    path: auth.grpc.port
+    env:
+    - AUTH_GRPC_PORT
+  - name: http://user:50065
+    usage: AUTH_USER_SERVER_URL
+    default: User server connection URL
+    valueType: string
+    path: auth.user_server.url
+    env: []
+  - name: id
+    usage: Unique identifier for this services
+    default: ""
+    valueType: string
+    path: auth.id
+    env:
+    - AUTH_ID
+  - name: token-signing-key
+    usage: Signing key used for service to service tokens
+    default: ""
+    valueType: string
+    path: auth.secrets.token_signing_key
+    env:
+    - AUTH_SECRETS_TOKEN_SIGNING_KEY
+  - name: healthcheck-host
+    usage: Host to listen on for services that support a health check
+    default: localhost
+    valueType: string
+    path: healthcheck.host
+    env:
+    - SWEET_REEL_HEALTHCHECK_HOST
+  - name: healthcheck-port
+    usage: Port to listen on for services that support a health check
+    default: 5051
+    valueType: int
+    path: healthcheck.port
+    env:
+    - SWEET_REEL_HEALTHCHECK_PORT
+  - name: healthcheck-web-port
+    usage: Port to listen on for services that support a health check
+    default: 5052
+    valueType: int
+    path: healthcheck.web.port
+    env:
+    - SWEET_REEL_HEALTHCHECK_WEB_PORT
+  - name: log-level
+    usage: log level to use
+    default: info
+    valueType: string
+    path: log.level
+    env:
+    - LOG_LEVEL
+  - name: service
+    usage: which service to run
+    default: ""
+    valueType: string
+    path: service
+    env:
+    - SWEET_REEL_SERVICE
 - name: user
   shortName: Run as user service
   long: ""

@@ -1,0 +1,19 @@
+version: v1
+plugins:
+  - name: go
+    out: code/auth/go
+    opt:
+      - paths=source_relative
+  - name: connect-go
+    out: code/auth/go
+    opt:
+      - paths=source_relative
+  - name: go-grpc
+    out: code/auth/go
+    opt:
+      - paths=source_relative
+      - require_unimplemented_servers=false
+  - name: doc
+    out: ../docs/api/auth
+    opt:
+      - markdown,auth.md
