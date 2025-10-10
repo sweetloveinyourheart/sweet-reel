@@ -65,9 +65,6 @@ func (s *Server) createMiddlewareChain() http.Handler {
 	// Error recovery middleware
 	handler = middleware.RecoveryMiddleware(handler)
 
-	// Request ID middleware
-	handler = middleware.RequestIDMiddleware(handler)
-
 	// CORS middleware
 	handler = middleware.CORSMiddleware(handler, middleware.CORSConfig{
 		AllowOrigins: s.config.Security.AllowOrigins,
@@ -84,6 +81,9 @@ func (s *Server) createMiddlewareChain() http.Handler {
 			MaxBodySize: 1024,
 		})
 	}
+
+	// Request ID middleware
+	handler = middleware.RequestIDMiddleware(handler)
 
 	return handler
 }

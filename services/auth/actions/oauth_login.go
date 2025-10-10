@@ -37,7 +37,7 @@ func (a *actions) OAuthLogin(ctx context.Context, request *connect.Request[proto
 		}
 		userInfo, err = a.googleOAuthClient.GetUserInfo(ctx, token)
 		if err != nil {
-			return nil, grpc.InternalError(errors.New("user info is empty"))
+			return nil, grpc.InternalError(err)
 		}
 
 		if userInfo == nil {
