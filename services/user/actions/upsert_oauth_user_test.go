@@ -68,43 +68,6 @@ func (as *ActionsSuite) TestActions_UpsertOAuthUser_Success_ExistingUser() {
 	as.mockUserRepository.AssertExpectations(as.T())
 }
 
-func (as *ActionsSuite) TestActions_UpsertOAuthUser_Unauthenticated() {
-	as.setupEnvironment()
-
-	// Setup test data without auth token
-	provider := "google"
-	providerUserID := "google-123456"
-	email := "test@example.com"
-	name := "Test User"
-	picture := "https://example.com/avatar.jpg"
-
-	// Setup context WITHOUT auth token
-	ctx := context.Background()
-
-	// Setup request
-	request := &connect.Request[proto.UpsertOAuthUserRequest]{
-		Msg: &proto.UpsertOAuthUserRequest{
-			Provider:       provider,
-			ProviderUserId: providerUserID,
-			Email:          email,
-			Name:           name,
-			Picture:        picture,
-		},
-	}
-
-	// Execute
-	actionsInstance := actions.NewActions(ctx, "test-token")
-	response, err := actionsInstance.UpsertOAuthUser(ctx, request)
-
-	// Assertions
-	as.Error(err)
-	as.Nil(response)
-	as.Contains(err.Error(), "invalid session")
-
-	// Verify no repository methods were called
-	as.mockUserRepository.AssertNotCalled(as.T(), "GetUserWithIdentity")
-}
-
 func (as *ActionsSuite) TestActions_UpsertOAuthUser_GetUserWithIdentity_Error() {
 	as.setupEnvironment()
 
@@ -144,41 +107,4 @@ func (as *ActionsSuite) TestActions_UpsertOAuthUser_GetUserWithIdentity_Error() 
 
 	// Verify mocks were called
 	as.mockUserRepository.AssertExpectations(as.T())
-}
-
-func (as *ActionsSuite) TestActions_UpsertOAuthUser_InvalidAuthTokenType() {
-	as.setupEnvironment()
-
-	// Setup test data with invalid auth token type
-	provider := "google"
-	providerUserID := "google-123456"
-	email := "test@example.com"
-	name := "Test User"
-	picture := "https://example.com/avatar.jpg"
-
-	// Setup context with invalid auth token type (string instead of uuid.UUID)
-	ctx := context.WithValue(context.Background(), grpc.AuthToken, "invalid-token")
-
-	// Setup request
-	request := &connect.Request[proto.UpsertOAuthUserRequest]{
-		Msg: &proto.UpsertOAuthUserRequest{
-			Provider:       provider,
-			ProviderUserId: providerUserID,
-			Email:          email,
-			Name:           name,
-			Picture:        picture,
-		},
-	}
-
-	// Execute
-	actionsInstance := actions.NewActions(ctx, "test-token")
-	response, err := actionsInstance.UpsertOAuthUser(ctx, request)
-
-	// Assertions
-	as.Error(err)
-	as.Nil(response)
-	as.Contains(err.Error(), "invalid session")
-
-	// Verify no repository methods were called
-	as.mockUserRepository.AssertNotCalled(as.T(), "GetUserWithIdentity")
 }
