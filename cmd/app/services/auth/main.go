@@ -13,6 +13,7 @@ import (
 	"github.com/sweetloveinyourheart/sweet-reel/pkg/config"
 	"github.com/sweetloveinyourheart/sweet-reel/pkg/grpc"
 	"github.com/sweetloveinyourheart/sweet-reel/pkg/interceptors"
+	authInterceptor "github.com/sweetloveinyourheart/sweet-reel/pkg/interceptors/auth"
 	"github.com/sweetloveinyourheart/sweet-reel/pkg/logger"
 	"github.com/sweetloveinyourheart/sweet-reel/pkg/oauth2"
 	"github.com/sweetloveinyourheart/sweet-reel/proto/code/auth/go/grpcconnect"
@@ -89,6 +90,7 @@ func setupGrpcServer(ctx context.Context) error {
 			serviceType,
 			signingKey,
 			interceptors.ConnectServerAuthHandler(signingKey),
+			authInterceptor.WithOverride(actions),
 		)...,
 	)
 	path, handler := grpcconnect.NewAuthServiceHandler(actions, opt)
@@ -102,7 +104,7 @@ func setupGrpcServer(ctx context.Context) error {
 func setupDependencies(ctx context.Context) error {
 	userClient := userConnect.NewUserServiceClient(
 		http.DefaultClient,
-		config.Instance().GetString("gameengineserver.dataprovider.url"),
+		config.Instance().GetString(fmt.Sprintf("%s.user_server.url", serviceType)),
 		connect.WithInterceptors(interceptors.CommonConnectClientInterceptors(
 			serviceType,
 			config.Instance().GetString(fmt.Sprintf("%s.secrets.token_signing_key", serviceType)),

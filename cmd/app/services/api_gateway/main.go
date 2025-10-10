@@ -3,12 +3,17 @@ package apigateway
 import (
 	"context"
 	"fmt"
+	"net/http"
 
+	"connectrpc.com/connect"
+	"github.com/samber/do"
 	"github.com/spf13/cobra"
 
 	"github.com/sweetloveinyourheart/sweet-reel/pkg/cmdutil"
 	"github.com/sweetloveinyourheart/sweet-reel/pkg/config"
+	"github.com/sweetloveinyourheart/sweet-reel/pkg/interceptors"
 	"github.com/sweetloveinyourheart/sweet-reel/pkg/logger"
+	authConnect "github.com/sweetloveinyourheart/sweet-reel/proto/code/auth/go/grpcconnect"
 	apigateway "github.com/sweetloveinyourheart/sweet-reel/services/api_gateway"
 )
 
@@ -60,6 +65,7 @@ func Command(rootCmd *cobra.Command) *cobra.Command {
 
 	// config options
 	config.Int64Default(apiGatewayCommand, fmt.Sprintf("%s.http.port", serviceType), "http-port", DEFAULT_API_GATEWAY_HTTP_PORT, "HTTP Port to listen on", "API_GATEWAY_HTTP_PORT")
+	config.StringDefault(apiGatewayCommand, fmt.Sprintf("%s.auth_server.url", serviceType), "http://auth:50070", "Auth server connection URL", "API_GATEWAY_AUTH_SERVER_URL")
 
 	cmdutil.BoilerplateFlagsCore(apiGatewayCommand, serviceType, envPrefix)
 	cmdutil.BoilerplateSecureFlags(apiGatewayCommand, serviceType)
@@ -79,5 +85,18 @@ func setupHTTPServer(ctx context.Context) error {
 }
 
 func setupDependencies(ctx context.Context) error {
+	authClient := authConnect.NewAuthServiceClient(
+		http.DefaultClient,
+		config.Instance().GetString(fmt.Sprintf("%s.auth_server.url", serviceType)),
+		connect.WithInterceptors(interceptors.CommonConnectClientInterceptors(
+			serviceType,
+			config.Instance().GetString(fmt.Sprintf("%s.secrets.token_signing_key", serviceType)),
+		)...),
+	)
+
+	do.Provide(nil, func(i *do.Injector) (authConnect.AuthServiceClient, error) {
+		return authClient, nil
+	})
+
 	return nil
 }

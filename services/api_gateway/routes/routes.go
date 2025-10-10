@@ -3,10 +3,10 @@ package routes
 import (
 	"net/http"
 
-	"github.com/sweetloveinyourheart/sweet-reel/services/api_gateway/internal/config"
-	"github.com/sweetloveinyourheart/sweet-reel/services/api_gateway/internal/handlers"
-	"github.com/sweetloveinyourheart/sweet-reel/services/api_gateway/internal/helpers"
-	"github.com/sweetloveinyourheart/sweet-reel/services/api_gateway/internal/middleware"
+	"github.com/sweetloveinyourheart/sweet-reel/services/api_gateway/config"
+	"github.com/sweetloveinyourheart/sweet-reel/services/api_gateway/handlers"
+	"github.com/sweetloveinyourheart/sweet-reel/services/api_gateway/helpers"
+	"github.com/sweetloveinyourheart/sweet-reel/services/api_gateway/middleware"
 )
 
 // Router manages all routes for the API Gateway
@@ -32,7 +32,9 @@ func (r *Router) SetupRoutes() {
 }
 
 // setupPublicRoutes sets up public API routes
-func (r *Router) setupPublicRoutes() {}
+func (r *Router) setupPublicRoutes() {
+	r.mux.Handle("/api/v1/oauth", helpers.POST(r.handlers.AuthHandler.GoogleOAuth))
+}
 
 // setupProtectedRoutes sets up authenticated API routes
 func (r *Router) setupProtectedRoutes() {
@@ -45,5 +47,5 @@ func (r *Router) setupProtectedRoutes() {
 	})
 
 	// Video management routes
-	r.mux.Handle("/api/v1/videos/presigned-url", authMiddleware(helpers.MethodHandler("POST", r.handlers.VideoManagement.GeneratePresignedURL)))
+	r.mux.Handle("/api/v1/videos/presigned-url", authMiddleware(helpers.POST(r.handlers.VideoManagement.GeneratePresignedURL)))
 }

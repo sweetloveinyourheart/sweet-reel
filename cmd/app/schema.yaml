@@ -37,6 +37,12 @@
     path: api_gateway.http.port
     env:
     - API_GATEWAY_HTTP_PORT
+  - name: http://auth:50070
+    usage: API_GATEWAY_AUTH_SERVER_URL
+    default: Auth server connection URL
+    valueType: string
+    path: api_gateway.auth_server.url
+    env: []
   - name: id
     usage: Unique identifier for this services
     default: ""

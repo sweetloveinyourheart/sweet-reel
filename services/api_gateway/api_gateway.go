@@ -3,8 +3,8 @@ package apigateway
 import (
 	"context"
 
-	"github.com/sweetloveinyourheart/sweet-reel/services/api_gateway/internal/config"
-	"github.com/sweetloveinyourheart/sweet-reel/services/api_gateway/internal/server"
+	"github.com/sweetloveinyourheart/sweet-reel/services/api_gateway/config"
+	"github.com/sweetloveinyourheart/sweet-reel/services/api_gateway/server"
 )
 
 // NewServer creates a new API Gateway server using the new internal structure

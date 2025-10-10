@@ -8,10 +8,10 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/sweetloveinyourheart/sweet-reel/pkg/logger"
-	"github.com/sweetloveinyourheart/sweet-reel/services/api_gateway/internal/config"
-	"github.com/sweetloveinyourheart/sweet-reel/services/api_gateway/internal/handlers"
-	"github.com/sweetloveinyourheart/sweet-reel/services/api_gateway/internal/middleware"
-	"github.com/sweetloveinyourheart/sweet-reel/services/api_gateway/internal/routes"
+	"github.com/sweetloveinyourheart/sweet-reel/services/api_gateway/config"
+	"github.com/sweetloveinyourheart/sweet-reel/services/api_gateway/handlers"
+	"github.com/sweetloveinyourheart/sweet-reel/services/api_gateway/middleware"
+	"github.com/sweetloveinyourheart/sweet-reel/services/api_gateway/routes"
 )
 
 // Server represents the API Gateway server
