@@ -58,3 +58,9 @@ ut-user:
 
 cov-user:
 	@make template-cov package=services/user packageName=user
+
+ut-auth:
+	@make template-ut package=services/auth packageName=auth
+
+cov-auth:
+	@make template-cov package=services/auth packageName=auth
