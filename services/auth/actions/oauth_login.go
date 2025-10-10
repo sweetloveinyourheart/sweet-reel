@@ -88,5 +88,5 @@ func (a *actions) OAuthLogin(ctx context.Context, request *connect.Request[proto
 }
 
 func (a *actions) ValidateToken(ctx context.Context, request *connect.Request[proto.ValidateTokenRequest]) (*connect.Response[proto.ValidateTokenResponse], error) {
-	return nil, nil
+	return nil, errors.New("method is not implemented")
 }

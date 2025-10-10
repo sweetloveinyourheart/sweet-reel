@@ -50,7 +50,12 @@ func (c *Client) ExchangeCode(ctx context.Context, code string) (*oauth2.Token, 
 func (c *Client) GetUserInfo(ctx context.Context, token *oauth2.Token) (*UserInfo, error) {
 	client := c.config.Client(ctx, token)
 
-	resp, err := client.Get(c.provider.GetUserInfoURL())
+	req, err := http.NewRequestWithContext(ctx, "GET", c.provider.GetUserInfoURL(), nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	resp, err := client.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get user info: %w", err)
 	}
@@ -85,7 +90,13 @@ func (c *Client) ValidateToken(ctx context.Context, token *oauth2.Token) error {
 	switch c.provider.GetProviderType() {
 	case ProviderGoogle:
 		// Google has a specific token info endpoint
-		resp, err := client.Get(c.provider.GetTokenInfoURL() + "?access_token=" + token.AccessToken)
+		tokenInfoURL := c.provider.GetTokenInfoURL() + "?access_token=" + token.AccessToken
+		req, err := http.NewRequestWithContext(ctx, "GET", tokenInfoURL, nil)
+		if err != nil {
+			return fmt.Errorf("failed to create request: %w", err)
+		}
+
+		resp, err := client.Do(req)
 		if err != nil {
 			return fmt.Errorf("failed to validate token: %w", err)
 		}
@@ -97,7 +108,12 @@ func (c *Client) ValidateToken(ctx context.Context, token *oauth2.Token) error {
 
 	case ProviderGitHub:
 		// GitHub doesn't have a token info endpoint, so we validate by making a user API call
-		resp, err := client.Get(c.provider.GetUserInfoURL())
+		req, err := http.NewRequestWithContext(ctx, "GET", c.provider.GetUserInfoURL(), nil)
+		if err != nil {
+			return fmt.Errorf("failed to create request: %w", err)
+		}
+
+		resp, err := client.Do(req)
 		if err != nil {
 			return fmt.Errorf("failed to validate token: %w", err)
 		}
@@ -109,7 +125,12 @@ func (c *Client) ValidateToken(ctx context.Context, token *oauth2.Token) error {
 
 	default:
 		// For unknown providers, just check if we can make a user info request
-		resp, err := client.Get(c.provider.GetUserInfoURL())
+		req, err := http.NewRequestWithContext(ctx, "GET", c.provider.GetUserInfoURL(), nil)
+		if err != nil {
+			return fmt.Errorf("failed to create request: %w", err)
+		}
+
+		resp, err := client.Do(req)
 		if err != nil {
 			return fmt.Errorf("failed to validate token: %w", err)
 		}
