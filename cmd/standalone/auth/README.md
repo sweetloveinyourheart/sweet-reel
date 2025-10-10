@@ -43,9 +43,9 @@ app auth [flags]
       --google-oauth-redirect-url string    
       --grpc-port int                       GRPC Port to listen on (default 50060)
   -h, --help                                help for auth
-      --http://user:50065 string            AUTH_USER_SERVER_URL (default "User server connection URL")
       --id string                           Unique identifier for this services
       --token-signing-key string            Signing key used for service to service tokens
+      --user-server-url string              User server connection URL (default "http://user:50065")
 ```
 
 ### Environment Variables
@@ -56,6 +56,7 @@ app auth [flags]
 - AUTH_GRPC_PORT :: `auth.grpc.port` GRPC Port to listen on
 - AUTH_ID :: `auth.id` Unique identifier for this services
 - AUTH_SECRETS_TOKEN_SIGNING_KEY :: `auth.secrets.token_signing_key` Signing key used for service to service tokens
+- AUTH_USER_SERVER_URL :: `auth.user_server.url` User server connection URL
 ```
 
 ### Options inherited from parent commands

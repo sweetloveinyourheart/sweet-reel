@@ -70,7 +70,7 @@ func Command(rootCmd *cobra.Command) *cobra.Command {
 
 	// config options
 	config.Int64Default(authManagementCommand, fmt.Sprintf("%s.grpc.port", serviceType), "grpc-port", DEFAULT_AUTH_GRPC_PORT, "GRPC Port to listen on", "AUTH_GRPC_PORT")
-	config.StringDefault(authManagementCommand, fmt.Sprintf("%s.user_server.url", serviceType), "http://user:50065", "User server connection URL", "AUTH_USER_SERVER_URL")
+	config.StringDefault(authManagementCommand, fmt.Sprintf("%s.user_server.url", serviceType), "user-server-url", "http://user:50065", "User server connection URL", "AUTH_USER_SERVER_URL")
 	config.String(authManagementCommand, fmt.Sprintf("%s.google.oauth.client_id", serviceType), "google-oauth-client-id", "", "AUTH_GOOGLE_OAUTH_CLIENT_ID")
 	config.String(authManagementCommand, fmt.Sprintf("%s.google.oauth.client_secret", serviceType), "google-oauth-client-secret", "", "AUTH_GOOGLE_OAUTH_CLIENT_SECRET")
 	config.String(authManagementCommand, fmt.Sprintf("%s.google.oauth.redirect_url", serviceType), "google-oauth-redirect-url", "", "AUTH_GOOGLE_OAUTH_REDIRECT_URL")

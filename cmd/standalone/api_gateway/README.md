@@ -38,15 +38,16 @@ app api_gateway [flags]
 ### Options
 
 ```
+      --auth-server-url string     Auth server connection URL (default "http://auth:50070")
   -h, --help                       help for api_gateway
       --http-port int              HTTP Port to listen on (default 8080)
-      --http://auth:50070 string   API_GATEWAY_AUTH_SERVER_URL (default "Auth server connection URL")
       --id string                  Unique identifier for this services
       --token-signing-key string   Signing key used for service to service tokens
 ```
 
 ### Environment Variables
 
+- API_GATEWAY_AUTH_SERVER_URL :: `api_gateway.auth_server.url` Auth server connection URL
 - API_GATEWAY_HTTP_PORT :: `api_gateway.http.port` HTTP Port to listen on
 - API_GATEWAY_ID :: `api_gateway.id` Unique identifier for this services
 - API_GATEWAY_SECRETS_TOKEN_SIGNING_KEY :: `api_gateway.secrets.token_signing_key` Signing key used for service to service tokens

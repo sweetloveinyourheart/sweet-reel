@@ -14,6 +14,7 @@ import (
 	"github.com/sweetloveinyourheart/sweet-reel/pkg/db"
 	"github.com/sweetloveinyourheart/sweet-reel/pkg/grpc"
 	"github.com/sweetloveinyourheart/sweet-reel/pkg/interceptors"
+	authInterceptor "github.com/sweetloveinyourheart/sweet-reel/pkg/interceptors/auth"
 	"github.com/sweetloveinyourheart/sweet-reel/pkg/logger"
 	"github.com/sweetloveinyourheart/sweet-reel/proto/code/user/go/grpcconnect"
 	user "github.com/sweetloveinyourheart/sweet-reel/services/user"
@@ -89,6 +90,7 @@ func setupGrpcServer(ctx context.Context) error {
 			serviceType,
 			signingKey,
 			interceptors.ConnectServerAuthHandler(signingKey),
+			authInterceptor.WithOverride(actions),
 		)...,
 	)
 	path, handler := grpcconnect.NewUserServiceHandler(actions, opt)

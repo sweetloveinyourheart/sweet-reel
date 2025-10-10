@@ -38,15 +38,16 @@ app api_gateway [flags]
 ### Options
 
 ```
+      --auth-server-url string     Auth server connection URL (default "http://auth:50070")
   -h, --help                       help for api_gateway
       --http-port int              HTTP Port to listen on (default 8080)
-      --http://auth:50070 string   API_GATEWAY_AUTH_SERVER_URL (default "Auth server connection URL")
       --id string                  Unique identifier for this services
       --token-signing-key string   Signing key used for service to service tokens
 ```
 
 ### Environment Variables
 
+- API_GATEWAY_AUTH_SERVER_URL :: `api_gateway.auth_server.url` Auth server connection URL
 - API_GATEWAY_HTTP_PORT :: `api_gateway.http.port` HTTP Port to listen on
 - API_GATEWAY_ID :: `api_gateway.id` Unique identifier for this services
 - API_GATEWAY_SECRETS_TOKEN_SIGNING_KEY :: `api_gateway.secrets.token_signing_key` Signing key used for service to service tokens
@@ -88,9 +89,9 @@ app auth [flags]
       --google-oauth-redirect-url string    
       --grpc-port int                       GRPC Port to listen on (default 50060)
   -h, --help                                help for auth
-      --http://user:50065 string            AUTH_USER_SERVER_URL (default "User server connection URL")
       --id string                           Unique identifier for this services
       --token-signing-key string            Signing key used for service to service tokens
+      --user-server-url string              User server connection URL (default "http://user:50065")
 ```
 
 ### Environment Variables
@@ -101,6 +102,7 @@ app auth [flags]
 - AUTH_GRPC_PORT :: `auth.grpc.port` GRPC Port to listen on
 - AUTH_ID :: `auth.id` Unique identifier for this services
 - AUTH_SECRETS_TOKEN_SIGNING_KEY :: `auth.secrets.token_signing_key` Signing key used for service to service tokens
+- AUTH_USER_SERVER_URL :: `auth.user_server.url` User server connection URL
 ```
 
 ### Options inherited from parent commands

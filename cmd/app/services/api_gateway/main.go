@@ -65,7 +65,7 @@ func Command(rootCmd *cobra.Command) *cobra.Command {
 
 	// config options
 	config.Int64Default(apiGatewayCommand, fmt.Sprintf("%s.http.port", serviceType), "http-port", DEFAULT_API_GATEWAY_HTTP_PORT, "HTTP Port to listen on", "API_GATEWAY_HTTP_PORT")
-	config.StringDefault(apiGatewayCommand, fmt.Sprintf("%s.auth_server.url", serviceType), "http://auth:50070", "Auth server connection URL", "API_GATEWAY_AUTH_SERVER_URL")
+	config.StringDefault(apiGatewayCommand, fmt.Sprintf("%s.auth_server.url", serviceType), "auth-server-url", "http://auth:50070", "Auth server connection URL", "API_GATEWAY_AUTH_SERVER_URL")
 
 	cmdutil.BoilerplateFlagsCore(apiGatewayCommand, serviceType, envPrefix)
 	cmdutil.BoilerplateSecureFlags(apiGatewayCommand, serviceType)
