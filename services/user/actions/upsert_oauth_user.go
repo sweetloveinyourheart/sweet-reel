@@ -2,9 +2,10 @@ package actions
 
 import (
 	"context"
-	"errors"
+	"database/sql"
 
 	"connectrpc.com/connect"
+	"github.com/cockroachdb/errors"
 	"github.com/gofrs/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -17,16 +18,11 @@ import (
 )
 
 func (a *actions) UpsertOAuthUser(ctx context.Context, request *connect.Request[proto.UpsertOAuthUserRequest]) (*connect.Response[proto.UpsertOAuthUserResponse], error) {
-	_, ok := ctx.Value(grpc.AuthToken).(uuid.UUID)
-	if !ok {
-		return nil, grpc.UnauthenticatedError(errors.New("invalid session"))
-	}
-
 	isNewUser := false
 
 	var user *models.User
 	user, err := a.userRepo.GetUserWithIdentity(ctx, request.Msg.Provider, request.Msg.ProviderUserId)
-	if err != nil {
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return nil, grpc.InternalError(err)
 	}
 

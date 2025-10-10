@@ -250,7 +250,7 @@ services:
       "AUTH_GRPC_PORT": 50070
       "AUTH_GOOGLE_CLIENT_ID": ${AUTH_GOOGLE_CLIENT_ID}
       "AUTH_GOOGLE_CLIENT_SECRET": ${AUTH_GOOGLE_CLIENT_SECRET}
-      "AUTH_GOOGLE_OAUTH_REDIRECT_URL": "http://localhost:3000"
+      "AUTH_GOOGLE_OAUTH_REDIRECT_URL": "http://localhost:3000/auth/callback/google"
     ports:
       - 50070:50070 # GRPC port
     networks:

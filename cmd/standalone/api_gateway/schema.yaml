@@ -30,6 +30,13 @@
       - SWEET_REEL_HEALTHCHECK_WEB_PORT
     defaultDatabaseName: ""
   config:
+  - name: auth-server-url
+    usage: Auth server connection URL
+    default: http://auth:50070
+    valueType: string
+    path: api_gateway.auth_server.url
+    env:
+    - API_GATEWAY_AUTH_SERVER_URL
   - name: http-port
     usage: HTTP Port to listen on
     default: 8080

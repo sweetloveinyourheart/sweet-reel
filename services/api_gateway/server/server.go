@@ -8,10 +8,10 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/sweetloveinyourheart/sweet-reel/pkg/logger"
-	"github.com/sweetloveinyourheart/sweet-reel/services/api_gateway/internal/config"
-	"github.com/sweetloveinyourheart/sweet-reel/services/api_gateway/internal/handlers"
-	"github.com/sweetloveinyourheart/sweet-reel/services/api_gateway/internal/middleware"
-	"github.com/sweetloveinyourheart/sweet-reel/services/api_gateway/internal/routes"
+	"github.com/sweetloveinyourheart/sweet-reel/services/api_gateway/config"
+	"github.com/sweetloveinyourheart/sweet-reel/services/api_gateway/handlers"
+	"github.com/sweetloveinyourheart/sweet-reel/services/api_gateway/middleware"
+	"github.com/sweetloveinyourheart/sweet-reel/services/api_gateway/routes"
 )
 
 // Server represents the API Gateway server
@@ -65,9 +65,6 @@ func (s *Server) createMiddlewareChain() http.Handler {
 	// Error recovery middleware
 	handler = middleware.RecoveryMiddleware(handler)
 
-	// Request ID middleware
-	handler = middleware.RequestIDMiddleware(handler)
-
 	// CORS middleware
 	handler = middleware.CORSMiddleware(handler, middleware.CORSConfig{
 		AllowOrigins: s.config.Security.AllowOrigins,
@@ -84,6 +81,9 @@ func (s *Server) createMiddlewareChain() http.Handler {
 			MaxBodySize: 1024,
 		})
 	}
+
+	// Request ID middleware
+	handler = middleware.RequestIDMiddleware(handler)
 
 	return handler
 }

@@ -105,24 +105,6 @@ func (c *Client) ValidateToken(ctx context.Context, token *oauth2.Token) error {
 		if resp.StatusCode != http.StatusOK {
 			return fmt.Errorf("token validation failed: status %d", resp.StatusCode)
 		}
-
-	case ProviderGitHub:
-		// GitHub doesn't have a token info endpoint, so we validate by making a user API call
-		req, err := http.NewRequestWithContext(ctx, "GET", c.provider.GetUserInfoURL(), nil)
-		if err != nil {
-			return fmt.Errorf("failed to create request: %w", err)
-		}
-
-		resp, err := client.Do(req)
-		if err != nil {
-			return fmt.Errorf("failed to validate token: %w", err)
-		}
-		defer resp.Body.Close()
-
-		if resp.StatusCode != http.StatusOK {
-			return fmt.Errorf("token validation failed: status %d", resp.StatusCode)
-		}
-
 	default:
 		// For unknown providers, just check if we can make a user info request
 		req, err := http.NewRequestWithContext(ctx, "GET", c.provider.GetUserInfoURL(), nil)

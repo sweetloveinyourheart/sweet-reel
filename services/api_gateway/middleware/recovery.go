@@ -1,15 +1,14 @@
 package middleware
 
 import (
-	"encoding/json"
-	"fmt"
 	"net/http"
 	"runtime/debug"
-	"time"
 
 	"go.uber.org/zap"
 
 	"github.com/sweetloveinyourheart/sweet-reel/pkg/logger"
+	"github.com/sweetloveinyourheart/sweet-reel/services/api_gateway/errors"
+	"github.com/sweetloveinyourheart/sweet-reel/services/api_gateway/helpers"
 )
 
 // RecoveryMiddleware creates a recovery middleware that handles panics
@@ -27,19 +26,11 @@ func RecoveryMiddleware(next http.Handler) http.Handler {
 					zap.String("stack", string(debug.Stack())),
 				)
 
-				w.Header().Set("Content-Type", "application/json")
-				w.WriteHeader(http.StatusInternalServerError)
-
-				response := map[string]any{
-					"error":     "Internal Server Error",
-					"message":   "An unexpected error occurred",
-					"requestId": requestID,
-					"timestamp": time.Now().UTC(),
-				}
-
-				if err := json.NewEncoder(w).Encode(response); err != nil {
-					http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-				}
+				helpers.WriteErrorResponse(w, errors.NewHTTPError(
+					http.StatusInternalServerError,
+					errors.ErrInternalServer.Message,
+					errors.ErrInternalServer.Code,
+				))
 			}
 		}()
 
@@ -83,20 +74,11 @@ func NewRecoveryMiddleware(config RecoveryConfig) func(http.Handler) http.Handle
 					w.Header().Set("Content-Type", "application/json")
 					w.WriteHeader(http.StatusInternalServerError)
 
-					response := map[string]any{
-						"error":     "Internal Server Error",
-						"message":   "An unexpected error occurred",
-						"requestId": requestID,
-						"timestamp": time.Now().UTC(),
-					}
-
-					if config.EnableStackTrace {
-						response["stack"] = fmt.Sprintf("%v", err)
-					}
-
-					if encodeErr := json.NewEncoder(w).Encode(response); encodeErr != nil {
-						http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-					}
+					helpers.WriteErrorResponse(w, errors.NewHTTPError(
+						http.StatusInternalServerError,
+						errors.ErrInternalServer.Message,
+						errors.ErrInternalServer.Code,
+					))
 				}
 			}()
 

@@ -58,12 +58,6 @@
     path: auth.grpc.port
     env:
     - AUTH_GRPC_PORT
-  - name: http://user:50065
-    usage: AUTH_USER_SERVER_URL
-    default: User server connection URL
-    valueType: string
-    path: auth.user_server.url
-    env: []
   - name: id
     usage: Unique identifier for this services
     default: ""
@@ -78,6 +72,13 @@
     path: auth.secrets.token_signing_key
     env:
     - AUTH_SECRETS_TOKEN_SIGNING_KEY
+  - name: user-server-url
+    usage: User server connection URL
+    default: http://user:50065
+    valueType: string
+    path: auth.user_server.url
+    env:
+    - AUTH_USER_SERVER_URL
   - name: healthcheck-host
     usage: Host to listen on for services that support a health check
     default: localhost

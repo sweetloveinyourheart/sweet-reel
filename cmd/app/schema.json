@@ -40,6 +40,16 @@
     "defaultDatabaseName": "",
     "Config": [
       {
+        "name": "auth-server-url",
+        "usage": "Auth server connection URL",
+        "default": "http://auth:50070",
+        "valueType": "string",
+        "path": "api_gateway.auth_server.url",
+        "env": [
+          "API_GATEWAY_AUTH_SERVER_URL"
+        ]
+      },
+      {
         "name": "http-port",
         "usage": "HTTP Port to listen on",
         "default": 8080,
@@ -202,14 +212,6 @@
         ]
       },
       {
-        "name": "http://user:50065",
-        "usage": "AUTH_USER_SERVER_URL",
-        "default": "User server connection URL",
-        "valueType": "string",
-        "path": "auth.user_server.url",
-        "env": null
-      },
-      {
         "name": "id",
         "usage": "Unique identifier for this services",
         "default": "",
@@ -227,6 +229,16 @@
         "path": "auth.secrets.token_signing_key",
         "env": [
           "AUTH_SECRETS_TOKEN_SIGNING_KEY"
+        ]
+      },
+      {
+        "name": "user-server-url",
+        "usage": "User server connection URL",
+        "default": "http://user:50065",
+        "valueType": "string",
+        "path": "auth.user_server.url",
+        "env": [
+          "AUTH_USER_SERVER_URL"
         ]
       },
       {

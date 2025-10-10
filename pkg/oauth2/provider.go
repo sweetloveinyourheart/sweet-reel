@@ -9,7 +9,6 @@ type ProviderType string
 
 const (
 	ProviderGoogle ProviderType = "google"
-	ProviderGitHub ProviderType = "github"
 )
 
 // Provider interface abstracts OAuth2 provider differences

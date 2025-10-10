@@ -2,6 +2,7 @@ package errors
 
 import (
 	"errors"
+	"net/http"
 )
 
 // Authentication errors
@@ -33,7 +34,6 @@ var (
 // API Gateway specific errors
 var (
 	ErrRouteNotFound     = errors.New("route not found")
-	ErrMethodNotAllowed  = errors.New("method not allowed")
 	ErrRateLimitExceeded = errors.New("rate limit exceeded")
 )
 
@@ -58,27 +58,90 @@ func NewAPIError(code, message, details string) *APIError {
 	}
 }
 
+// HTTPError represents an HTTP error with status code and details
+type HTTPError struct {
+	StatusCode int    `json:"-"`
+	Message    string `json:"message"`
+	Code       string `json:"code"`
+}
+
+func (e *HTTPError) Error() string {
+	return e.Message
+}
+
+// NewHTTPError creates a new HTTP error
+func NewHTTPError(statusCode int, message, code string) *HTTPError {
+	return &HTTPError{
+		StatusCode: statusCode,
+		Message:    message,
+		Code:       code,
+	}
+}
+
+// HTTP status error variables for helper functions
+var (
+	ErrHTTPBadRequest = &HTTPError{
+		StatusCode: http.StatusBadRequest,
+		Message:    "Bad Request",
+		Code:       "BAD_REQUEST",
+	}
+
+	ErrHTTPUnauthorized = &HTTPError{
+		StatusCode: http.StatusUnauthorized,
+		Message:    "Unauthorized",
+		Code:       "UNAUTHORIZED",
+	}
+
+	ErrHTTPForbidden = &HTTPError{
+		StatusCode: http.StatusForbidden,
+		Message:    "Forbidden",
+		Code:       "FORBIDDEN",
+	}
+
+	ErrHTTPNotFound = &HTTPError{
+		StatusCode: http.StatusNotFound,
+		Message:    "Not Found",
+		Code:       "NOT_FOUND",
+	}
+
+	ErrHTTPMethodNotAllowed = &HTTPError{
+		StatusCode: http.StatusMethodNotAllowed,
+		Message:    "Method Not Allowed",
+		Code:       "METHOD_NOT_ALLOWED",
+	}
+
+	ErrHTTPInternalServer = &HTTPError{
+		StatusCode: http.StatusInternalServerError,
+		Message:    "Internal Server Error",
+		Code:       "INTERNAL_ERROR",
+	}
+)
+
 // Common API errors
 var (
+	ErrBadRequest = &APIError{
+		Code:    "BAD_REQUEST",
+		Message: "Bad Request",
+	}
 	ErrUnauthorized = &APIError{
 		Code:    "UNAUTHORIZED",
-		Message: "Authentication required",
+		Message: "Unauthorized",
 	}
 	ErrForbidden = &APIError{
 		Code:    "FORBIDDEN",
-		Message: "Access denied",
+		Message: "Forbidden",
 	}
 	ErrNotFound = &APIError{
 		Code:    "NOT_FOUND",
-		Message: "Resource not found",
+		Message: "Not Found",
 	}
-	ErrBadRequest = &APIError{
-		Code:    "BAD_REQUEST",
-		Message: "Invalid request",
+	ErrMethodNotAllowed = &APIError{
+		Code:    "METHOD_NOT_ALLOWED",
+		Message: "Method Not Allowed",
 	}
 	ErrInternalServer = &APIError{
-		Code:    "INTERNAL_SERVER_ERROR",
-		Message: "Internal server error",
+		Code:    "INTERNAL_ERROR",
+		Message: "Internal Server Error",
 	}
 	ErrServiceDown = &APIError{
 		Code:    "SERVICE_UNAVAILABLE",
@@ -111,5 +174,10 @@ var (
 	ErrAuthNoPermissions = &APIError{
 		Code:    "AUTH_NO_PERMISSIONS",
 		Message: "Access denied: no permissions found",
+	}
+
+	ErrOAuthLoginFailed = &APIError{
+		Code:    "OAUTH_LOGIN_FAILED",
+		Message: "Login failed",
 	}
 )
