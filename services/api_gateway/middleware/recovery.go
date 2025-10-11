@@ -8,7 +8,6 @@ import (
 
 	"github.com/sweetloveinyourheart/sweet-reel/pkg/logger"
 	"github.com/sweetloveinyourheart/sweet-reel/services/api_gateway/errors"
-	"github.com/sweetloveinyourheart/sweet-reel/services/api_gateway/helpers"
 )
 
 // RecoveryMiddleware creates a recovery middleware that handles panics
@@ -26,11 +25,9 @@ func RecoveryMiddleware(next http.Handler) http.Handler {
 					zap.String("stack", string(debug.Stack())),
 				)
 
-				helpers.WriteErrorResponse(w, errors.NewHTTPError(
-					http.StatusInternalServerError,
+				writeErrorResponse(w, http.StatusInternalServerError,
 					errors.ErrInternalServer.Message,
-					errors.ErrInternalServer.Code,
-				))
+					errors.ErrInternalServer.Code)
 			}
 		}()
 
@@ -71,14 +68,9 @@ func NewRecoveryMiddleware(config RecoveryConfig) func(http.Handler) http.Handle
 
 					logger.Global().Error("Panic recovered", fields...)
 
-					w.Header().Set("Content-Type", "application/json")
-					w.WriteHeader(http.StatusInternalServerError)
-
-					helpers.WriteErrorResponse(w, errors.NewHTTPError(
-						http.StatusInternalServerError,
+					writeErrorResponse(w, http.StatusInternalServerError,
 						errors.ErrInternalServer.Message,
-						errors.ErrInternalServer.Code,
-					))
+						errors.ErrInternalServer.Code)
 				}
 			}()
 

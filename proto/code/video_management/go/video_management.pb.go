@@ -26,6 +26,7 @@ type PresignedUrlRequest struct {
 	Title         string                 `protobuf:"bytes,1,opt,name=title,proto3" json:"title,omitempty"`
 	Description   string                 `protobuf:"bytes,2,opt,name=description,proto3" json:"description,omitempty"`
 	FileName      string                 `protobuf:"bytes,3,opt,name=file_name,json=fileName,proto3" json:"file_name,omitempty"`
+	UploaderId    string                 `protobuf:"bytes,4,opt,name=uploader_id,json=uploaderId,proto3" json:"uploader_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -77,6 +78,13 @@ func (x *PresignedUrlRequest) GetDescription() string {
 func (x *PresignedUrlRequest) GetFileName() string {
 	if x != nil {
 		return x.FileName
+	}
+	return ""
+}
+
+func (x *PresignedUrlRequest) GetUploaderId() string {
+	if x != nil {
+		return x.UploaderId
 	}
 	return ""
 }
@@ -145,11 +153,13 @@ var File_video_management_proto protoreflect.FileDescriptor
 
 const file_video_management_proto_rawDesc = "" +
 	"\n" +
-	"\x16video_management.proto\x12:com.sweetloveinyourheart.srl.videomanagement.dataproviders\"j\n" +
+	"\x16video_management.proto\x12:com.sweetloveinyourheart.srl.videomanagement.dataproviders\"\x8b\x01\n" +
 	"\x13PresignedUrlRequest\x12\x14\n" +
 	"\x05title\x18\x01 \x01(\tR\x05title\x12 \n" +
 	"\vdescription\x18\x02 \x01(\tR\vdescription\x12\x1b\n" +
-	"\tfile_name\x18\x03 \x01(\tR\bfileName\"u\n" +
+	"\tfile_name\x18\x03 \x01(\tR\bfileName\x12\x1f\n" +
+	"\vuploader_id\x18\x04 \x01(\tR\n" +
+	"uploaderId\"u\n" +
 	"\x14PresignedUrlResponse\x12\x19\n" +
 	"\bvideo_id\x18\x01 \x01(\tR\avideoId\x12#\n" +
 	"\rpresigned_url\x18\x02 \x01(\tR\fpresignedUrl\x12\x1d\n" +

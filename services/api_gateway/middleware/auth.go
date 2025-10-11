@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
 	"slices"
 	"strings"
@@ -9,7 +10,6 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 
 	"github.com/sweetloveinyourheart/sweet-reel/services/api_gateway/errors"
-	"github.com/sweetloveinyourheart/sweet-reel/services/api_gateway/helpers"
 )
 
 type contextKey string
@@ -50,19 +50,17 @@ func NewAuthMiddleware(config AuthConfig) func(http.Handler) http.Handler {
 
 			token, err := extractToken(r, config)
 			if err != nil {
-				helpers.WriteErrorResponse(w, errors.NewHTTPError(
-					http.StatusUnauthorized,
+				writeErrorResponse(w, http.StatusUnauthorized,
 					errors.ErrAuthenticationTokenRequired.Message,
-					errors.ErrAuthenticationTokenRequired.Code))
+					errors.ErrAuthenticationTokenRequired.Code)
 				return
 			}
 
 			claims, err := validateToken(token, config.SigningKey)
 			if err != nil {
-				helpers.WriteErrorResponse(w, errors.NewHTTPError(http.StatusUnauthorized,
+				writeErrorResponse(w, http.StatusUnauthorized,
 					errors.ErrAuthenticationTokenInvalid.Message,
-					errors.ErrAuthenticationTokenInvalid.Code,
-				))
+					errors.ErrAuthenticationTokenInvalid.Code)
 				return
 			}
 
@@ -158,10 +156,9 @@ func RequireRole(roles ...string) func(http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			userRoles, ok := r.Context().Value(RolesContextKey).([]any)
 			if !ok {
-				helpers.WriteErrorResponse(w, errors.NewHTTPError(
-					http.StatusForbidden,
+				writeErrorResponse(w, http.StatusForbidden,
 					errors.ErrAuthNoRoles.Message,
-					errors.ErrAuthNoRoles.Code))
+					errors.ErrAuthNoRoles.Code)
 				return
 			}
 
@@ -180,10 +177,9 @@ func RequireRole(roles ...string) func(http.Handler) http.Handler {
 				}
 			}
 
-			helpers.WriteErrorResponse(w, errors.NewHTTPError(
-				http.StatusForbidden,
+			writeErrorResponse(w, http.StatusForbidden,
 				errors.ErrAuthInsufficientPermissions.Message,
-				errors.ErrAuthInsufficientPermissions.Code))
+				errors.ErrAuthInsufficientPermissions.Code)
 		})
 	}
 }
@@ -194,9 +190,9 @@ func RequirePermission(permissions ...string) func(http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			userPermissions, ok := r.Context().Value(PermissionsContextKey).([]any)
 			if !ok {
-				helpers.WriteErrorResponse(w, errors.NewHTTPError(http.StatusForbidden,
+				writeErrorResponse(w, http.StatusForbidden,
 					errors.ErrAuthNoPermissions.Message,
-					errors.ErrAuthNoPermissions.Code))
+					errors.ErrAuthNoPermissions.Code)
 				return
 			}
 
@@ -214,9 +210,24 @@ func RequirePermission(permissions ...string) func(http.Handler) http.Handler {
 				}
 			}
 
-			helpers.WriteErrorResponse(w, errors.NewHTTPError(http.StatusForbidden,
+			writeErrorResponse(w, http.StatusForbidden,
 				errors.ErrAuthInsufficientPermissions.Message,
-				errors.ErrAuthInsufficientPermissions.Code))
+				errors.ErrAuthInsufficientPermissions.Code)
 		})
+	}
+}
+
+// writeErrorResponse writes an error response in JSON format
+func writeErrorResponse(w http.ResponseWriter, statusCode int, message, code string) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(statusCode)
+
+	response := map[string]string{
+		"error": message,
+		"code":  code,
+	}
+
+	if err := json.NewEncoder(w).Encode(response); err != nil {
+		http.Error(w, message, statusCode)
 	}
 }

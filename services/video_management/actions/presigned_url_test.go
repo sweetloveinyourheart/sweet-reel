@@ -12,7 +12,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
-	"github.com/sweetloveinyourheart/sweet-reel/pkg/grpc"
 	"github.com/sweetloveinyourheart/sweet-reel/pkg/s3"
 	proto "github.com/sweetloveinyourheart/sweet-reel/proto/code/video_management/go"
 	"github.com/sweetloveinyourheart/sweet-reel/services/video_management/actions"
@@ -22,15 +21,15 @@ import (
 func (as *ActionsSuite) TestActions_PresignedUrl_Success() {
 	as.setupEnvironment()
 
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
 	// Setup test data
 	userID := uuid.Must(uuid.NewV7())
 	title := "Test Video"
 	description := "Test video description"
 	fileName := "test-video.mp4"
 	expectedURL := "https://s3.example.com/presigned-url"
-
-	// Setup context with auth token
-	ctx := context.WithValue(context.Background(), grpc.AuthToken, userID)
 
 	// Setup mock expectations
 	as.mockS3.On("GenerateUploadPublicUri",
@@ -57,6 +56,7 @@ func (as *ActionsSuite) TestActions_PresignedUrl_Success() {
 			Title:       title,
 			Description: description,
 			FileName:    fileName,
+			UploaderId:  userID.String(),
 		},
 	}
 
@@ -83,14 +83,14 @@ func (as *ActionsSuite) TestActions_PresignedUrl_Success() {
 func (as *ActionsSuite) TestActions_PresignedUrl_Success_WithoutDescription() {
 	as.setupEnvironment()
 
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
 	// Setup test data
 	userID := uuid.Must(uuid.NewV7())
 	title := "Test Video Without Description"
 	fileName := "test-video.mp4"
 	expectedURL := "https://s3.example.com/presigned-url"
-
-	// Setup context with auth token
-	ctx := context.WithValue(context.Background(), grpc.AuthToken, userID)
 
 	// Setup mock expectations
 	as.mockS3.On("GenerateUploadPublicUri",
@@ -108,8 +108,9 @@ func (as *ActionsSuite) TestActions_PresignedUrl_Success_WithoutDescription() {
 	// Setup request without description
 	request := &connect.Request[proto.PresignedUrlRequest]{
 		Msg: &proto.PresignedUrlRequest{
-			Title:    title,
-			FileName: fileName,
+			Title:      title,
+			FileName:   fileName,
+			UploaderId: userID.String(),
 		},
 	}
 
@@ -128,44 +129,11 @@ func (as *ActionsSuite) TestActions_PresignedUrl_Success_WithoutDescription() {
 	as.mockVideoRepository.AssertExpectations(as.T())
 }
 
-func (as *ActionsSuite) TestActions_PresignedUrl_UnauthenticatedError() {
-	as.setupEnvironment()
-
-	// Setup context without auth token
-	ctx := context.Background()
-
-	// Setup request
-	request := &connect.Request[proto.PresignedUrlRequest]{
-		Msg: &proto.PresignedUrlRequest{
-			Title:    "Test Video",
-			FileName: "test-video.mp4",
-		},
-	}
-
-	// Execute
-	actionsInstance := actions.NewActions(ctx, "test-token")
-	response, err := actionsInstance.PresignedUrl(ctx, request)
-
-	// Assertions
-	assert.Error(as.T(), err)
-	assert.Nil(as.T(), response)
-
-	// Verify error is unauthenticated
-	var connectErr *connect.Error
-	assert.True(as.T(), errors.As(err, &connectErr))
-	assert.Equal(as.T(), connect.CodeUnauthenticated, connectErr.Code())
-
-	// Verify no mocks were called
-	as.mockS3.AssertNotCalled(as.T(), "GenerateUploadPublicUri")
-	as.mockVideoRepository.AssertNotCalled(as.T(), "CreateVideo")
-}
-
 func (as *ActionsSuite) TestActions_PresignedUrl_InvalidFileName_NoExtension() {
 	as.setupEnvironment()
 
-	// Setup test data
-	userID := uuid.Must(uuid.NewV7())
-	ctx := context.WithValue(context.Background(), grpc.AuthToken, userID)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
 
 	// Setup request with filename without extension
 	request := &connect.Request[proto.PresignedUrlRequest]{
@@ -196,9 +164,8 @@ func (as *ActionsSuite) TestActions_PresignedUrl_InvalidFileName_NoExtension() {
 func (as *ActionsSuite) TestActions_PresignedUrl_InvalidFileName_Empty() {
 	as.setupEnvironment()
 
-	// Setup test data
-	userID := uuid.Must(uuid.NewV7())
-	ctx := context.WithValue(context.Background(), grpc.AuthToken, userID)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
 
 	// Setup request with empty filename
 	request := &connect.Request[proto.PresignedUrlRequest]{
@@ -229,9 +196,8 @@ func (as *ActionsSuite) TestActions_PresignedUrl_InvalidFileName_Empty() {
 func (as *ActionsSuite) TestActions_PresignedUrl_VideoValidationError() {
 	as.setupEnvironment()
 
-	// Setup test data
-	userID := uuid.Must(uuid.NewV7())
-	ctx := context.WithValue(context.Background(), grpc.AuthToken, userID)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
 
 	// Setup request with empty title (will cause validation error)
 	request := &connect.Request[proto.PresignedUrlRequest]{
@@ -262,14 +228,14 @@ func (as *ActionsSuite) TestActions_PresignedUrl_VideoValidationError() {
 func (as *ActionsSuite) TestActions_PresignedUrl_S3GenerateUrlError() {
 	as.setupEnvironment()
 
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
 	// Setup test data
 	userID := uuid.Must(uuid.NewV7())
 	title := "Test Video"
 	fileName := "test-video.mp4"
 	s3Error := errors.New("S3 service unavailable")
-
-	// Setup context with auth token
-	ctx := context.WithValue(context.Background(), grpc.AuthToken, userID)
 
 	// Setup mock expectations - S3 fails
 	as.mockS3.On("GenerateUploadPublicUri",
@@ -280,8 +246,9 @@ func (as *ActionsSuite) TestActions_PresignedUrl_S3GenerateUrlError() {
 	// Setup request
 	request := &connect.Request[proto.PresignedUrlRequest]{
 		Msg: &proto.PresignedUrlRequest{
-			Title:    title,
-			FileName: fileName,
+			Title:      title,
+			FileName:   fileName,
+			UploaderId: userID.String(),
 		},
 	}
 
@@ -306,15 +273,15 @@ func (as *ActionsSuite) TestActions_PresignedUrl_S3GenerateUrlError() {
 func (as *ActionsSuite) TestActions_PresignedUrl_DatabaseError() {
 	as.setupEnvironment()
 
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
 	// Setup test data
 	userID := uuid.Must(uuid.NewV7())
 	title := "Test Video"
 	fileName := "test-video.mp4"
 	expectedURL := "https://s3.example.com/presigned-url"
 	dbError := errors.New("database connection failed")
-
-	// Setup context with auth token
-	ctx := context.WithValue(context.Background(), grpc.AuthToken, userID)
 
 	// Setup mock expectations
 	as.mockS3.On("GenerateUploadPublicUri",
@@ -327,8 +294,9 @@ func (as *ActionsSuite) TestActions_PresignedUrl_DatabaseError() {
 	// Setup request
 	request := &connect.Request[proto.PresignedUrlRequest]{
 		Msg: &proto.PresignedUrlRequest{
-			Title:    title,
-			FileName: fileName,
+			Title:      title,
+			FileName:   fileName,
+			UploaderId: userID.String(),
 		},
 	}
 
@@ -353,14 +321,14 @@ func (as *ActionsSuite) TestActions_PresignedUrl_DatabaseError() {
 func (as *ActionsSuite) TestActions_PresignedUrl_KeyGeneration() {
 	as.setupEnvironment()
 
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
 	// Setup test data
 	userID := uuid.Must(uuid.NewV7())
 	title := "Test Video"
 	fileName := "test-video.mp4"
 	expectedURL := "https://s3.example.com/presigned-url"
-
-	// Setup context with auth token
-	ctx := context.WithValue(context.Background(), grpc.AuthToken, userID)
 
 	// Capture the generated key for validation
 	var capturedKey string
@@ -377,8 +345,9 @@ func (as *ActionsSuite) TestActions_PresignedUrl_KeyGeneration() {
 	// Setup request
 	request := &connect.Request[proto.PresignedUrlRequest]{
 		Msg: &proto.PresignedUrlRequest{
-			Title:    title,
-			FileName: fileName,
+			Title:      title,
+			FileName:   fileName,
+			UploaderId: userID.String(),
 		},
 	}
 
@@ -424,7 +393,9 @@ func (as *ActionsSuite) TestActions_PresignedUrl_DifferentFileExtensions() {
 			as.mockVideoRepository.ExpectedCalls = nil
 
 			userID := uuid.Must(uuid.NewV7())
-			ctx := context.WithValue(context.Background(), grpc.AuthToken, userID)
+
+			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+			defer cancel()
 
 			if tc.shouldSucceed {
 				// Setup successful mocks
@@ -440,8 +411,9 @@ func (as *ActionsSuite) TestActions_PresignedUrl_DifferentFileExtensions() {
 
 			request := &connect.Request[proto.PresignedUrlRequest]{
 				Msg: &proto.PresignedUrlRequest{
-					Title:    "Test Video",
-					FileName: tc.fileName,
+					Title:      "Test Video",
+					FileName:   tc.fileName,
+					UploaderId: userID.String(),
 				},
 			}
 
