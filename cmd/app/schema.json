@@ -80,6 +80,26 @@
         ]
       },
       {
+        "name": "user-server-url",
+        "usage": "User server connection URL",
+        "default": "http://user:50065",
+        "valueType": "string",
+        "path": "api_gateway.user_server.url",
+        "env": [
+          "API_GATEWAY_USER_SERVER_URL"
+        ]
+      },
+      {
+        "name": "video-management-url",
+        "usage": "Video Management server connection URL",
+        "default": "http://user:50060",
+        "valueType": "string",
+        "path": "api_gateway.video_management.url",
+        "env": [
+          "API_GATEWAY_VIDEO_MANAGEMENT_SERVER_URL"
+        ]
+      },
+      {
         "name": "healthcheck-host",
         "usage": "Host to listen on for services that support a health check",
         "default": "localhost",

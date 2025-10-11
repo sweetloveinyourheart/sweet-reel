@@ -38,11 +38,13 @@ app api_gateway [flags]
 ### Options
 
 ```
-      --auth-server-url string     Auth server connection URL (default "http://auth:50070")
-  -h, --help                       help for api_gateway
-      --http-port int              HTTP Port to listen on (default 8080)
-      --id string                  Unique identifier for this services
-      --token-signing-key string   Signing key used for service to service tokens
+      --auth-server-url string        Auth server connection URL (default "http://auth:50070")
+  -h, --help                          help for api_gateway
+      --http-port int                 HTTP Port to listen on (default 8080)
+      --id string                     Unique identifier for this services
+      --token-signing-key string      Signing key used for service to service tokens
+      --user-server-url string        User server connection URL (default "http://user:50065")
+      --video-management-url string   Video Management server connection URL (default "http://user:50060")
 ```
 
 ### Environment Variables
@@ -51,6 +53,8 @@ app api_gateway [flags]
 - API_GATEWAY_HTTP_PORT :: `api_gateway.http.port` HTTP Port to listen on
 - API_GATEWAY_ID :: `api_gateway.id` Unique identifier for this services
 - API_GATEWAY_SECRETS_TOKEN_SIGNING_KEY :: `api_gateway.secrets.token_signing_key` Signing key used for service to service tokens
+- API_GATEWAY_USER_SERVER_URL :: `api_gateway.user_server.url` User server connection URL
+- API_GATEWAY_VIDEO_MANAGEMENT_SERVER_URL :: `api_gateway.video_management.url` Video Management server connection URL
 ```
 
 ### Options inherited from parent commands
