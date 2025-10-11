@@ -31,6 +31,7 @@
 | title | [string](#string) |  |  |
 | description | [string](#string) |  |  |
 | file_name | [string](#string) |  |  |
+| uploader_id | [string](#string) |  |  |
 
 
 

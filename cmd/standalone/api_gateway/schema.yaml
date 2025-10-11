@@ -67,7 +67,7 @@
     - API_GATEWAY_USER_SERVER_URL
   - name: video-management-url
     usage: Video Management server connection URL
-    default: http://user:50060
+    default: http://video_management:50060
     valueType: string
     path: api_gateway.video_management.url
     env:

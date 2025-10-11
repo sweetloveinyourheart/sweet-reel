@@ -6,14 +6,6 @@ import (
 	"github.com/sweetloveinyourheart/sweet-reel/services/api_gateway/middleware"
 )
 
-// GetAuthToken returns the authentication token from the request context.
-func GetAuthToken(r *http.Request) string {
-	if token, ok := r.Context().Value(middleware.AuthTokenKey).(string); ok {
-		return token
-	}
-	return ""
-}
-
 // GetClaims returns the full claims map from the request context.
 func GetClaims(r *http.Request) map[string]any {
 	if claims, ok := r.Context().Value(middleware.UserContextKey).(map[string]any); ok {

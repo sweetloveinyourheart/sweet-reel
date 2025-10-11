@@ -26,9 +26,9 @@ const (
 )
 
 func (a *actions) PresignedUrl(ctx context.Context, request *connect.Request[proto.PresignedUrlRequest]) (*connect.Response[proto.PresignedUrlResponse], error) {
-	userID, ok := ctx.Value(grpc.AuthToken).(uuid.UUID)
-	if !ok {
-		return nil, grpc.UnauthenticatedError(errors.New("invalid session"))
+	uploaderID := uuid.FromStringOrNil(request.Msg.GetUploaderId())
+	if uploaderID == uuid.Nil {
+		return nil, grpc.InvalidArgumentError(errors.Errorf("uploader id is not recognized, id: ", request.Msg.GetUploaderId()))
 	}
 
 	filename, ext := s3.ExtractFilenameAndExt(request.Msg.GetFileName())
@@ -46,7 +46,7 @@ func (a *actions) PresignedUrl(ctx context.Context, request *connect.Request[pro
 		Title:       request.Msg.GetTitle(),
 		Description: description,
 		Status:      models.VideoStatusReady,
-		UploaderID:  userID,
+		UploaderID:  uploaderID,
 	}
 
 	if err := newVideo.Validate(); err != nil {
@@ -67,7 +67,7 @@ func (a *actions) PresignedUrl(ctx context.Context, request *connect.Request[pro
 	if err := a.videoRepo.CreateVideo(ctx, &newVideo); err != nil {
 		logger.Global().Error("Failed to create video in database",
 			zap.String("videoID", newVideo.GetID().String()),
-			zap.String("userID", userID.String()),
+			zap.String("uploaderID", uploaderID.String()),
 			zap.Error(err))
 		return nil, grpc.InternalError(err)
 	}

@@ -13,11 +13,6 @@ import (
 )
 
 func (a *actions) GetUserByID(ctx context.Context, request *connect.Request[proto.GetUserByIDRequest]) (*connect.Response[proto.GetUserByIDResponse], error) {
-	_, ok := ctx.Value(grpc.AuthToken).(uuid.UUID)
-	if !ok {
-		return nil, grpc.UnauthenticatedError(errors.New("invalid session"))
-	}
-
 	userID := uuid.FromStringOrNil(request.Msg.GetUserId())
 	if userID == uuid.Nil {
 		return nil, grpc.InvalidArgumentError(errors.New("invalid user id"))

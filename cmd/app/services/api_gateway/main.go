@@ -69,7 +69,7 @@ func Command(rootCmd *cobra.Command) *cobra.Command {
 	config.Int64Default(apiGatewayCommand, fmt.Sprintf("%s.http.port", serviceType), "http-port", DEFAULT_API_GATEWAY_HTTP_PORT, "HTTP Port to listen on", "API_GATEWAY_HTTP_PORT")
 	config.StringDefault(apiGatewayCommand, fmt.Sprintf("%s.auth_server.url", serviceType), "auth-server-url", "http://auth:50070", "Auth server connection URL", "API_GATEWAY_AUTH_SERVER_URL")
 	config.StringDefault(apiGatewayCommand, fmt.Sprintf("%s.user_server.url", serviceType), "user-server-url", "http://user:50065", "User server connection URL", "API_GATEWAY_USER_SERVER_URL")
-	config.StringDefault(apiGatewayCommand, fmt.Sprintf("%s.video_management.url", serviceType), "video-management-url", "http://user:50060", "Video Management server connection URL", "API_GATEWAY_VIDEO_MANAGEMENT_SERVER_URL")
+	config.StringDefault(apiGatewayCommand, fmt.Sprintf("%s.video_management.url", serviceType), "video-management-url", "http://video_management:50060", "Video Management server connection URL", "API_GATEWAY_VIDEO_MANAGEMENT_SERVER_URL")
 
 	cmdutil.BoilerplateFlagsCore(apiGatewayCommand, serviceType, envPrefix)
 	cmdutil.BoilerplateSecureFlags(apiGatewayCommand, serviceType)
@@ -109,7 +109,7 @@ func setupDependencies(ctx context.Context) error {
 
 	videoManagementClient := videoManagementConnect.NewVideoManagementClient(
 		http.DefaultClient,
-		config.Instance().GetString(fmt.Sprintf("%s.video_management_server.url", serviceType)),
+		config.Instance().GetString(fmt.Sprintf("%s.video_management.url", serviceType)),
 		connect.WithInterceptors(interceptors.CommonConnectClientInterceptors(
 			serviceType,
 			config.Instance().GetString(fmt.Sprintf("%s.secrets.token_signing_key", serviceType)),

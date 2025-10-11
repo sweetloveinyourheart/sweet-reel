@@ -15,7 +15,6 @@ import (
 type contextKey string
 
 const (
-	AuthTokenKey          contextKey = "authToken"
 	UserContextKey        contextKey = "user"
 	UserIDContextKey      contextKey = "userID"
 	RolesContextKey       contextKey = "roles"
@@ -66,7 +65,6 @@ func NewAuthMiddleware(config AuthConfig) func(http.Handler) http.Handler {
 			}
 
 			ctx := r.Context()
-			ctx = context.WithValue(ctx, AuthTokenKey, token)
 			ctx = context.WithValue(ctx, UserContextKey, claims)
 			if userID, ok := claims["user_id"]; ok {
 				ctx = context.WithValue(ctx, UserIDContextKey, userID)

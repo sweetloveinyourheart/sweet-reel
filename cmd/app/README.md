@@ -44,7 +44,7 @@ app api_gateway [flags]
       --id string                     Unique identifier for this services
       --token-signing-key string      Signing key used for service to service tokens
       --user-server-url string        User server connection URL (default "http://user:50065")
-      --video-management-url string   Video Management server connection URL (default "http://user:50060")
+      --video-management-url string   Video Management server connection URL (default "http://video_management:50060")
 ```
 
 ### Environment Variables

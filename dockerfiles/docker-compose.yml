@@ -199,6 +199,11 @@ services:
       "VIDEO_MANAGEMENT_SECRETS_TOKEN_SIGNING_KEY": "secr3t_k3y"
       "VIDEO_MANAGEMENT_GRPC_PORT": 50060
       "VIDEO_MANAGEMENT_DB_URL": "postgres://root_admin:admin@123@srl_database:5432/video-management?sslmode=disable"
+      "VIDEO_MANAGEMENT_AWS_S3_REGION": "us-east-1"
+      "VIDEO_MANAGEMENT_AWS_S3_ACCESS_ID": "sweetreel"
+      "VIDEO_MANAGEMENT_AWS_S3_SECRET": "sweetreel4000"
+      "VIDEO_MANAGEMENT_AWS_S3_BUCKET": "video_processing"
+      "VIDEO_MANAGEMENT_MINIO_URL": "http://172.16.244.140:9000"
     ports:
       - 50060:50060 # GRPC port
     networks:

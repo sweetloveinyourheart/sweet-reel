@@ -39,6 +39,7 @@ func NewVideoManagementHandler() IVideoManagementHandler {
 // GeneratePresignedURL handles POST /api/v1/videos/presigned-url
 func (h *VideoManagementHandler) GeneratePresignedURL(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
+	userID := helpers.GetUserID(r)
 
 	var body request.PresignedUrlRequestBody
 	err := helpers.ParseJSONBody(r, &body)
@@ -51,8 +52,8 @@ func (h *VideoManagementHandler) GeneratePresignedURL(w http.ResponseWriter, r *
 		Title:       body.Title,
 		Description: body.Description,
 		FileName:    body.FileName,
+		UploaderId:  userID,
 	})
-	presignedUrlReq.Header().Set("Authorization", helpers.GetAuthToken(r))
 
 	presignedUrlRes, err := h.videoManagementServiceClient.PresignedUrl(ctx, presignedUrlReq)
 	if err != nil {

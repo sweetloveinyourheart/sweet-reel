@@ -12,6 +12,7 @@ message PresignedUrlRequest {
     string title = 1;
     string description = 2;
     string file_name = 3;
+    string uploader_id = 4;
 }
 
 message PresignedUrlResponse {
