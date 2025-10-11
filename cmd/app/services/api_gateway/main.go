@@ -14,6 +14,8 @@ import (
 	"github.com/sweetloveinyourheart/sweet-reel/pkg/interceptors"
 	"github.com/sweetloveinyourheart/sweet-reel/pkg/logger"
 	authConnect "github.com/sweetloveinyourheart/sweet-reel/proto/code/auth/go/grpcconnect"
+	userConnect "github.com/sweetloveinyourheart/sweet-reel/proto/code/user/go/grpcconnect"
+	videoManagementConnect "github.com/sweetloveinyourheart/sweet-reel/proto/code/video_management/go/grpcconnect"
 	apigateway "github.com/sweetloveinyourheart/sweet-reel/services/api_gateway"
 )
 
@@ -66,6 +68,8 @@ func Command(rootCmd *cobra.Command) *cobra.Command {
 	// config options
 	config.Int64Default(apiGatewayCommand, fmt.Sprintf("%s.http.port", serviceType), "http-port", DEFAULT_API_GATEWAY_HTTP_PORT, "HTTP Port to listen on", "API_GATEWAY_HTTP_PORT")
 	config.StringDefault(apiGatewayCommand, fmt.Sprintf("%s.auth_server.url", serviceType), "auth-server-url", "http://auth:50070", "Auth server connection URL", "API_GATEWAY_AUTH_SERVER_URL")
+	config.StringDefault(apiGatewayCommand, fmt.Sprintf("%s.user_server.url", serviceType), "user-server-url", "http://user:50065", "User server connection URL", "API_GATEWAY_USER_SERVER_URL")
+	config.StringDefault(apiGatewayCommand, fmt.Sprintf("%s.video_management.url", serviceType), "video-management-url", "http://user:50060", "Video Management server connection URL", "API_GATEWAY_VIDEO_MANAGEMENT_SERVER_URL")
 
 	cmdutil.BoilerplateFlagsCore(apiGatewayCommand, serviceType, envPrefix)
 	cmdutil.BoilerplateSecureFlags(apiGatewayCommand, serviceType)
@@ -94,8 +98,34 @@ func setupDependencies(ctx context.Context) error {
 		)...),
 	)
 
+	userClient := userConnect.NewUserServiceClient(
+		http.DefaultClient,
+		config.Instance().GetString(fmt.Sprintf("%s.user_server.url", serviceType)),
+		connect.WithInterceptors(interceptors.CommonConnectClientInterceptors(
+			serviceType,
+			config.Instance().GetString(fmt.Sprintf("%s.secrets.token_signing_key", serviceType)),
+		)...),
+	)
+
+	videoManagementClient := videoManagementConnect.NewVideoManagementClient(
+		http.DefaultClient,
+		config.Instance().GetString(fmt.Sprintf("%s.video_management_server.url", serviceType)),
+		connect.WithInterceptors(interceptors.CommonConnectClientInterceptors(
+			serviceType,
+			config.Instance().GetString(fmt.Sprintf("%s.secrets.token_signing_key", serviceType)),
+		)...),
+	)
+
 	do.Provide(nil, func(i *do.Injector) (authConnect.AuthServiceClient, error) {
 		return authClient, nil
+	})
+
+	do.Provide(nil, func(i *do.Injector) (userConnect.UserServiceClient, error) {
+		return userClient, nil
+	})
+
+	do.Provide(nil, func(i *do.Injector) (videoManagementConnect.VideoManagementClient, error) {
+		return videoManagementClient, nil
 	})
 
 	return nil
