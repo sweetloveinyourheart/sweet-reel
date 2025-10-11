@@ -12,8 +12,8 @@ services:
     container_name: ${COMPOSE_PROJECT_NAME:-test}-minio_mock_s3
     hostname: minio_mock_s3
     ports:
-      - "9050:9000"
-      - "9051:9001"
+      - "9000:9000"
+      - "9001:9001"
     volumes:
       - ./minio/create_buckets.sh:/create_buckets.sh
       - ./minio_data_:/data
