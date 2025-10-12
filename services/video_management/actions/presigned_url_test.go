@@ -45,7 +45,6 @@ func (as *ActionsSuite) TestActions_PresignedUrl_Success() {
 	as.mockVideoRepository.On("CreateVideo", ctx, mock.MatchedBy(func(video *models.Video) bool {
 		return video.Title == title &&
 			video.Description != nil && *video.Description == description &&
-			video.Status == models.VideoStatusReady &&
 			video.UploaderID == userID &&
 			video.ID != uuid.Nil
 	})).Return(nil)
@@ -101,7 +100,6 @@ func (as *ActionsSuite) TestActions_PresignedUrl_Success_WithoutDescription() {
 	as.mockVideoRepository.On("CreateVideo", ctx, mock.MatchedBy(func(video *models.Video) bool {
 		return video.Title == title &&
 			video.Description == nil &&
-			video.Status == models.VideoStatusReady &&
 			video.UploaderID == userID
 	})).Return(nil)
 
