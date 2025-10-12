@@ -90,6 +90,21 @@ app video_management [flags]
       --grpc-port int                             GRPC Port to listen on (default 50060)
   -h, --help                                      help for video_management
       --id string                                 Unique identifier for this services
+      --kafka-brokers string                      Kafka broker addresses (comma-separated) (default "localhost:9092")
+      --kafka-compression string                  Compression codec (none, gzip, snappy, lz4, zstd) (default "snappy")
+      --kafka-flush-bytes int32                   Number of bytes to buffer before flushing (default 16384)
+      --kafka-flush-frequency-ms int              Frequency of flushing messages in milliseconds (default 500)
+      --kafka-flush-messages int32                Number of messages to buffer before flushing (default 100)
+      --kafka-idempotent-writes                   Enable idempotent writes (default true)
+      --kafka-max-open-requests int32             Max open requests (default 1)
+      --kafka-required-acks string                Required acknowledgments (none, leader, all) (default "all")
+      --kafka-retry-backoff-ms int                Backoff time between retries in milliseconds (default 100)
+      --kafka-retry-max int32                     Maximum number of retries for failed requests (default 3)
+      --kafka-sasl-mechanism string               SASL mechanism (PLAIN, SCRAM-SHA-256, SCRAM-SHA-512)
+      --kafka-sasl-password string                SASL password for authentication
+      --kafka-sasl-username string                SASL username for authentication
+      --kafka-security-protocol string            Security protocol (PLAINTEXT, SSL, SASL_PLAINTEXT, SASL_SSL) (default "PLAINTEXT")
+      --kafka-tls-enabled                         Enable TLS encryption
       --minio-url string                          MINIO URL
       --s3_bucket string                          s3 bucket
       --token-signing-key string                  Signing key used for service to service tokens
@@ -110,6 +125,21 @@ app video_management [flags]
 - VIDEO_MANAGEMENT_DB_URL :: `video_management.db.url` Database connection URL
 - VIDEO_MANAGEMENT_GRPC_PORT :: `video_management.grpc.port` GRPC Port to listen on
 - VIDEO_MANAGEMENT_ID :: `video_management.id` Unique identifier for this services
+- VIDEO_MANAGEMENT_KAFKA_BROKERS :: `video_management.kafka.brokers` Kafka broker addresses (comma-separated)
+- VIDEO_MANAGEMENT_KAFKA_COMPRESSION :: `video_management.kafka.compression` Compression codec (none, gzip, snappy, lz4, zstd)
+- VIDEO_MANAGEMENT_KAFKA_FLUSH_BYTES :: `video_management.kafka.flush_bytes` Number of bytes to buffer before flushing
+- VIDEO_MANAGEMENT_KAFKA_FLUSH_FREQUENCY_MS :: `video_management.kafka.flush_frequency_ms` Frequency of flushing messages in milliseconds
+- VIDEO_MANAGEMENT_KAFKA_FLUSH_MESSAGES :: `video_management.kafka.flush_messages` Number of messages to buffer before flushing
+- VIDEO_MANAGEMENT_KAFKA_IDEMPOTENT_WRITES :: `video_management.kafka.idempotent_writes` Enable idempotent writes
+- VIDEO_MANAGEMENT_KAFKA_MAX_OPEN_REQUESTS :: `video_management.kafka.max_open_requests` Max open requests
+- VIDEO_MANAGEMENT_KAFKA_REQUIRED_ACKS :: `video_management.kafka.required_acks` Required acknowledgments (none, leader, all)
+- VIDEO_MANAGEMENT_KAFKA_RETRY_BACKOFF_MS :: `video_management.kafka.retry_backoff_ms` Backoff time between retries in milliseconds
+- VIDEO_MANAGEMENT_KAFKA_RETRY_MAX :: `video_management.kafka.retry_max` Maximum number of retries for failed requests
+- VIDEO_MANAGEMENT_KAFKA_SASL_MECHANISM :: `video_management.kafka.sasl_mechanism` SASL mechanism (PLAIN, SCRAM-SHA-256, SCRAM-SHA-512)
+- VIDEO_MANAGEMENT_KAFKA_SASL_PASSWORD :: `video_management.kafka.sasl_password` SASL password for authentication
+- VIDEO_MANAGEMENT_KAFKA_SASL_USERNAME :: `video_management.kafka.sasl_username` SASL username for authentication
+- VIDEO_MANAGEMENT_KAFKA_SECURITY_PROTOCOL :: `video_management.kafka.security_protocol` Security protocol (PLAINTEXT, SSL, SASL_PLAINTEXT, SASL_SSL)
+- VIDEO_MANAGEMENT_KAFKA_TLS_ENABLED :: `video_management.kafka.tls_enabled` Enable TLS encryption
 - VIDEO_MANAGEMENT_MINIO_URL :: `video_management.minio.url` MINIO URL
 - VIDEO_MANAGEMENT_AWS_S3_BUCKET :: `video_management.aws.s3.bucket` s3 bucket
 - VIDEO_MANAGEMENT_SECRETS_TOKEN_SIGNING_KEY :: `video_management.secrets.token_signing_key` Signing key used for service to service tokens

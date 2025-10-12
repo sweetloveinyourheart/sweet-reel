@@ -81,6 +81,7 @@ func Command(rootCmd *cobra.Command) *cobra.Command {
 	config.StringDefault(videoManagementCommand, fmt.Sprintf("%s.minio.url", serviceType), "minio-url", "", "MINIO URL", "VIDEO_MANAGEMENT_MINIO_URL")
 
 	cmdutil.BoilerplateFlagsCore(videoManagementCommand, serviceType, envPrefix)
+	cmdutil.BoilerplateFlagsKafka(videoManagementCommand, serviceType, envPrefix)
 	cmdutil.BoilerplateFlagsDB(videoManagementCommand, serviceType, envPrefix)
 	cmdutil.BoilerplateSecureFlags(videoManagementCommand, serviceType)
 
@@ -124,7 +125,7 @@ func setupDependencies(ctx context.Context) error {
 
 	videoRepo := repos.NewVideoRepository(dbConn)
 
-	do.Provide(nil, func(i *do.Injector) (repos.VideoRepositoryInterface, error) {
+	do.Provide(nil, func(i *do.Injector) (repos.IVideoRepository, error) {
 		return videoRepo, nil
 	})
 

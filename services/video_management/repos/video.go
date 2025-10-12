@@ -10,14 +10,13 @@ import (
 	"github.com/sweetloveinyourheart/sweet-reel/services/video_management/models"
 )
 
-type VideoRepositoryInterface interface {
+type IVideoRepository interface {
 	// Video operations
 	CreateVideo(ctx context.Context, video *models.Video) error
 	GetVideoByID(ctx context.Context, id uuid.UUID) (*models.Video, error)
 	GetVideosByUploaderID(ctx context.Context, uploaderID uuid.UUID, limit, offset int) ([]*models.Video, error)
 	UpdateVideo(ctx context.Context, video *models.Video) error
-	UpdateVideoStatus(ctx context.Context, id uuid.UUID, status models.VideoStatus) error
-	UpdateVideoProcessedAt(ctx context.Context, id uuid.UUID, processedAt time.Time) error
+	UpdateVideoProgress(ctx context.Context, id uuid.UUID, objectKey string, status models.VideoStatus, processedAt time.Time) error
 	DeleteVideo(ctx context.Context, id uuid.UUID) error
 	ListVideos(ctx context.Context, limit, offset int) ([]*models.Video, error)
 
@@ -53,7 +52,7 @@ type VideoRepository struct {
 	Tx db.DbOrTx
 }
 
-func NewVideoRepository(tx db.DbOrTx) VideoRepositoryInterface {
+func NewVideoRepository(tx db.DbOrTx) IVideoRepository {
 	return &VideoRepository{
 		Tx: tx,
 	}
@@ -63,24 +62,24 @@ func NewVideoRepository(tx db.DbOrTx) VideoRepositoryInterface {
 
 func (r *VideoRepository) CreateVideo(ctx context.Context, video *models.Video) error {
 	query := `
-		INSERT INTO videos (id, uploader_id, title, description, status, original_file_url, processed_at)
-		VALUES ($1, $2, $3, $4, $5, $6, $7)`
+		INSERT INTO videos (id, uploader_id, title, description, object_key, processed_at)
+		VALUES ($1, $2, $3, $4, $5, $6)`
 
 	_, err := r.Tx.Exec(ctx, query,
 		video.ID, video.UploaderID, video.Title, video.Description,
-		video.Status, video.OriginalFileURL, video.ProcessedAt)
+		video.ObjectKey, video.ProcessedAt)
 	return err
 }
 
 func (r *VideoRepository) GetVideoByID(ctx context.Context, id uuid.UUID) (*models.Video, error) {
 	query := `
-		SELECT id, uploader_id, title, description, status, original_file_url, processed_at, created_at, updated_at
+		SELECT id, uploader_id, title, description, status, object_key, processed_at, created_at, updated_at
 		FROM videos WHERE id = $1`
 
 	video := &models.Video{}
 	err := r.Tx.QueryRow(ctx, query, id).Scan(
 		&video.ID, &video.UploaderID, &video.Title, &video.Description,
-		&video.Status, &video.OriginalFileURL, &video.ProcessedAt,
+		&video.Status, &video.ObjectKey, &video.ProcessedAt,
 		&video.CreatedAt, &video.UpdatedAt)
 
 	if err != nil {
@@ -91,7 +90,7 @@ func (r *VideoRepository) GetVideoByID(ctx context.Context, id uuid.UUID) (*mode
 
 func (r *VideoRepository) GetVideosByUploaderID(ctx context.Context, uploaderID uuid.UUID, limit, offset int) ([]*models.Video, error) {
 	query := `
-		SELECT id, uploader_id, title, description, status, original_file_url, processed_at, created_at, updated_at
+		SELECT id, uploader_id, title, description, status, object_key, processed_at, created_at, updated_at
 		FROM videos WHERE uploader_id = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3`
 
 	rows, err := r.Tx.Query(ctx, query, uploaderID, limit, offset)
@@ -105,7 +104,7 @@ func (r *VideoRepository) GetVideosByUploaderID(ctx context.Context, uploaderID 
 		video := &models.Video{}
 		err := rows.Scan(
 			&video.ID, &video.UploaderID, &video.Title, &video.Description,
-			&video.Status, &video.OriginalFileURL, &video.ProcessedAt,
+			&video.Status, &video.ObjectKey, &video.ProcessedAt,
 			&video.CreatedAt, &video.UpdatedAt)
 		if err != nil {
 			return nil, err
@@ -118,24 +117,18 @@ func (r *VideoRepository) GetVideosByUploaderID(ctx context.Context, uploaderID 
 func (r *VideoRepository) UpdateVideo(ctx context.Context, video *models.Video) error {
 	query := `
 		UPDATE videos SET uploader_id = $2, title = $3, description = $4, status = $5, 
-		original_file_url = $6, processed_at = $7
+		object_key = $6, processed_at = $7
 		WHERE id = $1`
 
 	_, err := r.Tx.Exec(ctx, query,
 		video.ID, video.UploaderID, video.Title, video.Description,
-		video.Status, video.OriginalFileURL, video.ProcessedAt)
+		video.Status, video.ObjectKey, video.ProcessedAt)
 	return err
 }
 
-func (r *VideoRepository) UpdateVideoStatus(ctx context.Context, id uuid.UUID, status models.VideoStatus) error {
-	query := `UPDATE videos SET status = $2 WHERE id = $1`
-	_, err := r.Tx.Exec(ctx, query, id, status)
-	return err
-}
-
-func (r *VideoRepository) UpdateVideoProcessedAt(ctx context.Context, id uuid.UUID, processedAt time.Time) error {
-	query := `UPDATE videos SET processed_at = $2 WHERE id = $1`
-	_, err := r.Tx.Exec(ctx, query, id, processedAt)
+func (r *VideoRepository) UpdateVideoProgress(ctx context.Context, id uuid.UUID, objectKey string, status models.VideoStatus, processedAt time.Time) error {
+	query := `UPDATE videos SET object_key = $2, status = $3, processed_at = $4 WHERE id = $1`
+	_, err := r.Tx.Exec(ctx, query, id, objectKey, status, processedAt)
 	return err
 }
 
@@ -147,7 +140,7 @@ func (r *VideoRepository) DeleteVideo(ctx context.Context, id uuid.UUID) error {
 
 func (r *VideoRepository) ListVideos(ctx context.Context, limit, offset int) ([]*models.Video, error) {
 	query := `
-		SELECT id, uploader_id, title, description, status, original_file_url, processed_at, created_at, updated_at
+		SELECT id, uploader_id, title, description, status, object_key, processed_at, created_at, updated_at
 		FROM videos ORDER BY created_at DESC LIMIT $1 OFFSET $2`
 
 	rows, err := r.Tx.Query(ctx, query, limit, offset)
@@ -161,7 +154,7 @@ func (r *VideoRepository) ListVideos(ctx context.Context, limit, offset int) ([]
 		video := &models.Video{}
 		err := rows.Scan(
 			&video.ID, &video.UploaderID, &video.Title, &video.Description,
-			&video.Status, &video.OriginalFileURL, &video.ProcessedAt,
+			&video.Status, &video.ObjectKey, &video.ProcessedAt,
 			&video.CreatedAt, &video.UpdatedAt)
 		if err != nil {
 			return nil, err
@@ -175,23 +168,23 @@ func (r *VideoRepository) ListVideos(ctx context.Context, limit, offset int) ([]
 
 func (r *VideoRepository) CreateVideoManifest(ctx context.Context, manifest *models.VideoManifest) error {
 	query := `
-		INSERT INTO video_manifests (id, video_id, manifest_url, size_bytes)
+		INSERT INTO video_manifests (id, video_id, object_key, size_bytes)
 		VALUES ($1, $2, $3, $4)`
 
 	_, err := r.Tx.Exec(ctx, query,
-		manifest.ID, manifest.VideoID, manifest.ManifestURL,
+		manifest.ID, manifest.VideoID, manifest.ObjectKey,
 		manifest.SizeBytes)
 	return err
 }
 
 func (r *VideoRepository) GetVideoManifestByVideoID(ctx context.Context, videoID uuid.UUID) (*models.VideoManifest, error) {
 	query := `
-		SELECT id, video_id, manifest_url, size_bytes, created_at
+		SELECT id, video_id, object_key, size_bytes, created_at
 		FROM video_manifests WHERE video_id = $1`
 
 	manifest := &models.VideoManifest{}
 	err := r.Tx.QueryRow(ctx, query, videoID).Scan(
-		&manifest.ID, &manifest.VideoID, &manifest.ManifestURL,
+		&manifest.ID, &manifest.VideoID, &manifest.ObjectKey,
 		&manifest.SizeBytes, &manifest.CreatedAt)
 
 	if err != nil {
@@ -202,11 +195,11 @@ func (r *VideoRepository) GetVideoManifestByVideoID(ctx context.Context, videoID
 
 func (r *VideoRepository) UpdateVideoManifest(ctx context.Context, manifest *models.VideoManifest) error {
 	query := `
-		UPDATE video_manifests SET video_id = $2, manifest_url = $3, size_bytes = $4
+		UPDATE video_manifests SET video_id = $2, object_key = $3, size_bytes = $4
 		WHERE id = $1`
 
 	_, err := r.Tx.Exec(ctx, query,
-		manifest.ID, manifest.VideoID, manifest.ManifestURL, manifest.SizeBytes)
+		manifest.ID, manifest.VideoID, manifest.ObjectKey, manifest.SizeBytes)
 	return err
 }
 
@@ -297,18 +290,18 @@ func (r *VideoRepository) DeleteVideoVariantsByVideoID(ctx context.Context, vide
 
 func (r *VideoRepository) CreateVideoThumbnail(ctx context.Context, thumbnail *models.VideoThumbnail) error {
 	query := `
-		INSERT INTO video_thumbnails (id, video_id, file_url, width, height)
+		INSERT INTO video_thumbnails (id, video_id, object_key, width, height)
 		VALUES ($1, $2, $3, $4, $5)`
 
 	_, err := r.Tx.Exec(ctx, query,
-		thumbnail.ID, thumbnail.VideoID, thumbnail.FileURL,
+		thumbnail.ID, thumbnail.VideoID, thumbnail.ObjectKey,
 		thumbnail.Width, thumbnail.Height, thumbnail.CreatedAt)
 	return err
 }
 
 func (r *VideoRepository) GetVideoThumbnailsByVideoID(ctx context.Context, videoID uuid.UUID) ([]*models.VideoThumbnail, error) {
 	query := `
-		SELECT id, video_id, file_url, width, height, created_at
+		SELECT id, video_id, object_key, width, height, created_at
 		FROM video_thumbnails WHERE video_id = $1 ORDER BY created_at`
 
 	rows, err := r.Tx.Query(ctx, query, videoID)
@@ -321,7 +314,7 @@ func (r *VideoRepository) GetVideoThumbnailsByVideoID(ctx context.Context, video
 	for rows.Next() {
 		thumbnail := &models.VideoThumbnail{}
 		err := rows.Scan(
-			&thumbnail.ID, &thumbnail.VideoID, &thumbnail.FileURL,
+			&thumbnail.ID, &thumbnail.VideoID, &thumbnail.ObjectKey,
 			&thumbnail.Width, &thumbnail.Height, &thumbnail.CreatedAt)
 		if err != nil {
 			return nil, err
@@ -333,12 +326,12 @@ func (r *VideoRepository) GetVideoThumbnailsByVideoID(ctx context.Context, video
 
 func (r *VideoRepository) GetVideoThumbnailByID(ctx context.Context, id uuid.UUID) (*models.VideoThumbnail, error) {
 	query := `
-		SELECT id, video_id, file_url, width, height, created_at
+		SELECT id, video_id, object_key, width, height, created_at
 		FROM video_thumbnails WHERE id = $1`
 
 	thumbnail := &models.VideoThumbnail{}
 	err := r.Tx.QueryRow(ctx, query, id).Scan(
-		&thumbnail.ID, &thumbnail.VideoID, &thumbnail.FileURL,
+		&thumbnail.ID, &thumbnail.VideoID, &thumbnail.ObjectKey,
 		&thumbnail.Width, &thumbnail.Height, &thumbnail.CreatedAt)
 
 	if err != nil {
@@ -349,11 +342,11 @@ func (r *VideoRepository) GetVideoThumbnailByID(ctx context.Context, id uuid.UUI
 
 func (r *VideoRepository) UpdateVideoThumbnail(ctx context.Context, thumbnail *models.VideoThumbnail) error {
 	query := `
-		UPDATE video_thumbnails SET video_id = $2, file_url = $3, width = $4, height = $5
+		UPDATE video_thumbnails SET video_id = $2, object_key = $3, width = $4, height = $5
 		WHERE id = $1`
 
 	_, err := r.Tx.Exec(ctx, query,
-		thumbnail.ID, thumbnail.VideoID, thumbnail.FileURL,
+		thumbnail.ID, thumbnail.VideoID, thumbnail.ObjectKey,
 		thumbnail.Width, thumbnail.Height)
 	return err
 }

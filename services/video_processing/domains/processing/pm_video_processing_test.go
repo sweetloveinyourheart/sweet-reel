@@ -8,6 +8,7 @@ import (
 	"github.com/gofrs/uuid"
 
 	"github.com/sweetloveinyourheart/sweet-reel/pkg/kafka"
+	"github.com/sweetloveinyourheart/sweet-reel/pkg/messages"
 	"github.com/sweetloveinyourheart/sweet-reel/pkg/s3"
 	"github.com/sweetloveinyourheart/sweet-reel/services/video_processing/domains/processing"
 )
@@ -32,7 +33,7 @@ func (as *VideoProcessingSuite) TestHandleMessage_Success() {
 	// Create test video ID and data
 	videoID := uuid.Must(uuid.NewV4())
 	videoData := []byte("fake video data")
-	eventMessage := s3.S3EventMessage{
+	eventMessage := messages.S3EventMessage{
 		Key: videoID.String() + ".mp4",
 	}
 
@@ -60,9 +61,9 @@ func (as *VideoProcessingSuite) TestHandleMessage_Success() {
 // Test constants
 func (as *VideoProcessingSuite) TestConstants() {
 	as.Equal(1024, processing.BatchSize)
-	as.Equal("video-processing", processing.KafkaVideoProcessingGroup)
-	as.Equal("video-uploaded", processing.KafkaVideoUploadedTopic)
-	as.Equal("video-processed", processing.S3VideoProcessedBucket)
+	as.Equal("video-processing", kafka.KafkaVideoProcessingGroup)
+	as.Equal("video-uploaded", kafka.KafkaVideoUploadedTopic)
+	as.Equal("video-processed", s3.S3VideoProcessedBucket)
 }
 
 func (as *VideoProcessingSuite) TestHandleMessage_NilMessage() {
@@ -87,7 +88,7 @@ func (as *VideoProcessingSuite) TestHandleMessage_InvalidJSON() {
 
 	// Create message with invalid JSON
 	consumedMsg := &kafka.ConsumedMessage{
-		Topic:     processing.KafkaVideoUploadedTopic,
+		Topic:     kafka.KafkaVideoUploadedTopic,
 		Partition: 0,
 		Offset:    1,
 		Key:       "test-key",
@@ -103,7 +104,7 @@ func (as *VideoProcessingSuite) TestHandleMessage_InvalidJSON() {
 func (as *VideoProcessingSuite) TestHandleMessage_InvalidVideoID() {
 	as.setupEnvironment()
 
-	eventMessage := s3.S3EventMessage{
+	eventMessage := messages.S3EventMessage{
 		Key: "invalid-uuid.mp4",
 	}
 
@@ -111,7 +112,7 @@ func (as *VideoProcessingSuite) TestHandleMessage_InvalidVideoID() {
 	as.NoError(err)
 
 	consumedMsg := &kafka.ConsumedMessage{
-		Topic:     processing.KafkaVideoUploadedTopic,
+		Topic:     kafka.KafkaVideoUploadedTopic,
 		Partition: 0,
 		Offset:    1,
 		Key:       "test-key",
@@ -136,7 +137,7 @@ func (as *VideoProcessingSuite) TestHandleMessage_S3DownloadError() {
 	as.setupEnvironment()
 
 	videoID := uuid.Must(uuid.NewV4())
-	eventMessage := s3.S3EventMessage{
+	eventMessage := messages.S3EventMessage{
 		Key: videoID.String() + ".mp4",
 	}
 
@@ -144,7 +145,7 @@ func (as *VideoProcessingSuite) TestHandleMessage_S3DownloadError() {
 	as.NoError(err)
 
 	consumedMsg := &kafka.ConsumedMessage{
-		Topic:     processing.KafkaVideoUploadedTopic,
+		Topic:     kafka.KafkaVideoUploadedTopic,
 		Partition: 0,
 		Offset:    1,
 		Key:       videoID.String(),
@@ -170,7 +171,7 @@ func (as *VideoProcessingSuite) TestHandleMessage_FFmpegNotAvailable() {
 
 	videoID := uuid.Must(uuid.NewV4())
 	videoData := []byte("fake video data")
-	eventMessage := s3.S3EventMessage{
+	eventMessage := messages.S3EventMessage{
 		Key: videoID.String() + ".mp4",
 	}
 
@@ -178,7 +179,7 @@ func (as *VideoProcessingSuite) TestHandleMessage_FFmpegNotAvailable() {
 	as.NoError(err)
 
 	consumedMsg := &kafka.ConsumedMessage{
-		Topic:     processing.KafkaVideoUploadedTopic,
+		Topic:     kafka.KafkaVideoUploadedTopic,
 		Partition: 0,
 		Offset:    1,
 		Key:       videoID.String(),

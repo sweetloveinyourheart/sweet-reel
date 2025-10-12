@@ -686,6 +686,156 @@
         ]
       },
       {
+        "name": "kafka-brokers",
+        "usage": "Kafka broker addresses (comma-separated)",
+        "default": "localhost:9092",
+        "valueType": "string",
+        "path": "video_management.kafka.brokers",
+        "env": [
+          "VIDEO_MANAGEMENT_KAFKA_BROKERS"
+        ]
+      },
+      {
+        "name": "kafka-compression",
+        "usage": "Compression codec (none, gzip, snappy, lz4, zstd)",
+        "default": "snappy",
+        "valueType": "string",
+        "path": "video_management.kafka.compression",
+        "env": [
+          "VIDEO_MANAGEMENT_KAFKA_COMPRESSION"
+        ]
+      },
+      {
+        "name": "kafka-flush-bytes",
+        "usage": "Number of bytes to buffer before flushing",
+        "default": 16384,
+        "valueType": "int32",
+        "path": "video_management.kafka.flush_bytes",
+        "env": [
+          "VIDEO_MANAGEMENT_KAFKA_FLUSH_BYTES"
+        ]
+      },
+      {
+        "name": "kafka-flush-frequency-ms",
+        "usage": "Frequency of flushing messages in milliseconds",
+        "default": 500,
+        "valueType": "int64",
+        "path": "video_management.kafka.flush_frequency_ms",
+        "env": [
+          "VIDEO_MANAGEMENT_KAFKA_FLUSH_FREQUENCY_MS"
+        ]
+      },
+      {
+        "name": "kafka-flush-messages",
+        "usage": "Number of messages to buffer before flushing",
+        "default": 100,
+        "valueType": "int32",
+        "path": "video_management.kafka.flush_messages",
+        "env": [
+          "VIDEO_MANAGEMENT_KAFKA_FLUSH_MESSAGES"
+        ]
+      },
+      {
+        "name": "kafka-idempotent-writes",
+        "usage": "Enable idempotent writes",
+        "default": true,
+        "valueType": "bool",
+        "path": "video_management.kafka.idempotent_writes",
+        "env": [
+          "VIDEO_MANAGEMENT_KAFKA_IDEMPOTENT_WRITES"
+        ]
+      },
+      {
+        "name": "kafka-max-open-requests",
+        "usage": "Max open requests",
+        "default": 1,
+        "valueType": "int32",
+        "path": "video_management.kafka.max_open_requests",
+        "env": [
+          "VIDEO_MANAGEMENT_KAFKA_MAX_OPEN_REQUESTS"
+        ]
+      },
+      {
+        "name": "kafka-required-acks",
+        "usage": "Required acknowledgments (none, leader, all)",
+        "default": "all",
+        "valueType": "string",
+        "path": "video_management.kafka.required_acks",
+        "env": [
+          "VIDEO_MANAGEMENT_KAFKA_REQUIRED_ACKS"
+        ]
+      },
+      {
+        "name": "kafka-retry-backoff-ms",
+        "usage": "Backoff time between retries in milliseconds",
+        "default": 100,
+        "valueType": "int64",
+        "path": "video_management.kafka.retry_backoff_ms",
+        "env": [
+          "VIDEO_MANAGEMENT_KAFKA_RETRY_BACKOFF_MS"
+        ]
+      },
+      {
+        "name": "kafka-retry-max",
+        "usage": "Maximum number of retries for failed requests",
+        "default": 3,
+        "valueType": "int32",
+        "path": "video_management.kafka.retry_max",
+        "env": [
+          "VIDEO_MANAGEMENT_KAFKA_RETRY_MAX"
+        ]
+      },
+      {
+        "name": "kafka-sasl-mechanism",
+        "usage": "SASL mechanism (PLAIN, SCRAM-SHA-256, SCRAM-SHA-512)",
+        "default": "",
+        "valueType": "string",
+        "path": "video_management.kafka.sasl_mechanism",
+        "env": [
+          "VIDEO_MANAGEMENT_KAFKA_SASL_MECHANISM"
+        ]
+      },
+      {
+        "name": "kafka-sasl-password",
+        "usage": "SASL password for authentication",
+        "default": "",
+        "valueType": "string",
+        "path": "video_management.kafka.sasl_password",
+        "env": [
+          "VIDEO_MANAGEMENT_KAFKA_SASL_PASSWORD"
+        ]
+      },
+      {
+        "name": "kafka-sasl-username",
+        "usage": "SASL username for authentication",
+        "default": "",
+        "valueType": "string",
+        "path": "video_management.kafka.sasl_username",
+        "env": [
+          "VIDEO_MANAGEMENT_KAFKA_SASL_USERNAME"
+        ]
+      },
+      {
+        "name": "kafka-security-protocol",
+        "usage": "Security protocol (PLAINTEXT, SSL, SASL_PLAINTEXT, SASL_SSL)",
+        "default": "PLAINTEXT",
+        "valueType": "string",
+        "path": "video_management.kafka.security_protocol",
+        "env": [
+          "VIDEO_MANAGEMENT_KAFKA_SECURITY_PROTOCOL"
+        ]
+      },
+      {
+        "name": "kafka-tls-enabled",
+        "usage": "Enable TLS encryption",
+        "default": false,
+        "valueType": "bool",
+        "path": "video_management.kafka.tls_enabled",
+        "env": [
+          "VIDEO_MANAGEMENT_KAFKA_TLS_ENABLED"
+        ]
+      },
+      {
         "name": "minio-url",
         "usage": "MINIO URL",
         "default": "",

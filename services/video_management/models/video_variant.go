@@ -39,26 +39,16 @@ func (vv VideoVariant) GetPlaylistURL() string {
 	return vv.PlaylistURL
 }
 
-// GetTotalSegments returns the total segments pointer of the video variant
-func (vv VideoVariant) GetTotalSegments() *int {
-	return vv.TotalSegments
-}
-
-// GetTotalSegmentsOrDefault returns the total segments of the video variant or 0 if nil
-func (vv VideoVariant) GetTotalSegmentsOrDefault() int {
+// GetTotalSegments returns the total segments of the video variant or 0 if nil
+func (vv VideoVariant) GetTotalSegments() int {
 	if vv.TotalSegments == nil {
 		return 0
 	}
 	return *vv.TotalSegments
 }
 
-// GetTotalDuration returns the total duration pointer of the video variant
-func (vv VideoVariant) GetTotalDuration() *int {
-	return vv.TotalDuration
-}
-
-// GetTotalDurationOrDefault returns the total duration of the video variant or 0 if nil
-func (vv VideoVariant) GetTotalDurationOrDefault() int {
+// GetTotalDuration returns the total duration of the video variant or 0 if nil
+func (vv VideoVariant) GetTotalDuration() int {
 	if vv.TotalDuration == nil {
 		return 0
 	}

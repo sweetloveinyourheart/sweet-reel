@@ -8,9 +8,10 @@ import (
 	"github.com/stretchr/testify/mock"
 
 	"github.com/sweetloveinyourheart/sweet-reel/services/video_management/models"
+	"github.com/sweetloveinyourheart/sweet-reel/services/video_management/repos"
 )
 
-// MockVideoRepository is a mock implementation of VideoRepositoryInterface
+// MockVideoRepository is a mock implementation of IVideoRepository
 type MockVideoRepository struct {
 	mock.Mock
 }
@@ -43,13 +44,8 @@ func (m *MockVideoRepository) UpdateVideo(ctx context.Context, video *models.Vid
 	return args.Error(0)
 }
 
-func (m *MockVideoRepository) UpdateVideoStatus(ctx context.Context, id uuid.UUID, status models.VideoStatus) error {
-	args := m.Called(ctx, id, status)
-	return args.Error(0)
-}
-
-func (m *MockVideoRepository) UpdateVideoProcessedAt(ctx context.Context, id uuid.UUID, processedAt time.Time) error {
-	args := m.Called(ctx, id, processedAt)
+func (m *MockVideoRepository) UpdateVideoProgress(ctx context.Context, id uuid.UUID, objectKey string, status models.VideoStatus, processedAt time.Time) error {
+	args := m.Called(ctx, id, objectKey, status, processedAt)
 	return args.Error(0)
 }
 
@@ -203,33 +199,5 @@ func (m *MockVideoRepository) GetVideoCountByUploaderID(ctx context.Context, upl
 	return args.Get(0).(int64), args.Error(1)
 }
 
-// Ensure MockVideoRepository implements VideoRepositoryInterface
-var _ interface {
-	CreateVideo(ctx context.Context, video *models.Video) error
-	GetVideoByID(ctx context.Context, id uuid.UUID) (*models.Video, error)
-	GetVideosByUploaderID(ctx context.Context, uploaderID uuid.UUID, limit, offset int) ([]*models.Video, error)
-	UpdateVideo(ctx context.Context, video *models.Video) error
-	UpdateVideoStatus(ctx context.Context, id uuid.UUID, status models.VideoStatus) error
-	UpdateVideoProcessedAt(ctx context.Context, id uuid.UUID, processedAt time.Time) error
-	DeleteVideo(ctx context.Context, id uuid.UUID) error
-	ListVideos(ctx context.Context, limit, offset int) ([]*models.Video, error)
-	CreateVideoManifest(ctx context.Context, manifest *models.VideoManifest) error
-	GetVideoManifestByVideoID(ctx context.Context, videoID uuid.UUID) (*models.VideoManifest, error)
-	UpdateVideoManifest(ctx context.Context, manifest *models.VideoManifest) error
-	DeleteVideoManifest(ctx context.Context, id uuid.UUID) error
-	CreateVideoVariant(ctx context.Context, variant *models.VideoVariant) error
-	GetVideoVariantsByVideoID(ctx context.Context, videoID uuid.UUID) ([]*models.VideoVariant, error)
-	GetVideoVariantByID(ctx context.Context, id uuid.UUID) (*models.VideoVariant, error)
-	UpdateVideoVariant(ctx context.Context, variant *models.VideoVariant) error
-	DeleteVideoVariant(ctx context.Context, id uuid.UUID) error
-	DeleteVideoVariantsByVideoID(ctx context.Context, videoID uuid.UUID) error
-	CreateVideoThumbnail(ctx context.Context, thumbnail *models.VideoThumbnail) error
-	GetVideoThumbnailsByVideoID(ctx context.Context, videoID uuid.UUID) ([]*models.VideoThumbnail, error)
-	GetVideoThumbnailByID(ctx context.Context, id uuid.UUID) (*models.VideoThumbnail, error)
-	UpdateVideoThumbnail(ctx context.Context, thumbnail *models.VideoThumbnail) error
-	DeleteVideoThumbnail(ctx context.Context, id uuid.UUID) error
-	DeleteVideoThumbnailsByVideoID(ctx context.Context, videoID uuid.UUID) error
-	GetVideoWithRelations(ctx context.Context, videoID uuid.UUID) (*models.Video, *models.VideoManifest, []*models.VideoVariant, []*models.VideoThumbnail, error)
-	GetVideoCount(ctx context.Context) (int64, error)
-	GetVideoCountByUploaderID(ctx context.Context, uploaderID uuid.UUID) (int64, error)
-} = (*MockVideoRepository)(nil)
+// Ensure MockVideoRepository implements IVideoRepository
+var _ repos.IVideoRepository = (*MockVideoRepository)(nil)
