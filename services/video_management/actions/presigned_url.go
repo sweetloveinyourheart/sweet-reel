@@ -45,7 +45,6 @@ func (a *actions) PresignedUrl(ctx context.Context, request *connect.Request[pro
 		ID:          uuid.Must(uuid.NewV7()),
 		Title:       request.Msg.GetTitle(),
 		Description: description,
-		Status:      models.VideoStatusReady,
 		UploaderID:  uploaderID,
 	}
 

@@ -15,7 +15,7 @@ type actions struct {
 	context     context.Context
 	defaultAuth func(context.Context, string) (context.Context, error)
 	s3Client    s3.S3Storage
-	videoRepo   repos.VideoRepositoryInterface
+	videoRepo   repos.IVideoRepository
 }
 
 func NewActions(ctx context.Context, signingToken string) *actions {
@@ -24,7 +24,7 @@ func NewActions(ctx context.Context, signingToken string) *actions {
 		logger.Global().Fatal("unable to get s3 client")
 	}
 
-	videoRepo, err := do.Invoke[repos.VideoRepositoryInterface](nil)
+	videoRepo, err := do.Invoke[repos.IVideoRepository](nil)
 	if err != nil {
 		logger.Global().Fatal("unable to get s3 client")
 	}

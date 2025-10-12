@@ -12,7 +12,7 @@ import (
 type VideoThumbnail struct {
 	ID        uuid.UUID `json:"id"`
 	VideoID   uuid.UUID `json:"video_id"`
-	FileURL   string    `json:"file_url"`
+	ObjectKey string    `json:"object_key"`
 	Width     *int      `json:"width"`
 	Height    *int      `json:"height"`
 	CreatedAt time.Time `json:"created_at"`
@@ -28,31 +28,21 @@ func (vt VideoThumbnail) GetVideoID() uuid.UUID {
 	return vt.VideoID
 }
 
-// GetFileURL returns the file URL of the video thumbnail
-func (vt VideoThumbnail) GetFileURL() string {
-	return vt.FileURL
+// GetObjectKey returns the file URL of the video thumbnail
+func (vt VideoThumbnail) GetObjectKey() string {
+	return vt.ObjectKey
 }
 
-// GetWidth returns the width pointer of the video thumbnail
-func (vt VideoThumbnail) GetWidth() *int {
-	return vt.Width
-}
-
-// GetWidthOrDefault returns the width of the video thumbnail or 0 if nil
-func (vt VideoThumbnail) GetWidthOrDefault() int {
+// GetWidth returns the width of the video thumbnail or 0 if nil
+func (vt VideoThumbnail) GetWidth() int {
 	if vt.Width == nil {
 		return 0
 	}
 	return *vt.Width
 }
 
-// GetHeight returns the height pointer of the video thumbnail
-func (vt VideoThumbnail) GetHeight() *int {
-	return vt.Height
-}
-
-// GetHeightOrDefault returns the height of the video thumbnail or 0 if nil
-func (vt VideoThumbnail) GetHeightOrDefault() int {
+// GetHeight returns the height of the video thumbnail or 0 if nil
+func (vt VideoThumbnail) GetHeight() int {
 	if vt.Height == nil {
 		return 0
 	}
@@ -74,7 +64,7 @@ func (vt VideoThumbnail) Validate() error {
 		return errors.New("video ID is required")
 	}
 
-	if strings.TrimSpace(vt.FileURL) == "" {
+	if strings.TrimSpace(vt.ObjectKey) == "" {
 		return errors.New("file URL is required and cannot be empty")
 	}
 

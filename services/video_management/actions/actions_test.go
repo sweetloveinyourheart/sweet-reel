@@ -38,7 +38,7 @@ func TestActionsSuite(t *testing.T) {
 }
 
 func (as *ActionsSuite) setupEnvironment() {
-	do.Override(nil, func(i *do.Injector) (repos.VideoRepositoryInterface, error) {
+	do.Override(nil, func(i *do.Injector) (repos.IVideoRepository, error) {
 		return as.mockVideoRepository, nil
 	})
 

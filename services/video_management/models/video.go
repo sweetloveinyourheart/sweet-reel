@@ -19,15 +19,15 @@ const (
 
 // Video represents the main video metadata
 type Video struct {
-	ID              uuid.UUID   `json:"id"`
-	UploaderID      uuid.UUID   `json:"uploader_id"`
-	Title           string      `json:"title"`
-	Description     *string     `json:"description"`
-	Status          VideoStatus `json:"status"`
-	OriginalFileURL *string     `json:"original_file_url"`
-	ProcessedAt     *time.Time  `json:"processed_at"`
-	CreatedAt       time.Time   `json:"created_at"`
-	UpdatedAt       time.Time   `json:"updated_at"`
+	ID          uuid.UUID   `json:"id"`
+	UploaderID  uuid.UUID   `json:"uploader_id"`
+	Title       string      `json:"title"`
+	Description *string     `json:"description"`
+	Status      VideoStatus `json:"status"`
+	ObjectKey   *string     `json:"object_key"`
+	ProcessedAt *time.Time  `json:"processed_at"`
+	CreatedAt   time.Time   `json:"created_at"`
+	UpdatedAt   time.Time   `json:"updated_at"`
 }
 
 // GetID returns the ID of the video
@@ -45,13 +45,8 @@ func (v Video) GetTitle() string {
 	return v.Title
 }
 
-// GetDescription returns the description pointer of the video
-func (v Video) GetDescription() *string {
-	return v.Description
-}
-
-// GetDescriptionOrDefault returns the description of the video or empty string if nil
-func (v Video) GetDescriptionOrDefault() string {
+// GetDescription returns the description of the video
+func (v Video) GetDescription() string {
 	if v.Description == nil {
 		return ""
 	}
@@ -63,26 +58,16 @@ func (v Video) GetStatus() VideoStatus {
 	return v.Status
 }
 
-// GetOriginalFileURL returns the original file URL pointer of the video
-func (v Video) GetOriginalFileURL() *string {
-	return v.OriginalFileURL
-}
-
-// GetOriginalFileURLOrDefault returns the original file URL of the video or empty string if nil
-func (v Video) GetOriginalFileURLOrDefault() string {
-	if v.OriginalFileURL == nil {
+// GetObjectKey returns the object key of the video
+func (v Video) GetObjectKey() string {
+	if v.ObjectKey == nil {
 		return ""
 	}
-	return *v.OriginalFileURL
+	return *v.ObjectKey
 }
 
-// GetProcessedAt returns the processed timestamp pointer of the video
-func (v Video) GetProcessedAt() *time.Time {
-	return v.ProcessedAt
-}
-
-// GetProcessedAtOrDefault returns the processed timestamp of the video or zero time if nil
-func (v Video) GetProcessedAtOrDefault() time.Time {
+// GetProcessedAt returns the processed timestamp of the video
+func (v Video) GetProcessedAt() time.Time {
 	if v.ProcessedAt == nil {
 		return time.Time{}
 	}
@@ -115,16 +100,6 @@ func (v Video) Validate() error {
 
 	if len(v.Title) > 255 {
 		return errors.New("video title cannot exceed 255 characters")
-	}
-
-	// Validate status
-	validStatuses := map[VideoStatus]bool{
-		VideoStatusProcessing: true,
-		VideoStatusReady:      true,
-		VideoStatusFailed:     true,
-	}
-	if !validStatuses[v.Status] {
-		return errors.New("invalid video status")
 	}
 
 	return nil

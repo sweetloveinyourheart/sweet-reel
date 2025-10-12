@@ -17,15 +17,54 @@ import (
 	"github.com/sweetloveinyourheart/sweet-reel/pkg/ffmpeg"
 	"github.com/sweetloveinyourheart/sweet-reel/pkg/kafka"
 	"github.com/sweetloveinyourheart/sweet-reel/pkg/logger"
+	"github.com/sweetloveinyourheart/sweet-reel/pkg/messages"
 	"github.com/sweetloveinyourheart/sweet-reel/pkg/s3"
 )
 
 const (
-	BatchSize                 = 1024
-	KafkaVideoProcessingGroup = "video-processing"
-	KafkaVideoUploadedTopic   = "video-uploaded"
+	BatchSize = 1024
+)
 
-	S3VideoProcessedBucket = "video-processed"
+var (
+	// Define multiple quality levels for adaptive streaming
+	qualities = []ffmpeg.SegmentationOptions{
+		{
+			SegmentDuration: "6",
+			PlaylistType:    "vod",
+			PlaylistName:    "playlist.m3u8",
+			SegmentPrefix:   "segment",
+			SegmentFormat:   "ts",
+			VideoCodec:      "libx264",
+			VideoBitrate:    "800k",
+			AudioCodec:      "aac",
+			AudioBitrate:    "96k",
+			Resolution:      "854x480", // 480p
+		},
+		{
+			SegmentDuration: "6",
+			PlaylistType:    "vod",
+			PlaylistName:    "playlist.m3u8",
+			SegmentPrefix:   "segment",
+			SegmentFormat:   "ts",
+			VideoCodec:      "libx264",
+			VideoBitrate:    "1400k",
+			AudioCodec:      "aac",
+			AudioBitrate:    "128k",
+			Resolution:      "1280x720", // 720p
+		},
+		{
+			SegmentDuration: "6",
+			PlaylistType:    "vod",
+			PlaylistName:    "playlist.m3u8",
+			SegmentPrefix:   "segment",
+			SegmentFormat:   "ts",
+			VideoCodec:      "libx264",
+			VideoBitrate:    "2800k",
+			AudioCodec:      "aac",
+			AudioBitrate:    "192k",
+			Resolution:      "1920x1080", // 1080p
+		},
+	}
 )
 
 type VideoProcessManager struct {
@@ -34,6 +73,7 @@ type VideoProcessManager struct {
 
 	storageClient s3.S3Storage
 	ff            ffmpeg.FFmpegInterface
+	kafkaClient   *kafka.Client
 }
 
 func NewVideoProcessManager(ctx context.Context) (*VideoProcessManager, error) {
@@ -52,6 +92,7 @@ func NewVideoProcessManager(ctx context.Context) (*VideoProcessManager, error) {
 		queue:         make(chan lo.Tuple2[context.Context, *kafka.ConsumedMessage], BatchSize*2),
 		storageClient: storageClient,
 		ff:            ffmpeg.New(),
+		kafkaClient:   kafkaClient,
 	}
 
 	go func() {
@@ -62,13 +103,16 @@ func NewVideoProcessManager(ctx context.Context) (*VideoProcessManager, error) {
 					msg.ValueAsString()))
 
 			switch msg.Topic {
-			case KafkaVideoUploadedTopic:
+			case kafka.KafkaVideoUploadedTopic:
 				vsp.queue <- lo.T2(ctx, msg)
 			}
 
 			return nil
 		}
-		consumer, err := kafkaClient.CreateConsumer(KafkaVideoProcessingGroup, []string{KafkaVideoUploadedTopic}, messageHandler)
+		consumer, err := kafkaClient.CreateConsumer(kafka.KafkaVideoProcessingGroup,
+			[]string{kafka.KafkaVideoUploadedTopic},
+			messageHandler)
+
 		if err != nil {
 			logger.Global().ErrorContext(ctx, "failed to create consumer", zap.Error(err))
 			return
@@ -107,7 +151,7 @@ func (vsp *VideoProcessManager) HandleMessage(ctx context.Context, message *kafk
 		return errors.Errorf("message is nil")
 	}
 
-	var msg s3.S3EventMessage
+	var msg messages.S3EventMessage
 	if err := message.ValueAsJSON(&msg); err != nil {
 		return err
 	}
@@ -119,18 +163,25 @@ func (vsp *VideoProcessManager) HandleMessage(ctx context.Context, message *kafk
 	}
 
 	// Process video using FFmpeg wrapper
-	fileName, _ := s3.ExtractFilenameAndExt(msg.Key)
+	fileName, _ := s3.ExtractFilenameAndExt(key)
 	videoID := uuid.FromStringOrNil(fileName)
 	if videoID == uuid.Nil {
-		return errors.Errorf("invalid video id")
+		return errors.Errorf("invalid video id: %s", videoID.String())
 	}
 
 	if err := vsp.processVideo(ctx, videoID, bytes); err != nil {
+		if err = vsp.notifyVideoProgress(ctx, videoID, key, messages.VideoStatusFailed); err != nil {
+			logger.Global().Error("Failed to publish video progress update message: %v", zap.Error(err))
+		}
+
 		return errors.Wrap(err, "failed to process video")
 	}
 
-	logger.Global().InfoContext(ctx, "Video processing completed successfully",
-		zap.String("key", msg.Key))
+	if err := vsp.notifyVideoProgress(ctx, videoID, key, messages.VideoStatusReady); err != nil {
+		logger.Global().Error("Failed to publish video progress update message: %v", zap.Error(err))
+	}
+
+	logger.Global().InfoContext(ctx, "Video processing completed successfully", zap.String("key", msg.Key))
 
 	return nil
 }
@@ -169,46 +220,6 @@ func (vsp *VideoProcessManager) processVideo(ctx context.Context, videoID uuid.U
 		return errors.Wrap(err, "failed to create HLS output directory")
 	}
 
-	// Define multiple quality levels for adaptive streaming
-	qualities := []ffmpeg.SegmentationOptions{
-		{
-			SegmentDuration: "6",
-			PlaylistType:    "vod",
-			PlaylistName:    "playlist.m3u8",
-			SegmentPrefix:   "segment",
-			SegmentFormat:   "ts",
-			VideoCodec:      "libx264",
-			VideoBitrate:    "800k",
-			AudioCodec:      "aac",
-			AudioBitrate:    "96k",
-			Resolution:      "854x480", // 480p
-		},
-		{
-			SegmentDuration: "6",
-			PlaylistType:    "vod",
-			PlaylistName:    "playlist.m3u8",
-			SegmentPrefix:   "segment",
-			SegmentFormat:   "ts",
-			VideoCodec:      "libx264",
-			VideoBitrate:    "1400k",
-			AudioCodec:      "aac",
-			AudioBitrate:    "128k",
-			Resolution:      "1280x720", // 720p
-		},
-		{
-			SegmentDuration: "6",
-			PlaylistType:    "vod",
-			PlaylistName:    "playlist.m3u8",
-			SegmentPrefix:   "segment",
-			SegmentFormat:   "ts",
-			VideoCodec:      "libx264",
-			VideoBitrate:    "2800k",
-			AudioCodec:      "aac",
-			AudioBitrate:    "192k",
-			Resolution:      "1920x1080", // 1080p
-		},
-	}
-
 	progressCallback := func(progress ffmpeg.ProgressInfo) {
 		if int(progress.Percentage)%10 == 0 { // Log every 10%
 			logger.Global().InfoContext(ctx, "Video processing progress",
@@ -237,7 +248,7 @@ func (vsp *VideoProcessManager) processVideo(ctx context.Context, videoID uuid.U
 
 	// Create thumbnail
 	thumbnailPath := filepath.Join(tempDir, "thumbnail.jpg")
-	if err := vsp.ff.CreateThumbnail(ctx, inputPath, thumbnailPath, "00:00:05", 320, 240); err != nil {
+	if err := vsp.ff.CreateThumbnail(ctx, inputPath, thumbnailPath, "00:00:00", 320, 240); err != nil {
 		logger.Global().WarnContext(ctx, "Failed to create thumbnail", zap.Error(err))
 	} else {
 		logger.Global().InfoContext(ctx, "Thumbnail created", zap.String("path", thumbnailPath))
@@ -280,7 +291,7 @@ func (vsp *VideoProcessManager) uploadProcessedFiles(ctx context.Context, videoI
 		// Upload to storage
 		fileReader := bytes.NewReader(fileData)
 		mimeType := ffmpeg.GetMimeType(path)
-		if err := vsp.storageClient.Upload(storageKey, S3VideoProcessedBucket, fileReader, mimeType); err != nil {
+		if err := vsp.storageClient.Upload(storageKey, s3.S3VideoProcessedBucket, fileReader, mimeType); err != nil {
 			return errors.Wrapf(err, "failed to upload file: %s", storageKey)
 		}
 
@@ -304,7 +315,7 @@ func (vsp *VideoProcessManager) uploadProcessedFiles(ctx context.Context, videoI
 			} else {
 				thumbnailKey := fmt.Sprintf("%s/thumbnail.jpg", videoID.String())
 				thumbnailReader := bytes.NewReader(thumbnailData)
-				if err := vsp.storageClient.Upload(thumbnailKey, S3VideoProcessedBucket, thumbnailReader, "image/jpeg"); err != nil {
+				if err := vsp.storageClient.Upload(thumbnailKey, s3.S3VideoProcessedBucket, thumbnailReader, "image/jpeg"); err != nil {
 					logger.Global().WarnContext(ctx, "Failed to upload thumbnail", zap.Error(err))
 				} else {
 					logger.Global().InfoContext(ctx, "Thumbnail uploaded",
@@ -316,6 +327,25 @@ func (vsp *VideoProcessManager) uploadProcessedFiles(ctx context.Context, videoI
 
 	logger.Global().InfoContext(ctx, "All processed files uploaded successfully",
 		zap.String("video_id", videoID.String()))
+
+	return nil
+}
+
+func (vsp *VideoProcessManager) notifyVideoProgress(ctx context.Context, videoID uuid.UUID, objectKey string, status messages.VideoStatus) error {
+	msg := messages.VideoProcessingProgress{
+		VideoID:     videoID,
+		Status:      status,
+		ObjectKey:   objectKey,
+		ProcessedAt: time.Now(),
+	}
+	_, _, err := vsp.kafkaClient.SendJSON(ctx, kafka.KafkaVideoProgressTopic, videoID.String(), msg)
+	if err != nil {
+		return err
+	}
+
+	logger.Global().Info("Video progress published",
+		zap.String("video_id", videoID.String()),
+		zap.String("status", string(status)))
 
 	return nil
 }
