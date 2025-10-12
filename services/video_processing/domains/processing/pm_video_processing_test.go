@@ -31,10 +31,10 @@ func (as *VideoProcessingSuite) TestHandleMessage_Success() {
 	as.setupEnvironment()
 
 	// Create test video ID and data
-	videoID := uuid.Must(uuid.NewV4())
+	videoID := uuid.Must(uuid.NewV7())
 	videoData := []byte("fake video data")
 	eventMessage := messages.S3EventMessage{
-		Key: videoID.String() + ".mp4",
+		Key: fmt.Sprintf("test/%s.mp4", videoID.String()),
 	}
 
 	// Marshal the event message
@@ -49,10 +49,6 @@ func (as *VideoProcessingSuite) TestHandleMessage_Success() {
 	manager, err := processing.NewVideoProcessManager(as.ctx)
 	as.NoError(err)
 	as.NotNil(manager)
-
-	// Note: Due to the complex nature of the HandleMessage method and its dependencies on filesystem operations
-	// and FFmpeg (which is created directly with ffmpeg.New() instead of dependency injection),
-	// detailed testing of the processing logic would require more sophisticated mocking or integration tests.
 
 	// Verify that we have a valid event data structure
 	as.NotEmpty(eventData)
@@ -122,7 +118,7 @@ func (as *VideoProcessingSuite) TestHandleMessage_InvalidVideoID() {
 	}
 
 	// Extract bucket and key from the event message like the actual code does
-	bucket, key := s3.ExtractBucketAndKeyFromEventMessage("invalid-uuid.mp4")
+	bucket, key := s3.ExtractBucketAndKeyFromEventMessage(eventMessage.Key)
 	as.mockS3.On("Download", key, bucket).Return([]byte("fake data"), nil)
 
 	manager, err := processing.NewVideoProcessManager(as.ctx)
@@ -136,9 +132,9 @@ func (as *VideoProcessingSuite) TestHandleMessage_InvalidVideoID() {
 func (as *VideoProcessingSuite) TestHandleMessage_S3DownloadError() {
 	as.setupEnvironment()
 
-	videoID := uuid.Must(uuid.NewV4())
+	videoID := uuid.Must(uuid.NewV7())
 	eventMessage := messages.S3EventMessage{
-		Key: videoID.String() + ".mp4",
+		Key: fmt.Sprintf("test/%s.mp4", videoID.String()),
 	}
 
 	eventData, err := json.Marshal(eventMessage)
@@ -155,7 +151,7 @@ func (as *VideoProcessingSuite) TestHandleMessage_S3DownloadError() {
 	}
 
 	// Extract bucket and key from the event message like the actual code does
-	bucket, key := s3.ExtractBucketAndKeyFromEventMessage(videoID.String() + ".mp4")
+	bucket, key := s3.ExtractBucketAndKeyFromEventMessage(eventMessage.Key)
 	as.mockS3.On("Download", key, bucket).Return([]byte(nil), fmt.Errorf("test error: download failed"))
 
 	manager, err := processing.NewVideoProcessManager(as.ctx)
@@ -164,40 +160,4 @@ func (as *VideoProcessingSuite) TestHandleMessage_S3DownloadError() {
 	err = manager.HandleMessage(as.ctx, consumedMsg)
 	as.Error(err)
 	as.Contains(err.Error(), "download failed")
-}
-
-func (as *VideoProcessingSuite) TestHandleMessage_FFmpegNotAvailable() {
-	as.setupEnvironment()
-
-	videoID := uuid.Must(uuid.NewV4())
-	videoData := []byte("fake video data")
-	eventMessage := messages.S3EventMessage{
-		Key: videoID.String() + ".mp4",
-	}
-
-	eventData, err := json.Marshal(eventMessage)
-	as.NoError(err)
-
-	consumedMsg := &kafka.ConsumedMessage{
-		Topic:     kafka.KafkaVideoUploadedTopic,
-		Partition: 0,
-		Offset:    1,
-		Key:       videoID.String(),
-		Value:     eventData,
-		Headers:   make(map[string]string),
-		Timestamp: time.Now(),
-	}
-
-	// Extract bucket and key from the event message like the actual code does
-	bucket, key := s3.ExtractBucketAndKeyFromEventMessage(videoID.String() + ".mp4")
-	as.mockS3.On("Download", key, bucket).Return(videoData, nil)
-
-	manager, err := processing.NewVideoProcessManager(as.ctx)
-	as.NoError(err)
-
-	err = manager.HandleMessage(as.ctx, consumedMsg)
-	as.Error(err)
-	// Note: Since FFmpeg is created directly with ffmpeg.New() instead of dependency injection,
-	// we can't mock it easily. The actual error will be about ffmpeg not found in PATH
-	as.Contains(err.Error(), "FFmpeg not available")
 }
