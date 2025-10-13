@@ -137,29 +137,3 @@ type StreamInfo struct {
 	BitsPerSample      int               `json:"bits_per_sample,omitempty"`
 	Tags               map[string]string `json:"tags,omitempty"`
 }
-
-// DefaultTranscodeOptions returns sensible default options for transcoding
-func DefaultTranscodeOptions() TranscodeOptions {
-	return TranscodeOptions{
-		VideoCodec:   "libx264",
-		VideoQuality: "23",
-		AudioCodec:   "aac",
-		AudioBitrate: "128k",
-		Format:       "mp4",
-	}
-}
-
-// DefaultSegmentationOptions returns sensible default options for HLS segmentation
-func DefaultSegmentationOptions() SegmentationOptions {
-	return SegmentationOptions{
-		SegmentDuration: "10",
-		PlaylistType:    "vod",
-		PlaylistName:    "playlist.m3u8",
-		SegmentPrefix:   "segment",
-		SegmentFormat:   "ts",
-		VideoCodec:      "libx264",
-		VideoQuality:    "23",
-		AudioCodec:      "aac",
-		AudioBitrate:    "128k",
-	}
-}

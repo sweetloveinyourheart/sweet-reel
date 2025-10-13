@@ -37,8 +37,8 @@ func (f *FFmpeg) SegmentVideo(ctx context.Context, inputPath, outputDir string, 
 	if options.VideoBitrate != "" {
 		args = append(args, "-b:v", options.VideoBitrate)
 		// For x264 with specific bitrate, use reasonable quality preset
-		if options.VideoCodec == "libx264" {
-			args = append(args, "-preset", "medium")
+		if options.VideoCodec == CodecLibX264 {
+			args = append(args, "-preset", PresetMedium)
 		}
 	} else if options.VideoQuality != "" {
 		args = append(args, "-crf", options.VideoQuality)
@@ -83,7 +83,7 @@ func (f *FFmpeg) SegmentVideo(ctx context.Context, inputPath, outputDir string, 
 	}
 
 	// HLS specific options
-	args = append(args, "-f", "hls")
+	args = append(args, "-f", FormatHLS)
 	args = append(args, "-hls_time", options.SegmentDuration)
 	args = append(args, "-hls_playlist_type", options.PlaylistType)
 
@@ -123,7 +123,7 @@ func (f *FFmpeg) SegmentVideoMultiQuality(ctx context.Context, inputPath, output
 	}
 
 	// Create master playlist
-	masterPlaylistPath := filepath.Join(outputDir, "master.m3u8")
+	masterPlaylistPath := filepath.Join(outputDir, MasterPlaylistName)
 	var masterPlaylistLines []string
 	masterPlaylistLines = append(masterPlaylistLines, "#EXTM3U")
 	masterPlaylistLines = append(masterPlaylistLines, "#EXT-X-VERSION:3")
@@ -158,7 +158,7 @@ func (f *FFmpeg) SegmentVideoMultiQuality(ctx context.Context, inputPath, output
 			masterPlaylistLines = append(masterPlaylistLines, streamInfo)
 		}
 
-		relativePath := fmt.Sprintf("%s/playlist.m3u8", quality.QualityName)
+		relativePath := fmt.Sprintf("%s/%s", quality.QualityName, DefaultPlaylistName)
 		masterPlaylistLines = append(masterPlaylistLines, relativePath)
 	}
 
@@ -188,16 +188,16 @@ func (f *FFmpeg) CreateDASHSegments(ctx context.Context, inputPath, outputDir st
 	args := []string{
 		"-y",            // Overwrite output files
 		"-i", inputPath, // Input file
-		"-f", "dash",
+		"-f", FormatDASH,
 		"-seg_duration", segmentDuration,
 		"-use_template", "1",
 		"-use_timeline", "1",
-		"-init_seg_name", "init_$RepresentationID$.m4s",
-		"-media_seg_name", "chunk_$RepresentationID$_$Number$.m4s",
+		"-init_seg_name", DASHInitSegmentPattern,
+		"-media_seg_name", DASHMediaSegmentPattern,
 	}
 
 	// Output manifest file
-	manifestPath := filepath.Join(outputDir, "manifest.mpd")
+	manifestPath := filepath.Join(outputDir, DASHManifestName)
 	args = append(args, manifestPath)
 
 	logger.Global().Info("Creating DASH segments",
@@ -240,9 +240,9 @@ func (f *FFmpeg) CreatePreviewClips(ctx context.Context, inputPath, outputDir st
 			"-i", inputPath, // Input file
 			"-ss", fmt.Sprintf("%d", startTime), // Start time
 			"-t", clipDuration, // Duration
-			"-c:v", "libx264",
-			"-c:a", "aac",
-			"-movflags", "+faststart",
+			"-c:v", CodecLibX264,
+			"-c:a", CodecAAC,
+			"-movflags", OptionFastStart,
 			clipPath,
 		}
 

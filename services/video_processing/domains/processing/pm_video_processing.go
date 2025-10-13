@@ -22,54 +22,107 @@ import (
 )
 
 const (
+	// Batch processing
 	BatchSize = 1024
 
+	// Thumbnail settings
 	ThumbnailWidth      = 320
 	ThumbnailHeight     = 240
 	ThumbnailTimeOffset = "00:00:00"
+	ThumbnailFileName   = "thumbnail.jpg"
+
+	// Directory and file naming
+	TempDirPattern = "/tmp/video_processing_%s"
+	InputFileName  = "input.mp4"
+	HLSDirName     = "hls"
+
+	// Quality levels
+	Quality480p    = "480p"
+	Quality720p    = "720p"
+	Quality1080p   = "1080p"
+	QualityUnknown = "unknown"
+)
+
+// Re-export commonly used ffmpeg constants for convenience
+const (
+	// MIME types
+	ThumbnailMimeType = ffmpeg.MimeTypeJPEG
+
+	// Playlist settings
+	PlaylistFileName = ffmpeg.DefaultPlaylistName
+	SegmentPrefix    = ffmpeg.DefaultSegmentPrefix
+	SegmentDuration  = "6" // Custom duration, different from ffmpeg default
+	PlaylistType     = ffmpeg.PlaylistTypeVOD
+	SegmentFormat    = ffmpeg.DefaultSegmentFormat
+
+	// Codecs
+	CodecH264 = ffmpeg.CodecLibX264
+	CodecAAC  = ffmpeg.CodecAAC
+
+	// File extensions
+	ExtM3U8 = ffmpeg.ExtM3U8
+	ExtTS   = ffmpeg.ExtTS
+)
+
+// Video quality configurations
+const (
+	// Resolutions
+	Resolution480p  = ffmpeg.Resolution480p
+	Resolution720p  = ffmpeg.Resolution720p
+	Resolution1080p = ffmpeg.Resolution1080p
+
+	// Video bitrates
+	Bitrate480p  = ffmpeg.VideoBitrate480p
+	Bitrate720p  = ffmpeg.VideoBitrate720p
+	Bitrate1080p = ffmpeg.VideoBitrate1080p
+
+	// Audio bitrates
+	AudioBitrate480p  = ffmpeg.AudioBitrate96k
+	AudioBitrate720p  = ffmpeg.AudioBitrate128k
+	AudioBitrate1080p = ffmpeg.AudioBitrate192k
 )
 
 var (
 	// Define multiple quality levels for adaptive streaming
 	qualities = []ffmpeg.SegmentationOptions{
 		{
-			QualityName:     "480p",
-			SegmentDuration: "6",
-			PlaylistType:    "vod",
-			PlaylistName:    "playlist.m3u8",
-			SegmentPrefix:   "segment",
-			SegmentFormat:   "ts",
-			VideoCodec:      "libx264",
-			VideoBitrate:    "800k",
-			AudioCodec:      "aac",
-			AudioBitrate:    "96k",
-			Resolution:      "854x480", // 480p
+			QualityName:     Quality480p,
+			SegmentDuration: SegmentDuration,
+			PlaylistType:    PlaylistType,
+			PlaylistName:    PlaylistFileName,
+			SegmentPrefix:   SegmentPrefix,
+			SegmentFormat:   SegmentFormat,
+			VideoCodec:      CodecH264,
+			VideoBitrate:    Bitrate480p,
+			AudioCodec:      CodecAAC,
+			AudioBitrate:    AudioBitrate480p,
+			Resolution:      Resolution480p,
 		},
 		{
-			QualityName:     "720p",
-			SegmentDuration: "6",
-			PlaylistType:    "vod",
-			PlaylistName:    "playlist.m3u8",
-			SegmentPrefix:   "segment",
-			SegmentFormat:   "ts",
-			VideoCodec:      "libx264",
-			VideoBitrate:    "1400k",
-			AudioCodec:      "aac",
-			AudioBitrate:    "128k",
-			Resolution:      "1280x720", // 720p
+			QualityName:     Quality720p,
+			SegmentDuration: SegmentDuration,
+			PlaylistType:    PlaylistType,
+			PlaylistName:    PlaylistFileName,
+			SegmentPrefix:   SegmentPrefix,
+			SegmentFormat:   SegmentFormat,
+			VideoCodec:      CodecH264,
+			VideoBitrate:    Bitrate720p,
+			AudioCodec:      CodecAAC,
+			AudioBitrate:    AudioBitrate720p,
+			Resolution:      Resolution720p,
 		},
 		{
-			QualityName:     "1080p",
-			SegmentDuration: "6",
-			PlaylistType:    "vod",
-			PlaylistName:    "playlist.m3u8",
-			SegmentPrefix:   "segment",
-			SegmentFormat:   "ts",
-			VideoCodec:      "libx264",
-			VideoBitrate:    "2800k",
-			AudioCodec:      "aac",
-			AudioBitrate:    "192k",
-			Resolution:      "1920x1080", // 1080p
+			QualityName:     Quality1080p,
+			SegmentDuration: SegmentDuration,
+			PlaylistType:    PlaylistType,
+			PlaylistName:    PlaylistFileName,
+			SegmentPrefix:   SegmentPrefix,
+			SegmentFormat:   SegmentFormat,
+			VideoCodec:      CodecH264,
+			VideoBitrate:    Bitrate1080p,
+			AudioCodec:      CodecAAC,
+			AudioBitrate:    AudioBitrate1080p,
+			Resolution:      Resolution1080p,
 		},
 	}
 )
@@ -215,13 +268,13 @@ func (vsp *VideoProcessManager) processVideo(ctx context.Context, videoID uuid.U
 		return errors.Wrap(err, "FFmpeg not available")
 	}
 
-	tempDir := fmt.Sprintf("/tmp/video_processing_%s", videoID)
+	tempDir := fmt.Sprintf(TempDirPattern, videoID)
 	if err := os.MkdirAll(tempDir, 0755); err != nil {
 		return errors.Wrap(err, "failed to create temp directory")
 	}
 	defer os.RemoveAll(tempDir)
 
-	inputPath := filepath.Join(tempDir, "input.mp4")
+	inputPath := filepath.Join(tempDir, InputFileName)
 	if err := os.WriteFile(inputPath, videoData, 0644); err != nil {
 		return errors.Wrap(err, "failed to write input file")
 	}
@@ -238,7 +291,7 @@ func (vsp *VideoProcessManager) processVideo(ctx context.Context, videoID uuid.U
 		zap.String("size", probeInfo.Format.Size),
 		zap.Int("streams", len(probeInfo.Streams)))
 
-	hlsOutputDir := filepath.Join(tempDir, "hls")
+	hlsOutputDir := filepath.Join(tempDir, HLSDirName)
 	if err := os.MkdirAll(hlsOutputDir, 0755); err != nil {
 		return errors.Wrap(err, "failed to create HLS output directory")
 	}
@@ -270,7 +323,7 @@ func (vsp *VideoProcessManager) processVideo(ctx context.Context, videoID uuid.U
 		zap.Duration("processing_time", processingTime))
 
 	// Create thumbnail
-	thumbnailPath := filepath.Join(tempDir, "thumbnail.jpg")
+	thumbnailPath := filepath.Join(tempDir, ThumbnailFileName)
 	if err := vsp.ff.CreateThumbnail(ctx, inputPath, thumbnailPath, ThumbnailTimeOffset, ThumbnailWidth, ThumbnailHeight); err != nil {
 		logger.Global().WarnContext(ctx, "Failed to create thumbnail", zap.Error(err))
 	} else {
@@ -325,7 +378,7 @@ func (vsp *VideoProcessManager) uploadProcessedSegmentFiles(ctx context.Context,
 		// Determine file type and publish appropriate message
 		ext := filepath.Ext(path)
 		switch ext {
-		case ".m3u8":
+		case ExtM3U8:
 			manifestData := messages.VideoProcessedManifestData{
 				SizeBytes: info.Size(),
 			}
@@ -339,7 +392,7 @@ func (vsp *VideoProcessManager) uploadProcessedSegmentFiles(ctx context.Context,
 			if err != nil {
 				logger.Global().Error("Failed to publish manifest message", zap.Error(err))
 			}
-		case ".ts":
+		case ExtTS:
 			// For variant segments, extract quality from path and count segments
 			quality := vsp.extractQualityFromPath(relPath)
 			segments := vsp.countSegmentsInDirectory(filepath.Dir(path))
@@ -384,9 +437,9 @@ func (vsp *VideoProcessManager) uploadProcessedThumbnailFiles(ctx context.Contex
 			if err != nil {
 				logger.Global().WarnContext(ctx, "Failed to read thumbnail", zap.Error(err))
 			} else {
-				thumbnailKey := fmt.Sprintf("%s/thumbnail.jpg", videoID.String())
+				thumbnailKey := fmt.Sprintf("%s/%s", videoID.String(), ThumbnailFileName)
 				thumbnailReader := bytes.NewReader(thumbnailData)
-				if err := vsp.storageClient.Upload(thumbnailKey, s3.S3VideoProcessedBucket, thumbnailReader, "image/jpeg"); err != nil {
+				if err := vsp.storageClient.Upload(thumbnailKey, s3.S3VideoProcessedBucket, thumbnailReader, ThumbnailMimeType); err != nil {
 					logger.Global().WarnContext(ctx, "Failed to upload thumbnail", zap.Error(err))
 				} else {
 					data := messages.VideoProcessedThumbnailData{
@@ -424,7 +477,7 @@ func (vsp *VideoProcessManager) extractQualityFromPath(relPath string) string {
 		return filepath.Dir(relPath)
 	}
 
-	return "unknown"
+	return QualityUnknown
 }
 
 // countSegmentsInDirectory counts the number of .ts segment files in a directory
@@ -436,7 +489,7 @@ func (vsp *VideoProcessManager) countSegmentsInDirectory(dir string) int {
 	}
 
 	for _, entry := range entries {
-		if !entry.IsDir() && filepath.Ext(entry.Name()) == ".ts" {
+		if !entry.IsDir() && filepath.Ext(entry.Name()) == ExtTS {
 			count++
 		}
 	}
@@ -446,7 +499,7 @@ func (vsp *VideoProcessManager) countSegmentsInDirectory(dir string) int {
 
 // calculateVariantDuration calculates the total duration of a variant by parsing its playlist
 func (vsp *VideoProcessManager) calculateVariantDuration(dir string) int {
-	playlistPath := filepath.Join(dir, "playlist.m3u8")
+	playlistPath := filepath.Join(dir, PlaylistFileName)
 	data, err := os.ReadFile(playlistPath)
 	if err != nil {
 		return 0

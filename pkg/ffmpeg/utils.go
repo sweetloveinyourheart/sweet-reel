@@ -216,8 +216,8 @@ func (f *FFmpeg) CreateVideoFromImages(ctx context.Context, imagePattern, output
 		"-y",                           // Overwrite output files
 		"-framerate", formatFloat(fps), // Input framerate
 		"-i", imagePattern, // Input pattern (e.g., "frame_%04d.jpg")
-		"-c:v", "libx264",
-		"-pix_fmt", "yuv420p",
+		"-c:v", CodecLibX264,
+		"-pix_fmt", PixFmtYUV420P,
 		outputPath,
 	}
 
@@ -270,18 +270,28 @@ func (f *FFmpeg) GetTotalFrames(ctx context.Context, inputPath string) (int64, e
 func GetMimeType(filePath string) string {
 	ext := filepath.Ext(filePath)
 	switch ext {
-	case ".m3u8":
-		return "application/vnd.apple.mpegurl"
-	case ".ts":
-		return "video/mp2t"
-	case ".mp4":
-		return "video/mp4"
-	case ".jpg", ".jpeg":
-		return "image/jpeg"
-	case ".png":
-		return "image/png"
+	case ExtM3U8:
+		return MimeTypeM3U8
+	case ExtTS:
+		return MimeTypeTS
+	case ExtMP4:
+		return MimeTypeMP4
+	case ExtJPG, ExtJPEG:
+		return MimeTypeJPEG
+	case ExtPNG:
+		return MimeTypePNG
+	case ExtMKV:
+		return MimeTypeMKV
+	case ExtWebM:
+		return MimeTypeWebM
+	case ExtAVI:
+		return MimeTypeAVI
+	case ExtMOV:
+		return MimeTypeMOV
+	case ExtFLV:
+		return MimeTypeFLV
 	default:
-		return "application/octet-stream"
+		return MimeTypeOctetStream
 	}
 }
 
