@@ -102,5 +102,15 @@ func (v Video) Validate() error {
 		return errors.New("video title cannot exceed 255 characters")
 	}
 
+	// Validate status
+	validStatuses := map[VideoStatus]bool{
+		VideoStatusProcessing: true,
+		VideoStatusReady:      true,
+		VideoStatusFailed:     true,
+	}
+	if !validStatuses[v.Status] {
+		return errors.New("invalid video status")
+	}
+
 	return nil
 }

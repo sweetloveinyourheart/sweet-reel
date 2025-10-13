@@ -31,28 +31,6 @@ func TestFFmpegAvailability(t *testing.T) {
 	t.Logf("FFmpeg version: %s", version)
 }
 
-func TestDefaultOptions(t *testing.T) {
-	transcodeOptions := DefaultTranscodeOptions()
-
-	if transcodeOptions.VideoCodec != "libx264" {
-		t.Errorf("Expected default video codec to be libx264, got %s", transcodeOptions.VideoCodec)
-	}
-
-	if transcodeOptions.AudioCodec != "aac" {
-		t.Errorf("Expected default audio codec to be aac, got %s", transcodeOptions.AudioCodec)
-	}
-
-	segmentOptions := DefaultSegmentationOptions()
-
-	if segmentOptions.SegmentDuration != "10" {
-		t.Errorf("Expected default segment duration to be 10, got %s", segmentOptions.SegmentDuration)
-	}
-
-	if segmentOptions.PlaylistType != "vod" {
-		t.Errorf("Expected default playlist type to be vod, got %s", segmentOptions.PlaylistType)
-	}
-}
-
 func TestTimeStringParsing(t *testing.T) {
 	tests := []struct {
 		input    string

@@ -37,8 +37,8 @@ func (f *FFmpeg) SegmentVideo(ctx context.Context, inputPath, outputDir string, 
 	if options.VideoBitrate != "" {
 		args = append(args, "-b:v", options.VideoBitrate)
 		// For x264 with specific bitrate, use reasonable quality preset
-		if options.VideoCodec == "libx264" {
-			args = append(args, "-preset", "medium")
+		if options.VideoCodec == CodecLibX264 {
+			args = append(args, "-preset", PresetMedium)
 		}
 	} else if options.VideoQuality != "" {
 		args = append(args, "-crf", options.VideoQuality)
@@ -83,7 +83,7 @@ func (f *FFmpeg) SegmentVideo(ctx context.Context, inputPath, outputDir string, 
 	}
 
 	// HLS specific options
-	args = append(args, "-f", "hls")
+	args = append(args, "-f", FormatHLS)
 	args = append(args, "-hls_time", options.SegmentDuration)
 	args = append(args, "-hls_playlist_type", options.PlaylistType)
 
@@ -123,30 +123,27 @@ func (f *FFmpeg) SegmentVideoMultiQuality(ctx context.Context, inputPath, output
 	}
 
 	// Create master playlist
-	masterPlaylistPath := filepath.Join(outputDir, "master.m3u8")
+	masterPlaylistPath := filepath.Join(outputDir, MasterPlaylistName)
 	var masterPlaylistLines []string
 	masterPlaylistLines = append(masterPlaylistLines, "#EXTM3U")
 	masterPlaylistLines = append(masterPlaylistLines, "#EXT-X-VERSION:3")
 
-	for i, quality := range qualities {
+	for _, quality := range qualities {
 		// Create quality-specific directory
-		qualityDir := filepath.Join(outputDir, fmt.Sprintf("quality_%d", i))
+		qualityDir := filepath.Join(outputDir, quality.QualityName)
 		if err := ensureOutputDir(qualityDir); err != nil {
-			return errors.Wrapf(err, "failed to create quality directory %d", i)
+			return errors.Wrapf(err, "failed to create quality directory %s", quality.QualityName)
 		}
 
 		// Segment this quality level
-		qualityOptions := quality
-		qualityOptions.PlaylistName = "playlist.m3u8"
-
 		logger.Global().Info("Segmenting quality level",
-			zap.Int("quality", i+1),
+			zap.String("quality", quality.QualityName),
 			zap.Int("total", len(qualities)),
 			zap.String("resolution", quality.Resolution),
 			zap.String("bitrate", quality.VideoBitrate))
 
-		if err := f.SegmentVideo(ctx, inputPath, qualityDir, qualityOptions, progressCallback); err != nil {
-			return errors.Wrapf(err, "failed to segment quality level %d", i+1)
+		if err := f.SegmentVideo(ctx, inputPath, qualityDir, quality, progressCallback); err != nil {
+			return errors.Wrapf(err, "failed to segment quality level %s", quality.QualityName)
 		}
 
 		// Add to master playlist
@@ -161,7 +158,7 @@ func (f *FFmpeg) SegmentVideoMultiQuality(ctx context.Context, inputPath, output
 			masterPlaylistLines = append(masterPlaylistLines, streamInfo)
 		}
 
-		relativePath := fmt.Sprintf("quality_%d/playlist.m3u8", i)
+		relativePath := fmt.Sprintf("%s/%s", quality.QualityName, DefaultPlaylistName)
 		masterPlaylistLines = append(masterPlaylistLines, relativePath)
 	}
 
@@ -191,16 +188,16 @@ func (f *FFmpeg) CreateDASHSegments(ctx context.Context, inputPath, outputDir st
 	args := []string{
 		"-y",            // Overwrite output files
 		"-i", inputPath, // Input file
-		"-f", "dash",
+		"-f", FormatDASH,
 		"-seg_duration", segmentDuration,
 		"-use_template", "1",
 		"-use_timeline", "1",
-		"-init_seg_name", "init_$RepresentationID$.m4s",
-		"-media_seg_name", "chunk_$RepresentationID$_$Number$.m4s",
+		"-init_seg_name", DASHInitSegmentPattern,
+		"-media_seg_name", DASHMediaSegmentPattern,
 	}
 
 	// Output manifest file
-	manifestPath := filepath.Join(outputDir, "manifest.mpd")
+	manifestPath := filepath.Join(outputDir, DASHManifestName)
 	args = append(args, manifestPath)
 
 	logger.Global().Info("Creating DASH segments",
@@ -243,9 +240,9 @@ func (f *FFmpeg) CreatePreviewClips(ctx context.Context, inputPath, outputDir st
 			"-i", inputPath, // Input file
 			"-ss", fmt.Sprintf("%d", startTime), // Start time
 			"-t", clipDuration, // Duration
-			"-c:v", "libx264",
-			"-c:a", "aac",
-			"-movflags", "+faststart",
+			"-c:v", CodecLibX264,
+			"-c:a", CodecAAC,
+			"-movflags", OptionFastStart,
 			clipPath,
 		}
 

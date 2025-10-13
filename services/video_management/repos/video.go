@@ -62,11 +62,11 @@ func NewVideoRepository(tx db.DbOrTx) IVideoRepository {
 
 func (r *VideoRepository) CreateVideo(ctx context.Context, video *models.Video) error {
 	query := `
-		INSERT INTO videos (id, uploader_id, title, description, object_key, processed_at)
-		VALUES ($1, $2, $3, $4, $5, $6)`
+		INSERT INTO videos (id, uploader_id, title, description, status, object_key, processed_at)
+		VALUES ($1, $2, $3, $4, $5, $6, $7)`
 
 	_, err := r.Tx.Exec(ctx, query,
-		video.ID, video.UploaderID, video.Title, video.Description,
+		video.ID, video.UploaderID, video.Title, video.Description, video.Status,
 		video.ObjectKey, video.ProcessedAt)
 	return err
 }
@@ -213,18 +213,18 @@ func (r *VideoRepository) DeleteVideoManifest(ctx context.Context, id uuid.UUID)
 
 func (r *VideoRepository) CreateVideoVariant(ctx context.Context, variant *models.VideoVariant) error {
 	query := `
-		INSERT INTO video_variants (id, video_id, quality, playlist_url, total_segments, total_duration)
+		INSERT INTO video_variants (id, video_id, quality, object_key, total_segments, total_duration)
 		VALUES ($1, $2, $3, $4, $5, $6)`
 
 	_, err := r.Tx.Exec(ctx, query,
-		variant.ID, variant.VideoID, variant.Quality, variant.PlaylistURL,
+		variant.ID, variant.VideoID, variant.Quality, variant.ObjectKey,
 		variant.TotalSegments, variant.TotalDuration)
 	return err
 }
 
 func (r *VideoRepository) GetVideoVariantsByVideoID(ctx context.Context, videoID uuid.UUID) ([]*models.VideoVariant, error) {
 	query := `
-		SELECT id, video_id, quality, playlist_url, total_segments, total_duration, created_at
+		SELECT id, video_id, quality, object_key, total_segments, total_duration, created_at
 		FROM video_variants WHERE video_id = $1 ORDER BY quality`
 
 	rows, err := r.Tx.Query(ctx, query, videoID)
@@ -237,7 +237,7 @@ func (r *VideoRepository) GetVideoVariantsByVideoID(ctx context.Context, videoID
 	for rows.Next() {
 		variant := &models.VideoVariant{}
 		err := rows.Scan(
-			&variant.ID, &variant.VideoID, &variant.Quality, &variant.PlaylistURL,
+			&variant.ID, &variant.VideoID, &variant.Quality, &variant.ObjectKey,
 			&variant.TotalSegments, &variant.TotalDuration, &variant.CreatedAt)
 		if err != nil {
 			return nil, err
@@ -249,12 +249,12 @@ func (r *VideoRepository) GetVideoVariantsByVideoID(ctx context.Context, videoID
 
 func (r *VideoRepository) GetVideoVariantByID(ctx context.Context, id uuid.UUID) (*models.VideoVariant, error) {
 	query := `
-		SELECT id, video_id, quality, playlist_url, total_segments, total_duration, created_at
+		SELECT id, video_id, quality, object_key, total_segments, total_duration, created_at
 		FROM video_variants WHERE id = $1`
 
 	variant := &models.VideoVariant{}
 	err := r.Tx.QueryRow(ctx, query, id).Scan(
-		&variant.ID, &variant.VideoID, &variant.Quality, &variant.PlaylistURL,
+		&variant.ID, &variant.VideoID, &variant.Quality, &variant.ObjectKey,
 		&variant.TotalSegments, &variant.TotalDuration, &variant.CreatedAt)
 
 	if err != nil {
@@ -265,11 +265,11 @@ func (r *VideoRepository) GetVideoVariantByID(ctx context.Context, id uuid.UUID)
 
 func (r *VideoRepository) UpdateVideoVariant(ctx context.Context, variant *models.VideoVariant) error {
 	query := `
-		UPDATE video_variants SET video_id = $2, quality = $3, playlist_url = $4, 
+		UPDATE video_variants SET video_id = $2, quality = $3, object_key = $4, 
 		total_segments = $5, total_duration = $6 WHERE id = $1`
 
 	_, err := r.Tx.Exec(ctx, query,
-		variant.ID, variant.VideoID, variant.Quality, variant.PlaylistURL,
+		variant.ID, variant.VideoID, variant.Quality, variant.ObjectKey,
 		variant.TotalSegments, variant.TotalDuration)
 	return err
 }
@@ -295,7 +295,7 @@ func (r *VideoRepository) CreateVideoThumbnail(ctx context.Context, thumbnail *m
 
 	_, err := r.Tx.Exec(ctx, query,
 		thumbnail.ID, thumbnail.VideoID, thumbnail.ObjectKey,
-		thumbnail.Width, thumbnail.Height, thumbnail.CreatedAt)
+		thumbnail.Width, thumbnail.Height)
 	return err
 }
 

@@ -46,6 +46,7 @@ func (a *actions) PresignedUrl(ctx context.Context, request *connect.Request[pro
 		Title:       request.Msg.GetTitle(),
 		Description: description,
 		UploaderID:  uploaderID,
+		Status:      models.VideoStatusProcessing,
 	}
 
 	if err := newVideo.Validate(); err != nil {
