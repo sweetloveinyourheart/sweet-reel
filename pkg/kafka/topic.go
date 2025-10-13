@@ -5,6 +5,7 @@ const (
 )
 
 const (
-	KafkaVideoUploadedTopic = "video-uploaded"
-	KafkaVideoProgressTopic = "video-progress-update"
+	KafkaVideoUploadedTopic  = "video-uploaded"
+	KafkaVideoProgressTopic  = "video-progress-update"
+	KafkaVideoProcessedTopic = "video-processed"
 )

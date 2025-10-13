@@ -45,6 +45,8 @@ type TranscodeOptions struct {
 
 // SegmentationOptions contains options for video segmentation
 type SegmentationOptions struct {
+	QualityName string
+
 	// Segment duration
 	SegmentDuration string // Duration of each segment (e.g., "10", "30")
 

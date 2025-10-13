@@ -13,7 +13,7 @@ type VideoVariant struct {
 	ID            uuid.UUID `json:"id"`
 	VideoID       uuid.UUID `json:"video_id"`
 	Quality       string    `json:"quality"`
-	PlaylistURL   string    `json:"playlist_url"`
+	ObjectKey     string    `json:"object_key"`
 	TotalSegments *int      `json:"total_segments"`
 	TotalDuration *int      `json:"total_duration"`
 	CreatedAt     time.Time `json:"created_at"`
@@ -34,9 +34,9 @@ func (vv VideoVariant) GetQuality() string {
 	return vv.Quality
 }
 
-// GetPlaylistURL returns the playlist URL of the video variant
-func (vv VideoVariant) GetPlaylistURL() string {
-	return vv.PlaylistURL
+// GetObjectKey returns the playlist URL of the video variant
+func (vv VideoVariant) GetObjectKey() string {
+	return vv.ObjectKey
 }
 
 // GetTotalSegments returns the total segments of the video variant or 0 if nil
@@ -78,8 +78,8 @@ func (vv VideoVariant) Validate() error {
 		return errors.New("quality cannot exceed 50 characters")
 	}
 
-	if strings.TrimSpace(vv.PlaylistURL) == "" {
-		return errors.New("playlist URL is required and cannot be empty")
+	if strings.TrimSpace(vv.ObjectKey) == "" {
+		return errors.New("object key is required and cannot be empty")
 	}
 
 	if vv.TotalSegments != nil && *vv.TotalSegments < 0 {

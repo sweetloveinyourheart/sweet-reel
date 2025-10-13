@@ -65,7 +65,7 @@ func (vt VideoThumbnail) Validate() error {
 	}
 
 	if strings.TrimSpace(vt.ObjectKey) == "" {
-		return errors.New("file URL is required and cannot be empty")
+		return errors.New("object key is required and cannot be empty")
 	}
 
 	if vt.Width != nil && *vt.Width <= 0 {

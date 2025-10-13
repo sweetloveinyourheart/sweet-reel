@@ -56,7 +56,7 @@ func (vm VideoManifest) Validate() error {
 	}
 
 	if strings.TrimSpace(vm.ObjectKey) == "" {
-		return errors.New("manifest URL is required and cannot be empty")
+		return errors.New("object key is required and cannot be empty")
 	}
 
 	if vm.SizeBytes != nil && *vm.SizeBytes < 0 {

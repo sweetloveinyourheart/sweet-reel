@@ -21,3 +21,33 @@ type VideoProcessingProgress struct {
 	ObjectKey   string      `json:"object_key"`
 	ProcessedAt time.Time   `json:"processed_at"`
 }
+
+type VideoProcessedType string
+
+const (
+	VideoProcessedTypeManifest  VideoProcessedType = "manifest"
+	VideoProcessedTypeThumbnail VideoProcessedType = "thumbnail"
+	VideoProcessedTypeVariant   VideoProcessedType = "variant"
+)
+
+type VideoProcessed struct {
+	VideoID   uuid.UUID          `json:"video_id"`
+	ObjectKey string             `json:"object_key"`
+	Type      VideoProcessedType `json:"type"`
+	Data      any                `json:"data"`
+}
+
+type VideoProcessedManifestData struct {
+	SizeBytes int64 `json:"size_bytes"`
+}
+
+type VideoProcessedThumbnailData struct {
+	Width  int `json:"width"`
+	Height int `json:"height"`
+}
+
+type VideoProcessedVariantData struct {
+	Quality       string `json:"quality"`
+	TotalSegments int    `json:"total_segments"`
+	TotalDuration int    `json:"total_duration"`
+}

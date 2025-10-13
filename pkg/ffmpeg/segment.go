@@ -128,25 +128,22 @@ func (f *FFmpeg) SegmentVideoMultiQuality(ctx context.Context, inputPath, output
 	masterPlaylistLines = append(masterPlaylistLines, "#EXTM3U")
 	masterPlaylistLines = append(masterPlaylistLines, "#EXT-X-VERSION:3")
 
-	for i, quality := range qualities {
+	for _, quality := range qualities {
 		// Create quality-specific directory
-		qualityDir := filepath.Join(outputDir, fmt.Sprintf("quality_%d", i))
+		qualityDir := filepath.Join(outputDir, quality.QualityName)
 		if err := ensureOutputDir(qualityDir); err != nil {
-			return errors.Wrapf(err, "failed to create quality directory %d", i)
+			return errors.Wrapf(err, "failed to create quality directory %s", quality.QualityName)
 		}
 
 		// Segment this quality level
-		qualityOptions := quality
-		qualityOptions.PlaylistName = "playlist.m3u8"
-
 		logger.Global().Info("Segmenting quality level",
-			zap.Int("quality", i+1),
+			zap.String("quality", quality.QualityName),
 			zap.Int("total", len(qualities)),
 			zap.String("resolution", quality.Resolution),
 			zap.String("bitrate", quality.VideoBitrate))
 
-		if err := f.SegmentVideo(ctx, inputPath, qualityDir, qualityOptions, progressCallback); err != nil {
-			return errors.Wrapf(err, "failed to segment quality level %d", i+1)
+		if err := f.SegmentVideo(ctx, inputPath, qualityDir, quality, progressCallback); err != nil {
+			return errors.Wrapf(err, "failed to segment quality level %s", quality.QualityName)
 		}
 
 		// Add to master playlist
@@ -161,7 +158,7 @@ func (f *FFmpeg) SegmentVideoMultiQuality(ctx context.Context, inputPath, output
 			masterPlaylistLines = append(masterPlaylistLines, streamInfo)
 		}
 
-		relativePath := fmt.Sprintf("quality_%d/playlist.m3u8", i)
+		relativePath := fmt.Sprintf("%s/playlist.m3u8", quality.QualityName)
 		masterPlaylistLines = append(masterPlaylistLines, relativePath)
 	}
 
