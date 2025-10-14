@@ -121,7 +121,7 @@ AuthService handles all authentication-related logic.
 | Method Name | Request Type | Response Type | Description |
 | ----------- | ------------ | ------------- | ------------|
 | OAuthLogin | [OAuthLoginRequest](#com-sweetloveinyourheart-srl-auth-OAuthLoginRequest) | [OAuthLoginResponse](#com-sweetloveinyourheart-srl-auth-OAuthLoginResponse) | Handles OAuth login with external providers (Google, GitHub, etc.) |
-| RefreshToken | [RefreshTokenRequest](#com-sweetloveinyourheart-srl-auth-RefreshTokenRequest) | [RefreshTokenResponse](#com-sweetloveinyourheart-srl-auth-RefreshTokenResponse) | Optionally, validate or refresh tokens later. |
+| RefreshToken | [RefreshTokenRequest](#com-sweetloveinyourheart-srl-auth-RefreshTokenRequest) | [RefreshTokenResponse](#com-sweetloveinyourheart-srl-auth-RefreshTokenResponse) | Handle refresh tokens. |
 
  
 

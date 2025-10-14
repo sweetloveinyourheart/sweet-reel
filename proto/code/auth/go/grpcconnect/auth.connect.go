@@ -44,7 +44,7 @@ const (
 type AuthServiceClient interface {
 	// Handles OAuth login with external providers (Google, GitHub, etc.)
 	OAuthLogin(context.Context, *connect.Request[_go.OAuthLoginRequest]) (*connect.Response[_go.OAuthLoginResponse], error)
-	// Optionally, validate or refresh tokens later.
+	// Handle refresh tokens.
 	RefreshToken(context.Context, *connect.Request[_go.RefreshTokenRequest]) (*connect.Response[_go.RefreshTokenResponse], error)
 }
 
@@ -95,7 +95,7 @@ func (c *authServiceClient) RefreshToken(ctx context.Context, req *connect.Reque
 type AuthServiceHandler interface {
 	// Handles OAuth login with external providers (Google, GitHub, etc.)
 	OAuthLogin(context.Context, *connect.Request[_go.OAuthLoginRequest]) (*connect.Response[_go.OAuthLoginResponse], error)
-	// Optionally, validate or refresh tokens later.
+	// Handle refresh tokens.
 	RefreshToken(context.Context, *connect.Request[_go.RefreshTokenRequest]) (*connect.Response[_go.RefreshTokenResponse], error)
 }
 

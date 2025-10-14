@@ -9,7 +9,7 @@ service AuthService {
     // Handles OAuth login with external providers (Google, GitHub, etc.)
     rpc OAuthLogin(OAuthLoginRequest) returns (OAuthLoginResponse);
 
-    // Optionally, validate or refresh tokens later.
+    // Handle refresh tokens.
     rpc RefreshToken(RefreshTokenRequest) returns (RefreshTokenResponse);
 }
 

@@ -31,7 +31,7 @@ const (
 type AuthServiceClient interface {
 	// Handles OAuth login with external providers (Google, GitHub, etc.)
 	OAuthLogin(ctx context.Context, in *OAuthLoginRequest, opts ...grpc.CallOption) (*OAuthLoginResponse, error)
-	// Optionally, validate or refresh tokens later.
+	// Handle refresh tokens.
 	RefreshToken(ctx context.Context, in *RefreshTokenRequest, opts ...grpc.CallOption) (*RefreshTokenResponse, error)
 }
 
@@ -71,7 +71,7 @@ func (c *authServiceClient) RefreshToken(ctx context.Context, in *RefreshTokenRe
 type AuthServiceServer interface {
 	// Handles OAuth login with external providers (Google, GitHub, etc.)
 	OAuthLogin(context.Context, *OAuthLoginRequest) (*OAuthLoginResponse, error)
-	// Optionally, validate or refresh tokens later.
+	// Handle refresh tokens.
 	RefreshToken(context.Context, *RefreshTokenRequest) (*RefreshTokenResponse, error)
 }
 
