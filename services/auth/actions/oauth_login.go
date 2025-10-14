@@ -2,6 +2,7 @@ package actions
 
 import (
 	"context"
+	"time"
 
 	"github.com/cockroachdb/errors"
 	"github.com/golang-jwt/jwt/v4"
@@ -64,9 +65,22 @@ func (a *actions) OAuthLogin(ctx context.Context, request *connect.Request[proto
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"user_id": user.Id,
 		"email":   user.Email,
+		"exp":     time.Now().Add(1 * time.Hour).Unix(), // 1 hour expiration
 	})
 
 	tokenString, err := token.SignedString([]byte(a.signingToken))
+	if err != nil {
+		return nil, grpc.InternalError(err)
+	}
+
+	// Generate refresh token
+	refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"user_id": user.Id,
+		"type":    "refresh",
+		"exp":     time.Now().Add(30 * 24 * time.Hour).Unix(), // 30 days expiration
+	})
+
+	refreshTokenString, err := refreshToken.SignedString([]byte(a.signingToken))
 	if err != nil {
 		return nil, grpc.InternalError(err)
 	}
@@ -80,13 +94,76 @@ func (a *actions) OAuthLogin(ctx context.Context, request *connect.Request[proto
 			CreatedAt: user.CreatedAt,
 			UpdatedAt: user.UpdatedAt,
 		},
-		JwtToken:  tokenString,
-		IsNewUser: upsertResponse.Msg.IsNewUser,
+		JwtToken:        tokenString,
+		JwtRefreshToken: refreshTokenString,
+		IsNewUser:       upsertResponse.Msg.IsNewUser,
 	}
 
 	return connect.NewResponse(response), nil
 }
 
-func (a *actions) ValidateToken(ctx context.Context, request *connect.Request[proto.ValidateTokenRequest]) (*connect.Response[proto.ValidateTokenResponse], error) {
-	return nil, errors.New("method is not implemented")
+func (a *actions) RefreshToken(ctx context.Context, request *connect.Request[proto.RefreshTokenRequest]) (*connect.Response[proto.RefreshTokenResponse], error) {
+	refreshToken := request.Msg.GetJwtRefreshToken()
+	if stringsutil.IsBlank(refreshToken) {
+		return nil, grpc.InvalidArgumentError(errors.New("refresh token is empty"))
+	}
+
+	// Parse and validate refresh token
+	token, err := jwt.Parse(refreshToken, func(token *jwt.Token) (any, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, errors.New("unexpected signing method")
+		}
+		return []byte(a.signingToken), nil
+	})
+
+	if err != nil {
+		return nil, grpc.UnauthenticatedError(errors.New("invalid refresh token"))
+	}
+
+	// Extract claims
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok || !token.Valid {
+		return nil, grpc.UnauthenticatedError(errors.New("invalid refresh token claims"))
+	}
+
+	// Verify this is a refresh token
+	tokenType, ok := claims["type"].(string)
+	if !ok || tokenType != "refresh" {
+		return nil, grpc.UnauthenticatedError(errors.New("invalid token type"))
+	}
+
+	// Extract user ID
+	userID, ok := claims["user_id"].(string)
+	if !ok || stringsutil.IsBlank(userID) {
+		return nil, grpc.UnauthenticatedError(errors.New("invalid user id in token"))
+	}
+
+	// Get user information
+	getUserRequest := &userProto.GetUserByIDRequest{UserId: userID}
+	getUserResponse, err := a.userServerClient.GetUserByID(ctx, connect.NewRequest(getUserRequest))
+	if err != nil {
+		return nil, grpc.InternalError(err)
+	}
+
+	user := getUserResponse.Msg.GetUser()
+	if user == nil {
+		return nil, grpc.NotFoundError(errors.New("user not found"))
+	}
+
+	// Generate new access token
+	newToken := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"user_id": user.Id,
+		"email":   user.Email,
+		"exp":     time.Now().Add(1 * time.Hour).Unix(), // 1 hour expiration
+	})
+
+	tokenString, err := newToken.SignedString([]byte(a.signingToken))
+	if err != nil {
+		return nil, grpc.InternalError(err)
+	}
+
+	// Set response data
+	response := &proto.RefreshTokenResponse{JwtToken: tokenString}
+
+	return connect.NewResponse(response), nil
 }

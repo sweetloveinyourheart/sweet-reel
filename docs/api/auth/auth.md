@@ -6,9 +6,9 @@
 - [auth.proto](#auth-proto)
     - [OAuthLoginRequest](#com-sweetloveinyourheart-srl-auth-OAuthLoginRequest)
     - [OAuthLoginResponse](#com-sweetloveinyourheart-srl-auth-OAuthLoginResponse)
+    - [RefreshTokenRequest](#com-sweetloveinyourheart-srl-auth-RefreshTokenRequest)
+    - [RefreshTokenResponse](#com-sweetloveinyourheart-srl-auth-RefreshTokenResponse)
     - [User](#com-sweetloveinyourheart-srl-auth-User)
-    - [ValidateTokenRequest](#com-sweetloveinyourheart-srl-auth-ValidateTokenRequest)
-    - [ValidateTokenResponse](#com-sweetloveinyourheart-srl-auth-ValidateTokenResponse)
   
     - [AuthService](#com-sweetloveinyourheart-srl-auth-AuthService)
   
@@ -49,7 +49,38 @@
 | ----- | ---- | ----- | ----------- |
 | user | [User](#com-sweetloveinyourheart-srl-auth-User) |  |  |
 | jwt_token | [string](#string) |  |  |
+| jwt_refresh_token | [string](#string) |  |  |
 | is_new_user | [bool](#bool) |  |  |
+
+
+
+
+
+
+<a name="com-sweetloveinyourheart-srl-auth-RefreshTokenRequest"></a>
+
+### RefreshTokenRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| jwt_refresh_token | [string](#string) |  |  |
+
+
+
+
+
+
+<a name="com-sweetloveinyourheart-srl-auth-RefreshTokenResponse"></a>
+
+### RefreshTokenResponse
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| jwt_token | [string](#string) |  |  |
 
 
 
@@ -75,38 +106,6 @@
 
 
 
-
-<a name="com-sweetloveinyourheart-srl-auth-ValidateTokenRequest"></a>
-
-### ValidateTokenRequest
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| jwt_token | [string](#string) |  |  |
-
-
-
-
-
-
-<a name="com-sweetloveinyourheart-srl-auth-ValidateTokenResponse"></a>
-
-### ValidateTokenResponse
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| valid | [bool](#bool) |  |  |
-| user_id | [string](#string) |  |  |
-| email | [string](#string) |  |  |
-
-
-
-
-
  
 
  
@@ -122,7 +121,7 @@ AuthService handles all authentication-related logic.
 | Method Name | Request Type | Response Type | Description |
 | ----------- | ------------ | ------------- | ------------|
 | OAuthLogin | [OAuthLoginRequest](#com-sweetloveinyourheart-srl-auth-OAuthLoginRequest) | [OAuthLoginResponse](#com-sweetloveinyourheart-srl-auth-OAuthLoginResponse) | Handles OAuth login with external providers (Google, GitHub, etc.) |
-| ValidateToken | [ValidateTokenRequest](#com-sweetloveinyourheart-srl-auth-ValidateTokenRequest) | [ValidateTokenResponse](#com-sweetloveinyourheart-srl-auth-ValidateTokenResponse) | Optionally, validate or refresh tokens later. |
+| RefreshToken | [RefreshTokenRequest](#com-sweetloveinyourheart-srl-auth-RefreshTokenRequest) | [RefreshTokenResponse](#com-sweetloveinyourheart-srl-auth-RefreshTokenResponse) | Optionally, validate or refresh tokens later. |
 
  
 

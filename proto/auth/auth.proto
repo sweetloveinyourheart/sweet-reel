@@ -10,7 +10,7 @@ service AuthService {
     rpc OAuthLogin(OAuthLoginRequest) returns (OAuthLoginResponse);
 
     // Optionally, validate or refresh tokens later.
-    rpc ValidateToken(ValidateTokenRequest) returns (ValidateTokenResponse);
+    rpc RefreshToken(RefreshTokenRequest) returns (RefreshTokenResponse);
 }
 
 // ===== Messages =====
@@ -32,15 +32,14 @@ message User {
 message OAuthLoginResponse {
     User user = 1;
     string jwt_token = 2;
-    bool is_new_user = 3;
+    string jwt_refresh_token = 3;
+    bool is_new_user = 4;
 }
 
-message ValidateTokenRequest {
+message RefreshTokenRequest {
+    string jwt_refresh_token = 1;
+}
+
+message RefreshTokenResponse {
     string jwt_token = 1;
-}
-
-message ValidateTokenResponse {
-    bool valid = 1;
-    string user_id = 2;
-    string email = 3;
 }
