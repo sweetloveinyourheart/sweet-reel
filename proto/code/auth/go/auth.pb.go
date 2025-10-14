@@ -158,12 +158,13 @@ func (x *User) GetUpdatedAt() string {
 }
 
 type OAuthLoginResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	User          *User                  `protobuf:"bytes,1,opt,name=user,proto3" json:"user,omitempty"`
-	JwtToken      string                 `protobuf:"bytes,2,opt,name=jwt_token,json=jwtToken,proto3" json:"jwt_token,omitempty"`
-	IsNewUser     bool                   `protobuf:"varint,3,opt,name=is_new_user,json=isNewUser,proto3" json:"is_new_user,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	User            *User                  `protobuf:"bytes,1,opt,name=user,proto3" json:"user,omitempty"`
+	JwtToken        string                 `protobuf:"bytes,2,opt,name=jwt_token,json=jwtToken,proto3" json:"jwt_token,omitempty"`
+	JwtRefreshToken string                 `protobuf:"bytes,3,opt,name=jwt_refresh_token,json=jwtRefreshToken,proto3" json:"jwt_refresh_token,omitempty"`
+	IsNewUser       bool                   `protobuf:"varint,4,opt,name=is_new_user,json=isNewUser,proto3" json:"is_new_user,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
 }
 
 func (x *OAuthLoginResponse) Reset() {
@@ -210,6 +211,13 @@ func (x *OAuthLoginResponse) GetJwtToken() string {
 	return ""
 }
 
+func (x *OAuthLoginResponse) GetJwtRefreshToken() string {
+	if x != nil {
+		return x.JwtRefreshToken
+	}
+	return ""
+}
+
 func (x *OAuthLoginResponse) GetIsNewUser() bool {
 	if x != nil {
 		return x.IsNewUser
@@ -217,73 +225,71 @@ func (x *OAuthLoginResponse) GetIsNewUser() bool {
 	return false
 }
 
-type ValidateTokenRequest struct {
+type RefreshTokenRequest struct {
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	JwtRefreshToken string                 `protobuf:"bytes,1,opt,name=jwt_refresh_token,json=jwtRefreshToken,proto3" json:"jwt_refresh_token,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *RefreshTokenRequest) Reset() {
+	*x = RefreshTokenRequest{}
+	mi := &file_auth_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RefreshTokenRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RefreshTokenRequest) ProtoMessage() {}
+
+func (x *RefreshTokenRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_auth_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RefreshTokenRequest.ProtoReflect.Descriptor instead.
+func (*RefreshTokenRequest) Descriptor() ([]byte, []int) {
+	return file_auth_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *RefreshTokenRequest) GetJwtRefreshToken() string {
+	if x != nil {
+		return x.JwtRefreshToken
+	}
+	return ""
+}
+
+type RefreshTokenResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	JwtToken      string                 `protobuf:"bytes,1,opt,name=jwt_token,json=jwtToken,proto3" json:"jwt_token,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *ValidateTokenRequest) Reset() {
-	*x = ValidateTokenRequest{}
-	mi := &file_auth_proto_msgTypes[3]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *ValidateTokenRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*ValidateTokenRequest) ProtoMessage() {}
-
-func (x *ValidateTokenRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_auth_proto_msgTypes[3]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use ValidateTokenRequest.ProtoReflect.Descriptor instead.
-func (*ValidateTokenRequest) Descriptor() ([]byte, []int) {
-	return file_auth_proto_rawDescGZIP(), []int{3}
-}
-
-func (x *ValidateTokenRequest) GetJwtToken() string {
-	if x != nil {
-		return x.JwtToken
-	}
-	return ""
-}
-
-type ValidateTokenResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Valid         bool                   `protobuf:"varint,1,opt,name=valid,proto3" json:"valid,omitempty"`
-	UserId        string                 `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	Email         string                 `protobuf:"bytes,3,opt,name=email,proto3" json:"email,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *ValidateTokenResponse) Reset() {
-	*x = ValidateTokenResponse{}
+func (x *RefreshTokenResponse) Reset() {
+	*x = RefreshTokenResponse{}
 	mi := &file_auth_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *ValidateTokenResponse) String() string {
+func (x *RefreshTokenResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*ValidateTokenResponse) ProtoMessage() {}
+func (*RefreshTokenResponse) ProtoMessage() {}
 
-func (x *ValidateTokenResponse) ProtoReflect() protoreflect.Message {
+func (x *RefreshTokenResponse) ProtoReflect() protoreflect.Message {
 	mi := &file_auth_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -295,28 +301,14 @@ func (x *ValidateTokenResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use ValidateTokenResponse.ProtoReflect.Descriptor instead.
-func (*ValidateTokenResponse) Descriptor() ([]byte, []int) {
+// Deprecated: Use RefreshTokenResponse.ProtoReflect.Descriptor instead.
+func (*RefreshTokenResponse) Descriptor() ([]byte, []int) {
 	return file_auth_proto_rawDescGZIP(), []int{4}
 }
 
-func (x *ValidateTokenResponse) GetValid() bool {
+func (x *RefreshTokenResponse) GetJwtToken() string {
 	if x != nil {
-		return x.Valid
-	}
-	return false
-}
-
-func (x *ValidateTokenResponse) GetUserId() string {
-	if x != nil {
-		return x.UserId
-	}
-	return ""
-}
-
-func (x *ValidateTokenResponse) GetEmail() string {
-	if x != nil {
-		return x.Email
+		return x.JwtToken
 	}
 	return ""
 }
@@ -338,21 +330,20 @@ const file_auth_proto_rawDesc = "" +
 	"\n" +
 	"created_at\x18\x05 \x01(\tR\tcreatedAt\x12\x1d\n" +
 	"\n" +
-	"updated_at\x18\x06 \x01(\tR\tupdatedAt\"\x8e\x01\n" +
+	"updated_at\x18\x06 \x01(\tR\tupdatedAt\"\xba\x01\n" +
 	"\x12OAuthLoginResponse\x12;\n" +
 	"\x04user\x18\x01 \x01(\v2'.com.sweetloveinyourheart.srl.auth.UserR\x04user\x12\x1b\n" +
-	"\tjwt_token\x18\x02 \x01(\tR\bjwtToken\x12\x1e\n" +
-	"\vis_new_user\x18\x03 \x01(\bR\tisNewUser\"3\n" +
-	"\x14ValidateTokenRequest\x12\x1b\n" +
-	"\tjwt_token\x18\x01 \x01(\tR\bjwtToken\"\\\n" +
-	"\x15ValidateTokenResponse\x12\x14\n" +
-	"\x05valid\x18\x01 \x01(\bR\x05valid\x12\x17\n" +
-	"\auser_id\x18\x02 \x01(\tR\x06userId\x12\x14\n" +
-	"\x05email\x18\x03 \x01(\tR\x05email2\x8d\x02\n" +
+	"\tjwt_token\x18\x02 \x01(\tR\bjwtToken\x12*\n" +
+	"\x11jwt_refresh_token\x18\x03 \x01(\tR\x0fjwtRefreshToken\x12\x1e\n" +
+	"\vis_new_user\x18\x04 \x01(\bR\tisNewUser\"A\n" +
+	"\x13RefreshTokenRequest\x12*\n" +
+	"\x11jwt_refresh_token\x18\x01 \x01(\tR\x0fjwtRefreshToken\"3\n" +
+	"\x14RefreshTokenResponse\x12\x1b\n" +
+	"\tjwt_token\x18\x01 \x01(\tR\bjwtToken2\x89\x02\n" +
 	"\vAuthService\x12y\n" +
 	"\n" +
-	"OAuthLogin\x124.com.sweetloveinyourheart.srl.auth.OAuthLoginRequest\x1a5.com.sweetloveinyourheart.srl.auth.OAuthLoginResponse\x12\x82\x01\n" +
-	"\rValidateToken\x127.com.sweetloveinyourheart.srl.auth.ValidateTokenRequest\x1a8.com.sweetloveinyourheart.srl.auth.ValidateTokenResponseBDZBgithub.com/sweetloveinyourheart/sweet-reel/proto/code/auth/go;grpcb\x06proto3"
+	"OAuthLogin\x124.com.sweetloveinyourheart.srl.auth.OAuthLoginRequest\x1a5.com.sweetloveinyourheart.srl.auth.OAuthLoginResponse\x12\x7f\n" +
+	"\fRefreshToken\x126.com.sweetloveinyourheart.srl.auth.RefreshTokenRequest\x1a7.com.sweetloveinyourheart.srl.auth.RefreshTokenResponseBDZBgithub.com/sweetloveinyourheart/sweet-reel/proto/code/auth/go;grpcb\x06proto3"
 
 var (
 	file_auth_proto_rawDescOnce sync.Once
@@ -368,18 +359,18 @@ func file_auth_proto_rawDescGZIP() []byte {
 
 var file_auth_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
 var file_auth_proto_goTypes = []any{
-	(*OAuthLoginRequest)(nil),     // 0: com.sweetloveinyourheart.srl.auth.OAuthLoginRequest
-	(*User)(nil),                  // 1: com.sweetloveinyourheart.srl.auth.User
-	(*OAuthLoginResponse)(nil),    // 2: com.sweetloveinyourheart.srl.auth.OAuthLoginResponse
-	(*ValidateTokenRequest)(nil),  // 3: com.sweetloveinyourheart.srl.auth.ValidateTokenRequest
-	(*ValidateTokenResponse)(nil), // 4: com.sweetloveinyourheart.srl.auth.ValidateTokenResponse
+	(*OAuthLoginRequest)(nil),    // 0: com.sweetloveinyourheart.srl.auth.OAuthLoginRequest
+	(*User)(nil),                 // 1: com.sweetloveinyourheart.srl.auth.User
+	(*OAuthLoginResponse)(nil),   // 2: com.sweetloveinyourheart.srl.auth.OAuthLoginResponse
+	(*RefreshTokenRequest)(nil),  // 3: com.sweetloveinyourheart.srl.auth.RefreshTokenRequest
+	(*RefreshTokenResponse)(nil), // 4: com.sweetloveinyourheart.srl.auth.RefreshTokenResponse
 }
 var file_auth_proto_depIdxs = []int32{
 	1, // 0: com.sweetloveinyourheart.srl.auth.OAuthLoginResponse.user:type_name -> com.sweetloveinyourheart.srl.auth.User
 	0, // 1: com.sweetloveinyourheart.srl.auth.AuthService.OAuthLogin:input_type -> com.sweetloveinyourheart.srl.auth.OAuthLoginRequest
-	3, // 2: com.sweetloveinyourheart.srl.auth.AuthService.ValidateToken:input_type -> com.sweetloveinyourheart.srl.auth.ValidateTokenRequest
+	3, // 2: com.sweetloveinyourheart.srl.auth.AuthService.RefreshToken:input_type -> com.sweetloveinyourheart.srl.auth.RefreshTokenRequest
 	2, // 3: com.sweetloveinyourheart.srl.auth.AuthService.OAuthLogin:output_type -> com.sweetloveinyourheart.srl.auth.OAuthLoginResponse
-	4, // 4: com.sweetloveinyourheart.srl.auth.AuthService.ValidateToken:output_type -> com.sweetloveinyourheart.srl.auth.ValidateTokenResponse
+	4, // 4: com.sweetloveinyourheart.srl.auth.AuthService.RefreshToken:output_type -> com.sweetloveinyourheart.srl.auth.RefreshTokenResponse
 	3, // [3:5] is the sub-list for method output_type
 	1, // [1:3] is the sub-list for method input_type
 	1, // [1:1] is the sub-list for extension type_name

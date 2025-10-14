@@ -35,17 +35,17 @@ const (
 const (
 	// AuthServiceOAuthLoginProcedure is the fully-qualified name of the AuthService's OAuthLogin RPC.
 	AuthServiceOAuthLoginProcedure = "/com.sweetloveinyourheart.srl.auth.AuthService/OAuthLogin"
-	// AuthServiceValidateTokenProcedure is the fully-qualified name of the AuthService's ValidateToken
+	// AuthServiceRefreshTokenProcedure is the fully-qualified name of the AuthService's RefreshToken
 	// RPC.
-	AuthServiceValidateTokenProcedure = "/com.sweetloveinyourheart.srl.auth.AuthService/ValidateToken"
+	AuthServiceRefreshTokenProcedure = "/com.sweetloveinyourheart.srl.auth.AuthService/RefreshToken"
 )
 
 // AuthServiceClient is a client for the com.sweetloveinyourheart.srl.auth.AuthService service.
 type AuthServiceClient interface {
 	// Handles OAuth login with external providers (Google, GitHub, etc.)
 	OAuthLogin(context.Context, *connect.Request[_go.OAuthLoginRequest]) (*connect.Response[_go.OAuthLoginResponse], error)
-	// Optionally, validate or refresh tokens later.
-	ValidateToken(context.Context, *connect.Request[_go.ValidateTokenRequest]) (*connect.Response[_go.ValidateTokenResponse], error)
+	// Handle refresh tokens.
+	RefreshToken(context.Context, *connect.Request[_go.RefreshTokenRequest]) (*connect.Response[_go.RefreshTokenResponse], error)
 }
 
 // NewAuthServiceClient constructs a client for the com.sweetloveinyourheart.srl.auth.AuthService
@@ -65,10 +65,10 @@ func NewAuthServiceClient(httpClient connect.HTTPClient, baseURL string, opts ..
 			connect.WithSchema(authServiceMethods.ByName("OAuthLogin")),
 			connect.WithClientOptions(opts...),
 		),
-		validateToken: connect.NewClient[_go.ValidateTokenRequest, _go.ValidateTokenResponse](
+		refreshToken: connect.NewClient[_go.RefreshTokenRequest, _go.RefreshTokenResponse](
 			httpClient,
-			baseURL+AuthServiceValidateTokenProcedure,
-			connect.WithSchema(authServiceMethods.ByName("ValidateToken")),
+			baseURL+AuthServiceRefreshTokenProcedure,
+			connect.WithSchema(authServiceMethods.ByName("RefreshToken")),
 			connect.WithClientOptions(opts...),
 		),
 	}
@@ -76,8 +76,8 @@ func NewAuthServiceClient(httpClient connect.HTTPClient, baseURL string, opts ..
 
 // authServiceClient implements AuthServiceClient.
 type authServiceClient struct {
-	oAuthLogin    *connect.Client[_go.OAuthLoginRequest, _go.OAuthLoginResponse]
-	validateToken *connect.Client[_go.ValidateTokenRequest, _go.ValidateTokenResponse]
+	oAuthLogin   *connect.Client[_go.OAuthLoginRequest, _go.OAuthLoginResponse]
+	refreshToken *connect.Client[_go.RefreshTokenRequest, _go.RefreshTokenResponse]
 }
 
 // OAuthLogin calls com.sweetloveinyourheart.srl.auth.AuthService.OAuthLogin.
@@ -85,9 +85,9 @@ func (c *authServiceClient) OAuthLogin(ctx context.Context, req *connect.Request
 	return c.oAuthLogin.CallUnary(ctx, req)
 }
 
-// ValidateToken calls com.sweetloveinyourheart.srl.auth.AuthService.ValidateToken.
-func (c *authServiceClient) ValidateToken(ctx context.Context, req *connect.Request[_go.ValidateTokenRequest]) (*connect.Response[_go.ValidateTokenResponse], error) {
-	return c.validateToken.CallUnary(ctx, req)
+// RefreshToken calls com.sweetloveinyourheart.srl.auth.AuthService.RefreshToken.
+func (c *authServiceClient) RefreshToken(ctx context.Context, req *connect.Request[_go.RefreshTokenRequest]) (*connect.Response[_go.RefreshTokenResponse], error) {
+	return c.refreshToken.CallUnary(ctx, req)
 }
 
 // AuthServiceHandler is an implementation of the com.sweetloveinyourheart.srl.auth.AuthService
@@ -95,8 +95,8 @@ func (c *authServiceClient) ValidateToken(ctx context.Context, req *connect.Requ
 type AuthServiceHandler interface {
 	// Handles OAuth login with external providers (Google, GitHub, etc.)
 	OAuthLogin(context.Context, *connect.Request[_go.OAuthLoginRequest]) (*connect.Response[_go.OAuthLoginResponse], error)
-	// Optionally, validate or refresh tokens later.
-	ValidateToken(context.Context, *connect.Request[_go.ValidateTokenRequest]) (*connect.Response[_go.ValidateTokenResponse], error)
+	// Handle refresh tokens.
+	RefreshToken(context.Context, *connect.Request[_go.RefreshTokenRequest]) (*connect.Response[_go.RefreshTokenResponse], error)
 }
 
 // NewAuthServiceHandler builds an HTTP handler from the service implementation. It returns the path
@@ -112,18 +112,18 @@ func NewAuthServiceHandler(svc AuthServiceHandler, opts ...connect.HandlerOption
 		connect.WithSchema(authServiceMethods.ByName("OAuthLogin")),
 		connect.WithHandlerOptions(opts...),
 	)
-	authServiceValidateTokenHandler := connect.NewUnaryHandler(
-		AuthServiceValidateTokenProcedure,
-		svc.ValidateToken,
-		connect.WithSchema(authServiceMethods.ByName("ValidateToken")),
+	authServiceRefreshTokenHandler := connect.NewUnaryHandler(
+		AuthServiceRefreshTokenProcedure,
+		svc.RefreshToken,
+		connect.WithSchema(authServiceMethods.ByName("RefreshToken")),
 		connect.WithHandlerOptions(opts...),
 	)
 	return "/com.sweetloveinyourheart.srl.auth.AuthService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case AuthServiceOAuthLoginProcedure:
 			authServiceOAuthLoginHandler.ServeHTTP(w, r)
-		case AuthServiceValidateTokenProcedure:
-			authServiceValidateTokenHandler.ServeHTTP(w, r)
+		case AuthServiceRefreshTokenProcedure:
+			authServiceRefreshTokenHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -137,6 +137,6 @@ func (UnimplementedAuthServiceHandler) OAuthLogin(context.Context, *connect.Requ
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("com.sweetloveinyourheart.srl.auth.AuthService.OAuthLogin is not implemented"))
 }
 
-func (UnimplementedAuthServiceHandler) ValidateToken(context.Context, *connect.Request[_go.ValidateTokenRequest]) (*connect.Response[_go.ValidateTokenResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("com.sweetloveinyourheart.srl.auth.AuthService.ValidateToken is not implemented"))
+func (UnimplementedAuthServiceHandler) RefreshToken(context.Context, *connect.Request[_go.RefreshTokenRequest]) (*connect.Response[_go.RefreshTokenResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("com.sweetloveinyourheart.srl.auth.AuthService.RefreshToken is not implemented"))
 }

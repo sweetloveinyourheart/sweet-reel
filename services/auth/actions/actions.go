@@ -28,7 +28,7 @@ func (a *actions) AuthFuncOverride(ctx context.Context, token string, fullMethod
 		return ctx, nil
 	}
 
-	if fullMethodName == authConnect.AuthServiceValidateTokenProcedure {
+	if fullMethodName == authConnect.AuthServiceRefreshTokenProcedure {
 		return ctx, nil
 	}
 

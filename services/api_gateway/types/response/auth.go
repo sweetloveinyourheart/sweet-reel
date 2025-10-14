@@ -14,3 +14,7 @@ type GoogleOAuthResponse struct {
 	User     GoogleOAuthUser `json:"user"`
 	IsNew    bool            `json:"is_new"`
 }
+
+type RefreshTokenResponse struct {
+	JwtToken string `json:"jwt_token"`
+}
