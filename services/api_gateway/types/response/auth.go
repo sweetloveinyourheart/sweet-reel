@@ -10,9 +10,10 @@ type GoogleOAuthUser struct {
 }
 
 type GoogleOAuthResponse struct {
-	JwtToken string          `json:"jwt_token"`
-	User     GoogleOAuthUser `json:"user"`
-	IsNew    bool            `json:"is_new"`
+	JwtToken        string          `json:"jwt_token"`
+	JwtRefreshToken string          `json:"jwt_refresh_token"`
+	User            GoogleOAuthUser `json:"user"`
+	IsNew           bool            `json:"is_new"`
 }
 
 type RefreshTokenResponse struct {

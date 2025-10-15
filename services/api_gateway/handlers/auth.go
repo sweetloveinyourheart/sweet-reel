@@ -71,7 +71,8 @@ func (h *AuthHandler) GoogleOAuth(w http.ResponseWriter, r *http.Request) {
 
 	// Build response
 	responseData := response.GoogleOAuthResponse{
-		JwtToken: oauthResponse.Msg.GetJwtToken(),
+		JwtToken:        oauthResponse.Msg.GetJwtToken(),
+		JwtRefreshToken: oauthResponse.Msg.GetJwtRefreshToken(),
 		User: response.GoogleOAuthUser{
 			Id:        oauthResponse.Msg.User.Id,
 			Email:     oauthResponse.Msg.User.Email,
@@ -83,32 +84,14 @@ func (h *AuthHandler) GoogleOAuth(w http.ResponseWriter, r *http.Request) {
 		IsNew: oauthResponse.Msg.IsNewUser,
 	}
 
-	// Set refresh token in HTTP-only cookie
-	refreshCookie := &http.Cookie{
-		Name:     RefreshTokenCookieName,
-		Value:    oauthResponse.Msg.JwtRefreshToken,
-		Path:     "/",
-		HttpOnly: true,
-		Secure:   true,
-		SameSite: http.SameSiteStrictMode,
-	}
-	http.SetCookie(w, refreshCookie)
 	helpers.WriteJSONSuccess(w, responseData)
 }
 
-// GoogleOAuth handles POST /api/v1/auth/refresh-token
+// GoogleOAuth handles GET /api/v1/auth/refresh-token
 func (h *AuthHandler) RefreshToken(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	cookies := r.Cookies()
 
-	var refreshToken string
-	for _, cookie := range cookies {
-		if cookie.Name == RefreshTokenCookieName {
-			refreshToken = cookie.Value
-			break
-		}
-	}
-
+	refreshToken := r.URL.Query().Get("token")
 	if refreshToken == "" {
 		helpers.WriteErrorResponse(w, errors.NewHTTPError(
 			http.StatusUnauthorized,
