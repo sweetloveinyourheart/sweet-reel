@@ -1,4 +1,3 @@
-import { ApiResponse } from "../types"
 import { API_CONFIG } from "./config"
 
 export class ApiError extends Error {
@@ -141,7 +140,7 @@ class ApiClient {
     endpoint: string,
     options: RequestOptions = {},
     attempt: number = 0
-  ): Promise<ApiResponse<T>> {
+  ): Promise<T> {
     const { params, token, timeout, retry = 0, skipInterceptors = false, ...fetchOptions } = options
 
     // Build URL with query parameters
@@ -203,7 +202,7 @@ class ApiClient {
             response.status
           )
         }
-        return { data: undefined as T }
+        return undefined as T
       }
 
       const data = await response.json()
@@ -249,7 +248,7 @@ class ApiClient {
     }
   }
 
-  async get<T>(endpoint: string, options?: RequestOptions): Promise<ApiResponse<T>> {
+  async get<T>(endpoint: string, options?: RequestOptions): Promise<T> {
     return this.request<T>(endpoint, { ...options, method: "GET" })
   }
 
@@ -257,7 +256,7 @@ class ApiClient {
     endpoint: string,
     body?: any,
     options?: RequestOptions
-  ): Promise<ApiResponse<T>> {
+  ): Promise<T> {
     return this.request<T>(endpoint, {
       ...options,
       method: "POST",
@@ -269,7 +268,7 @@ class ApiClient {
     endpoint: string,
     body?: any,
     options?: RequestOptions
-  ): Promise<ApiResponse<T>> {
+  ): Promise<T> {
     return this.request<T>(endpoint, {
       ...options,
       method: "PUT",
@@ -281,7 +280,7 @@ class ApiClient {
     endpoint: string,
     body?: any,
     options?: RequestOptions
-  ): Promise<ApiResponse<T>> {
+  ): Promise<T> {
     return this.request<T>(endpoint, {
       ...options,
       method: "PATCH",
@@ -289,7 +288,7 @@ class ApiClient {
     })
   }
 
-  async delete<T>(endpoint: string, options?: RequestOptions): Promise<ApiResponse<T>> {
+  async delete<T>(endpoint: string, options?: RequestOptions): Promise<T> {
     return this.request<T>(endpoint, { ...options, method: "DELETE" })
   }
 
@@ -298,7 +297,7 @@ class ApiClient {
     file: File,
     onProgress?: (progress: number) => void,
     additionalData?: Record<string, string>
-  ): Promise<ApiResponse<any>> {
+  ): Promise<any> {
     return new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest()
 
@@ -315,7 +314,7 @@ class ApiClient {
             const data = JSON.parse(xhr.responseText)
             resolve(data)
           } catch (error) {
-            resolve({ data: xhr.responseText })
+            resolve(xhr.responseText)
           }
         } else {
           try {

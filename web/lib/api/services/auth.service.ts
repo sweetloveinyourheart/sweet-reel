@@ -1,18 +1,18 @@
 import { apiClient } from "../api-client"
-import type { ApiResponse, GoogleOAuthRequest, GoogleOAuthResponse, RefreshTokenResponse } from "../../types"
+import type { GoogleOAuthRequest, GoogleOAuthResponse, RefreshTokenResponse } from "../../types"
 
-export class UserService {
+export class AuthService {
   /**
    * Login by Google OAuth
    */
-  static async googleOAuth(data: GoogleOAuthRequest): Promise<ApiResponse<GoogleOAuthResponse>> {
+  static async googleOAuth(data: GoogleOAuthRequest): Promise<GoogleOAuthResponse> {
     return apiClient.post<GoogleOAuthResponse>("/oauth/google", data)
   }
 
   /**
    * Refresh token
    */
-  static async refreshToken(): Promise<ApiResponse<RefreshTokenResponse>> {
+  static async refreshToken(): Promise<RefreshTokenResponse> {
     return apiClient.get<RefreshTokenResponse>("/auth/refresh-token")
   }
 }
