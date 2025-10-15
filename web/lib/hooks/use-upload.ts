@@ -18,7 +18,7 @@ export function useVideoUpload() {
 
       // Get the presigned url
       const uploadResponse = await VideoService.generatePresignedURL()
-      if (!uploadResponse.data) {
+      if (!uploadResponse) {
         throw new Error("Failed to generate presigned url")
       }
 

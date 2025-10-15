@@ -9,6 +9,7 @@ export type User = {
 
 export type GoogleOAuthResponse = {
   jwt_token: string
+  jwt_refresh_token: string
   user: User
   is_new: boolean
 }

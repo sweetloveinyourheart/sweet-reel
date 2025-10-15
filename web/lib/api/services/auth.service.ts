@@ -12,7 +12,7 @@ export class AuthService {
   /**
    * Refresh token
    */
-  static async refreshToken(): Promise<RefreshTokenResponse> {
-    return apiClient.get<RefreshTokenResponse>("/auth/refresh-token")
+  static async refreshToken(accessToken: string): Promise<RefreshTokenResponse> {
+    return apiClient.get<RefreshTokenResponse>("/auth/refresh-token", { params: { "token": accessToken } })
   }
 }

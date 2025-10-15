@@ -3,19 +3,12 @@ import "next-auth/jwt"
 
 import Google from "next-auth/providers/google"
 import { createStorage } from "unstorage"
-import memoryDriver from "unstorage/drivers/memory"
-import vercelKVDriver from "unstorage/drivers/vercel-kv"
 import { UnstorageAdapter } from "@auth/unstorage-adapter"
+import { AuthService } from "./lib/api/services"
+import moment from "moment"
 
-const storage = createStorage({
-  driver: process.env.VERCEL
-    ? vercelKVDriver({
-        url: process.env.AUTH_KV_REST_API_URL,
-        token: process.env.AUTH_KV_REST_API_TOKEN,
-        env: false,
-      })
-    : memoryDriver(),
-})
+const RefreshTokenError = "RefreshTokenError"
+const storage = createStorage()
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   debug: !!process.env.AUTH_DEBUG,
@@ -29,16 +22,34 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     signIn: "/signin",
   },
   callbacks: {
-    authorized({ request, auth }) {
-      const { pathname } = request.nextUrl
-      if (pathname === "/middleware-example") return !!auth
-      return true
-    },
-    jwt({ token, trigger, session, account }) {
+    async jwt({ token, trigger, session, account }) {
       if (trigger === "update") token.name = session.user.name
-      if (account?.provider === "keycloak") {
-        return { ...token, accessToken: account.access_token }
+
+      if (account?.provider === "google" && account.access_token) {
+        const oauthResponse = await AuthService.googleOAuth({ access_token: account.access_token })
+
+        return {
+          ...token,
+          accessToken: oauthResponse.jwt_token,
+          accessTokenExp: moment().add(1, 'hour').valueOf(),
+          refreshToken: oauthResponse.jwt_refresh_token,
+        }
       }
+
+      if (token.refreshToken && token.accessTokenExp && Date.now() > token.accessTokenExp) {
+        try {
+          const newTokens = await AuthService.refreshToken(token.refreshToken)
+
+          return {
+            ...token,
+            accessToken: newTokens.jwt_token,
+            accessTokenExp: moment().add(1, 'hour').valueOf(),
+          }
+        } catch (err) {
+          return { ...token, error: RefreshTokenError}
+        }
+      }
+
       return token
     },
     async session({ session, token }) {
@@ -59,5 +70,7 @@ declare module "next-auth" {
 declare module "next-auth/jwt" {
   interface JWT {
     accessToken?: string
+    accessTokenExp?: number
+    refreshToken?: string
   }
 }
