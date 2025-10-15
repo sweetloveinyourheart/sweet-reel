@@ -1,11 +1,14 @@
 "use client"
 
 import { useState, useCallback } from "react"
-import { VideoService } from "../api/services/video.service"
-import { ApiError } from "../api/api-client"
+import { useApiClient } from "../lib/api"
+import { ApiError } from "../lib/api/core/errors"
 import { PresignedUrlRequest } from "../types"
+import type { PresignedUrlResponse } from "../types"
 
 export function useVideoUpload() {
+  const api = useApiClient()
+
   const [uploading, setUploading] = useState(false)
   const [progress, setProgress] = useState(0)
   const [error, setError] = useState<string | null>(null)
@@ -17,7 +20,7 @@ export function useVideoUpload() {
       setProgress(0)
 
       // Get the presigned url
-      const uploadResponse = await VideoService.generatePresignedURL()
+      const uploadResponse = await api.post<PresignedUrlResponse>("/videos/presigned-url")
       if (!uploadResponse) {
         throw new Error("Failed to generate presigned url")
       }
@@ -32,7 +35,7 @@ export function useVideoUpload() {
     } finally {
       setUploading(false)
     }
-  }, [])
+  }, [api])
 
   const reset = useCallback(() => {
     setProgress(0)

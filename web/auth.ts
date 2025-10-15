@@ -4,11 +4,13 @@ import "next-auth/jwt"
 import Google from "next-auth/providers/google"
 import { createStorage } from "unstorage"
 import { UnstorageAdapter } from "@auth/unstorage-adapter"
-import { AuthService } from "./lib/api/services"
+import { ApiClient } from "./lib/api/core/client"
+import { API_CONFIG } from "./lib/api/core/config"
 import moment from "moment"
+import type { GoogleOAuthResponse, RefreshTokenResponse } from "./types"
 
-const RefreshTokenError = "RefreshTokenError"
 const storage = createStorage()
+const authApiClient = new ApiClient(API_CONFIG.baseUrl)
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   debug: !!process.env.AUTH_DEBUG,
@@ -26,7 +28,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (trigger === "update") token.name = session.user.name
 
       if (account?.provider === "google" && account.access_token) {
-        const oauthResponse = await AuthService.googleOAuth({ access_token: account.access_token })
+        const oauthResponse = await authApiClient.post<GoogleOAuthResponse>(
+          "/oauth/google", 
+          { access_token: account.access_token }
+        )
 
         return {
           ...token,
@@ -38,7 +43,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
       if (token.refreshToken && token.accessTokenExp && Date.now() > token.accessTokenExp) {
         try {
-          const newTokens = await AuthService.refreshToken(token.refreshToken)
+          const newTokens = await authApiClient.get<RefreshTokenResponse>(
+            "/auth/refresh-token", 
+            { params: { "token": token.refreshToken } }
+          )
 
           return {
             ...token,
@@ -64,6 +72,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 declare module "next-auth" {
   interface Session {
     accessToken?: string
+    error?: SessionAuthError
   }
 }
 
@@ -74,3 +83,6 @@ declare module "next-auth/jwt" {
     refreshToken?: string
   }
 }
+
+export type SessionAuthError = string
+export const RefreshTokenError = "RefreshTokenError" as SessionAuthError

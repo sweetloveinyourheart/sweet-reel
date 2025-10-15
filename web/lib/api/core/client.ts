@@ -1,72 +1,71 @@
 import { API_CONFIG } from "./config"
+import { ApiError } from "./errors"
+import type {
+  RequestOptions,
+  RequestInterceptor,
+  ResponseInterceptor,
+  ErrorInterceptor,
+  TokenProvider,
+} from "./types"
 
-export class ApiError extends Error {
-  constructor(
-    message: string,
-    public status: number,
-    public data?: any
-  ) {
-    super(message)
-    this.name = "ApiError"
-  }
-}
-
-interface RequestOptions extends RequestInit {
-  params?: Record<string, string | number | boolean | undefined>
-  token?: string
-  timeout?: number
-  retry?: number
-  skipInterceptors?: boolean
-}
-
-type RequestInterceptor = (config: RequestInit, url: string) => RequestInit | Promise<RequestInit>
-type ResponseInterceptor = (response: Response) => Response | Promise<Response>
-type ErrorInterceptor = (error: ApiError) => ApiError | Promise<ApiError>
-
-class ApiClient {
+/**
+ * Core API Client class
+ * Handles HTTP requests with interceptors, retries, and authentication
+ */
+export class ApiClient {
   private baseUrl: string
   private defaultTimeout: number = API_CONFIG.timeout
   private requestInterceptors: RequestInterceptor[] = []
   private responseInterceptors: ResponseInterceptor[] = []
   private errorInterceptors: ErrorInterceptor[] = []
   private abortControllers: Map<string, AbortController> = new Map()
+  private tokenProvider: TokenProvider | null = null
 
   constructor(baseUrl: string = API_CONFIG.baseUrl) {
     this.baseUrl = baseUrl
   }
 
-  // Interceptor management
+  /**
+   * Set a custom token provider (e.g., from useSession hook in client components)
+   */
+  setTokenProvider(provider: TokenProvider) {
+    this.tokenProvider = provider
+  }
+
+  /**
+   * Add a request interceptor
+   */
   addRequestInterceptor(interceptor: RequestInterceptor) {
     this.requestInterceptors.push(interceptor)
   }
 
+  /**
+   * Add a response interceptor
+   */
   addResponseInterceptor(interceptor: ResponseInterceptor) {
     this.responseInterceptors.push(interceptor)
   }
 
+  /**
+   * Add an error interceptor
+   */
   addErrorInterceptor(interceptor: ErrorInterceptor) {
     this.errorInterceptors.push(interceptor)
   }
 
-  // Token management - Use this to integrate with NextAuth or other auth systems
-  setAuthToken(token: string | null) {
-    if (typeof window !== "undefined") {
-      if (token) {
-        localStorage.setItem("auth_token", token)
-      } else {
-        localStorage.removeItem("auth_token")
-      }
-    }
-  }
-
-  getAuthToken(): string | null {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("auth_token")
+  /**
+   * Get auth token - uses custom provider if set, otherwise returns null
+   */
+  async getAuthToken(): Promise<string | null> {
+    if (this.tokenProvider) {
+      return await this.tokenProvider()
     }
     return null
   }
 
-  // Request cancellation
+  /**
+   * Cancel a specific request by key
+   */
   cancelRequest(key: string) {
     const controller = this.abortControllers.get(key)
     if (controller) {
@@ -75,12 +74,18 @@ class ApiClient {
     }
   }
 
+  /**
+   * Cancel all pending requests
+   */
   cancelAllRequests() {
     this.abortControllers.forEach((controller) => controller.abort())
     this.abortControllers.clear()
   }
 
-  private async applyRequestInterceptors(config: RequestInit, url: string): Promise<RequestInit> {
+  private async applyRequestInterceptors(
+    config: RequestInit,
+    url: string
+  ): Promise<RequestInit> {
     let modifiedConfig = config
     for (const interceptor of this.requestInterceptors) {
       modifiedConfig = await interceptor(modifiedConfig, url)
@@ -141,7 +146,14 @@ class ApiClient {
     options: RequestOptions = {},
     attempt: number = 0
   ): Promise<T> {
-    const { params, token, timeout, retry = 0, skipInterceptors = false, ...fetchOptions } = options
+    const {
+      params,
+      token,
+      timeout,
+      retry = 0,
+      skipInterceptors = false,
+      ...fetchOptions
+    } = options
 
     // Build URL with query parameters
     let url = `${this.baseUrl}${endpoint}`
@@ -163,7 +175,7 @@ class ApiClient {
     }
 
     // Add authorization token if available
-    const authToken = token || this.getAuthToken()
+    const authToken = token || (await this.getAuthToken())
     if (authToken) {
       defaultHeaders["Authorization"] = `Bearer ${authToken}`
     }
@@ -197,10 +209,7 @@ class ApiClient {
       const contentType = response.headers.get("content-type")
       if (!contentType || !contentType.includes("application/json")) {
         if (!response.ok) {
-          throw new ApiError(
-            `HTTP error! status: ${response.status}`,
-            response.status
-          )
+          throw new ApiError(`HTTP error! status: ${response.status}`, response.status)
         }
         return undefined as T
       }
@@ -231,7 +240,9 @@ class ApiClient {
       // Retry logic for network errors or 5xx errors
       if (
         attempt < retry &&
-        (apiError.status >= 500 || apiError.status === 408 || apiError.message.includes("network"))
+        (apiError.status >= 500 ||
+          apiError.status === 408 ||
+          apiError.message.includes("network"))
       ) {
         // Exponential backoff
         const delay = Math.min(1000 * Math.pow(2, attempt), 10000)
@@ -248,15 +259,17 @@ class ApiClient {
     }
   }
 
+  /**
+   * Perform a GET request
+   */
   async get<T>(endpoint: string, options?: RequestOptions): Promise<T> {
     return this.request<T>(endpoint, { ...options, method: "GET" })
   }
 
-  async post<T>(
-    endpoint: string,
-    body?: any,
-    options?: RequestOptions
-  ): Promise<T> {
+  /**
+   * Perform a POST request
+   */
+  async post<T>(endpoint: string, body?: any, options?: RequestOptions): Promise<T> {
     return this.request<T>(endpoint, {
       ...options,
       method: "POST",
@@ -264,11 +277,10 @@ class ApiClient {
     })
   }
 
-  async put<T>(
-    endpoint: string,
-    body?: any,
-    options?: RequestOptions
-  ): Promise<T> {
+  /**
+   * Perform a PUT request
+   */
+  async put<T>(endpoint: string, body?: any, options?: RequestOptions): Promise<T> {
     return this.request<T>(endpoint, {
       ...options,
       method: "PUT",
@@ -276,11 +288,10 @@ class ApiClient {
     })
   }
 
-  async patch<T>(
-    endpoint: string,
-    body?: any,
-    options?: RequestOptions
-  ): Promise<T> {
+  /**
+   * Perform a PATCH request
+   */
+  async patch<T>(endpoint: string, body?: any, options?: RequestOptions): Promise<T> {
     return this.request<T>(endpoint, {
       ...options,
       method: "PATCH",
@@ -288,10 +299,16 @@ class ApiClient {
     })
   }
 
+  /**
+   * Perform a DELETE request
+   */
   async delete<T>(endpoint: string, options?: RequestOptions): Promise<T> {
     return this.request<T>(endpoint, { ...options, method: "DELETE" })
   }
 
+  /**
+   * Upload a file with progress tracking
+   */
   async uploadFile(
     endpoint: string,
     file: File,
@@ -327,12 +344,7 @@ class ApiClient {
               )
             )
           } catch {
-            reject(
-              new ApiError(
-                `Upload failed with status ${xhr.status}`,
-                xhr.status
-              )
-            )
+            reject(new ApiError(`Upload failed with status ${xhr.status}`, xhr.status))
           }
         }
       })
@@ -352,32 +364,36 @@ class ApiClient {
       xhr.open("POST", `${this.baseUrl}${endpoint}`)
 
       // Add auth token if available
-      const authToken = this.getAuthToken()
-      if (authToken) {
-        xhr.setRequestHeader("Authorization", `Bearer ${authToken}`)
-      }
+      this.getAuthToken().then((authToken) => {
+        if (authToken) {
+          xhr.setRequestHeader("Authorization", `Bearer ${authToken}`)
+        }
 
-      // Set timeout
-      xhr.timeout = this.defaultTimeout
+        // Set timeout
+        xhr.timeout = this.defaultTimeout
 
-      const formData = new FormData()
-      formData.append("file", file)
+        const formData = new FormData()
+        formData.append("file", file)
 
-      // Add additional form data if provided
-      if (additionalData) {
-        Object.entries(additionalData).forEach(([key, value]) => {
-          formData.append(key, value)
-        })
-      }
+        // Add additional form data if provided
+        if (additionalData) {
+          Object.entries(additionalData).forEach(([key, value]) => {
+            formData.append(key, value)
+          })
+        }
 
-      xhr.send(formData)
+        xhr.send(formData)
+      })
     })
   }
 }
 
+/**
+ * Default API client instance
+ */
 export const apiClient = new ApiClient()
 
-// Example: Add a request interceptor to log all requests (optional)
+// Development logging
 if (process.env.NODE_ENV === "development") {
   apiClient.addRequestInterceptor((config, url) => {
     console.log(`[API] ${config.method || "GET"} ${url}`)
@@ -385,11 +401,9 @@ if (process.env.NODE_ENV === "development") {
   })
 }
 
-// Example: Add an error interceptor for global error handling
+// Global error handling
 apiClient.addErrorInterceptor((error) => {
-  // You can add global error handling here (e.g., toast notifications)
   if (error.status === 401) {
-    // Handle unauthorized - redirect to login
     console.warn("[API] Unauthorized request")
   }
   return error
