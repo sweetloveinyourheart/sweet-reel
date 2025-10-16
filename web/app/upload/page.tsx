@@ -5,6 +5,9 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Upload, Video, X, CheckCircle2, AlertCircle } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { validateFileSize, validateFileType } from "@/lib/s3"
+import { useVideoUpload } from "@/hooks"
+import { PresignedUrlRequest } from "@/types"
 
 interface UploadedFile {
   file: File
@@ -14,22 +17,24 @@ interface UploadedFile {
   error?: string
 }
 
+const maxSize = 500 * 1024 * 1024 // 500MB
+const allowedTypes = ["video/mp4", "video/webm", "video/ogg", "video/quicktime"]
+
 export default function VideoUploadPage() {
-  const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([])
+  const { uploading, progress, error, uploadVideo, reset } = useVideoUpload()
+
+  const [uploadedFile, setUploadedFile] = useState<UploadedFile | null>(null)
   const [isDragging, setIsDragging] = useState(false)
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const validateFile = (file: File): string | null => {
-    const maxSize = 500 * 1024 * 1024 // 500MB
-    const allowedTypes = ["video/mp4", "video/webm", "video/ogg", "video/quicktime"]
-
-    if (!allowedTypes.includes(file.type)) {
+    if (!validateFileType(file, allowedTypes)) {
       return "Invalid file type. Please upload MP4, WebM, OGG, or MOV files."
     }
 
-    if (file.size > maxSize) {
+    if (!validateFileSize(file, maxSize)) {
       return "File size exceeds 500MB limit."
     }
 
@@ -37,20 +42,23 @@ export default function VideoUploadPage() {
   }
 
   const handleFiles = (files: FileList | null) => {
-    if (!files) return
+    if (!files || files.length === 0) return
 
-    const newFiles: UploadedFile[] = Array.from(files).map((file) => {
-      const error = validateFile(file)
-      return {
-        file,
-        preview: file.type.startsWith("video/") ? URL.createObjectURL(file) : undefined,
-        progress: 0,
-        status: error ? "error" : "pending",
-        error: error || undefined,
-      }
+    const file = files[0]
+    const error = validateFile(file)
+
+    // Clean up previous preview if exists
+    if (uploadedFile?.preview) {
+      URL.revokeObjectURL(uploadedFile.preview)
+    }
+
+    setUploadedFile({
+      file,
+      preview: file.type.startsWith("video/") ? URL.createObjectURL(file) : undefined,
+      progress: 0,
+      status: error ? "error" : "pending",
+      error: error || undefined,
     })
-
-    setUploadedFiles((prev) => [...prev, ...newFiles])
   }
 
   const handleDragEnter = (e: DragEvent<HTMLDivElement>) => {
@@ -83,44 +91,47 @@ export default function VideoUploadPage() {
     handleFiles(e.target.files)
   }
 
-  const removeFile = (index: number) => {
-    setUploadedFiles((prev) => {
-      const newFiles = [...prev]
-      if (newFiles[index].preview) {
-        URL.revokeObjectURL(newFiles[index].preview!)
-      }
-      newFiles.splice(index, 1)
-      return newFiles
-    })
+  const removeFile = () => {
+    if (uploadedFile?.preview) {
+      URL.revokeObjectURL(uploadedFile.preview)
+    }
+    setUploadedFile(null)
+    setTitle("")
+    setDescription("")
   }
 
-  const simulateUpload = (index: number) => {
-    setUploadedFiles((prev) => {
-      const newFiles = [...prev]
-      newFiles[index].status = "uploading"
-      return newFiles
-    })
+  const simulateUpload = () => {
+    if (!uploadedFile) return
+
+    setUploadedFile((prev) => prev ? { ...prev, status: "uploading" } : null)
 
     const interval = setInterval(() => {
-      setUploadedFiles((prev) => {
-        const newFiles = [...prev]
-        if (newFiles[index].progress < 100) {
-          newFiles[index].progress += 10
+      setUploadedFile((prev) => {
+        if (!prev) return null
+        if (prev.progress < 100) {
+          return { ...prev, progress: prev.progress + 10 }
         } else {
-          newFiles[index].status = "success"
           clearInterval(interval)
+          return { ...prev, status: "success" }
         }
-        return newFiles
       })
     }, 200)
   }
 
   const handleUpload = () => {
-    uploadedFiles.forEach((file, index) => {
-      if (file.status === "pending") {
-        simulateUpload(index)
+    try {
+      if (uploadedFile && uploadedFile.status === "pending") {
+        const fileMetadata = PresignedUrlRequest.parse({ 
+          title, 
+          description, 
+          file_name: uploadedFile.file.name 
+        })
       }
-    })
+
+      // TODO: handle upload video with the useVideoUpload() hook
+    } catch (error) {
+      // TODO: handle errors
+    }
   }
 
   const formatFileSize = (bytes: number): string => {
@@ -158,7 +169,6 @@ export default function VideoUploadPage() {
             ref={fileInputRef}
             type="file"
             accept="video/*"
-            multiple
             onChange={handleFileInputChange}
             className="hidden"
           />
@@ -168,7 +178,7 @@ export default function VideoUploadPage() {
             </div>
             <div>
               <p className="text-lg font-medium mb-1">
-                Drag and drop video files here
+                Drag and drop a video file here
               </p>
               <p className="text-sm text-muted-foreground mb-4">
                 or click the button below to browse
@@ -178,13 +188,13 @@ export default function VideoUploadPage() {
               onClick={() => fileInputRef.current?.click()}
               size="lg"
             >
-              Select Files
+              Select File
             </Button>
           </div>
         </div>
 
         {/* Video Details Form */}
-        {uploadedFiles.length > 0 && (
+        {uploadedFile && (
           <div className="space-y-4 border rounded-lg p-6">
             <h2 className="text-xl font-semibold mb-4">Video Details</h2>
             <div>
@@ -213,96 +223,89 @@ export default function VideoUploadPage() {
           </div>
         )}
 
-        {/* Uploaded Files List */}
-        {uploadedFiles.length > 0 && (
+        {/* Uploaded File Preview */}
+        {uploadedFile && (
           <div className="space-y-4">
-            <h2 className="text-xl font-semibold">Files to Upload</h2>
-            <div className="space-y-3">
-              {uploadedFiles.map((uploadedFile, index) => (
-                <div
-                  key={index}
-                  className="border rounded-lg p-4 flex items-start gap-4"
-                >
-                  <div className="flex-shrink-0">
-                    {uploadedFile.preview ? (
-                      <video
-                        src={uploadedFile.preview}
-                        className="w-24 h-16 rounded object-cover bg-muted"
-                      />
-                    ) : (
-                      <div className="w-24 h-16 rounded bg-muted flex items-center justify-center">
-                        <Video className="h-8 w-8 text-muted-foreground" />
-                      </div>
-                    )}
+            <h2 className="text-xl font-semibold">File to Upload</h2>
+            <div className="border rounded-lg p-4 flex items-start gap-4">
+              <div className="flex-shrink-0">
+                {uploadedFile.preview ? (
+                  <video
+                    src={uploadedFile.preview}
+                    className="w-24 h-16 rounded object-cover bg-muted"
+                  />
+                ) : (
+                  <div className="w-24 h-16 rounded bg-muted flex items-center justify-center">
+                    <Video className="h-8 w-8 text-muted-foreground" />
                   </div>
+                )}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-start justify-between gap-2 mb-2">
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-2 mb-2">
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium truncate">
-                          {uploadedFile.file.name}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          {formatFileSize(uploadedFile.file.size)}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {uploadedFile.status === "success" && (
-                          <CheckCircle2 className="h-5 w-5 text-green-600" />
-                        )}
-                        {uploadedFile.status === "error" && (
-                          <AlertCircle className="h-5 w-5 text-destructive" />
-                        )}
-                        <button
-                          onClick={() => removeFile(index)}
-                          className="text-muted-foreground hover:text-foreground"
-                        >
-                          <X className="h-5 w-5" />
-                        </button>
-                      </div>
-                    </div>
-                    {uploadedFile.status === "error" && uploadedFile.error && (
-                      <p className="text-sm text-destructive mb-2">
-                        {uploadedFile.error}
-                      </p>
+                    <p className="font-medium truncate">
+                      {uploadedFile.file.name}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {formatFileSize(uploadedFile.file.size)}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {uploadedFile.status === "success" && (
+                      <CheckCircle2 className="h-5 w-5 text-green-600" />
                     )}
-                    {(uploadedFile.status === "uploading" ||
-                      uploadedFile.status === "success") && (
-                      <div className="space-y-1">
-                        <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
-                          <div
-                            className="bg-primary h-full transition-all duration-300"
-                            style={{ width: `${uploadedFile.progress}%` }}
-                          />
-                        </div>
-                        <p className="text-xs text-muted-foreground">
-                          {uploadedFile.progress}% uploaded
-                        </p>
-                      </div>
+                    {uploadedFile.status === "error" && (
+                      <AlertCircle className="h-5 w-5 text-destructive" />
                     )}
+                    <button
+                      onClick={removeFile}
+                      className="text-muted-foreground hover:text-foreground"
+                    >
+                      <X className="h-5 w-5" />
+                    </button>
                   </div>
                 </div>
-              ))}
+                {uploadedFile.status === "error" && uploadedFile.error && (
+                  <p className="text-sm text-destructive mb-2">
+                    {uploadedFile.error}
+                  </p>
+                )}
+                {(uploadedFile.status === "uploading" ||
+                  uploadedFile.status === "success") && (
+                    <div className="space-y-1">
+                      <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
+                        <div
+                          className="bg-primary h-full transition-all duration-300"
+                          style={{ width: `${uploadedFile.progress}%` }}
+                        />
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        {uploadedFile.progress}% uploaded
+                      </p>
+                    </div>
+                  )}
+              </div>
             </div>
 
             <div className="flex gap-3 pt-4">
               <Button
                 onClick={handleUpload}
                 disabled={
-                  uploadedFiles.every(
-                    (f) => f.status === "uploading" || f.status === "success" || f.status === "error"
-                  )
+                  uploadedFile.status === "uploading" ||
+                  uploadedFile.status === "success" ||
+                  uploadedFile.status === "error"
                 }
                 className="flex-1"
                 size="lg"
               >
-                Upload Videos
+                Upload Video
               </Button>
               <Button
-                onClick={() => setUploadedFiles([])}
+                onClick={removeFile}
                 variant="outline"
                 size="lg"
               >
-                Clear All
+                Clear
               </Button>
             </div>
           </div>
