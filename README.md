@@ -188,31 +188,6 @@ Check service health:
 ./cmd/app/app check http localhost:8080/api/v1/health
 ```
 
-## API Endpoints
-
-### Authentication
-
-**POST** `/api/v1/oauth` - OAuth login (Google)
-```json
-{
-  "provider": "google",
-  "access_token": "<google_access_token>"
-}
-```
-
-**GET** `/api/v1/auth/refresh-token` - Refresh JWT token
-
-### Video Management (Protected)
-
-**POST** `/api/v1/videos/presigned-url` - Generate presigned upload URL
-```json
-{
-  "title": "My Video",
-  "description": "Video description",
-  "file_name": "video.mp4"
-}
-```
-
 ## Project Structure
 
 ```
