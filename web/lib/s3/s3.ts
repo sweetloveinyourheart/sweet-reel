@@ -40,10 +40,10 @@ export class S3Client {
    */
   private getDefaultConfig(): S3Config {
     return {
-      accessKeyId: process.env.AWS_ACCESS_KEY_ID || '',
-      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
-      region: process.env.AWS_REGION || 'us-east-1',
-      endpoint: process.env.AWS_ENDPOINT_URL,
+      accessKeyId: process.env.NEXT_PUBLIC_AWS_ACCESS_KEY_ID || '',
+      secretAccessKey: process.env.NEXT_PUBLIC_AWS_SECRET_ACCESS_KEY || '',
+      region: process.env.NEXT_PUBLIC_AWS_REGION || 'us-east-1',
+      endpoint: process.env.NEXT_PUBLIC_AWS_ENDPOINT_URL,
     };
   }
 
@@ -103,7 +103,7 @@ export class S3Client {
       });
 
       xhr.open('PUT', presignedUrl);
-      
+
       if (options?.contentType) {
         xhr.setRequestHeader('Content-Type', options.contentType);
       }
@@ -118,7 +118,7 @@ export class S3Client {
    */
   public async download(presignedUrl: string): Promise<Blob> {
     const response = await fetch(presignedUrl);
-    
+
     if (!response.ok) {
       throw new Error(`Download failed with status ${response.status}`);
     }
