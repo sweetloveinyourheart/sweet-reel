@@ -16,9 +16,13 @@ func ExtractBucketAndKeyFromEventMessage(path string) (string, string) {
 
 // ExtractFilenameAndExt splits a filename into its name and extension parts.
 // For example, from "abc123.jpg" it extracts "abc123" and ".jpg"
-// Returns an error if the filename is empty.
+// For a path like "path/to/file.txt" it returns "file" and ".txt"
 func ExtractFilenameAndExt(filename string) (string, string) {
-	ext := filepath.Ext(filename)
-	name := strings.TrimSuffix(filename, ext)
+	if filename == "" {
+		return "", ""
+	}
+	base := filepath.Base(filename)
+	ext := filepath.Ext(base)
+	name := strings.TrimSuffix(base, ext)
 	return name, ext
 }

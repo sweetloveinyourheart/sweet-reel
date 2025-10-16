@@ -70,6 +70,7 @@ export class S3Client {
     file: File | Blob,
     options?: {
       contentType?: string;
+      acl?: string;
       onProgress?: (progress: number) => void;
     }
   ): Promise<void> {
@@ -104,6 +105,10 @@ export class S3Client {
 
       xhr.open('PUT', presignedUrl);
 
+      if (options?.acl) {
+        xhr.setRequestHeader('x-amz-acl', options.acl);
+      }
+      
       if (options?.contentType) {
         xhr.setRequestHeader('Content-Type', options.contentType);
       }

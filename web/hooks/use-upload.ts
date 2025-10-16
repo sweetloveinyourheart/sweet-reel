@@ -45,6 +45,7 @@ export function useVideoUpload() {
       // Upload with progress tracking
       await s3Client.upload(presignedUrl, file, {
         contentType: file.type,
+        acl: 'public-read',
         onProgress: (progress) => {
           setProgress(progress)
         },

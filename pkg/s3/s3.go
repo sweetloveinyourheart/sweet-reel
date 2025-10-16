@@ -38,6 +38,7 @@ func CreateS3Client(ctx context.Context, config *Config) (*s3Client, error) {
 		client = s3.NewFromConfig(cfg,
 			func(o *s3.Options) {
 				o.BaseEndpoint = aws.String(config.minioURL)
+				o.UsePathStyle = true
 			})
 	} else {
 		client = s3.NewFromConfig(cfg)

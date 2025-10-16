@@ -204,7 +204,7 @@ services:
       "VIDEO_MANAGEMENT_AWS_S3_ACCESS_ID": "sweetreel"
       "VIDEO_MANAGEMENT_AWS_S3_SECRET": "sweetreel4000"
       "VIDEO_MANAGEMENT_AWS_S3_BUCKET": "video_processing"
-      "VIDEO_MANAGEMENT_MINIO_URL": "http://172.16.244.140:9000"
+      "VIDEO_MANAGEMENT_MINIO_URL": "http://localhost:9000"
     ports:
       - 50060:50060 # GRPC port
     networks:

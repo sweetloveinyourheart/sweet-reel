@@ -118,7 +118,7 @@ func TestExtractFilenameAndExt(t *testing.T) {
 		{
 			name:         "file with path",
 			filename:     "path/to/file.txt",
-			expectedName: "path/to/file",
+			expectedName: "file",
 			expectedExt:  ".txt",
 		},
 	}
