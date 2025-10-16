@@ -3,11 +3,12 @@
 import { useState, useRef, DragEvent, ChangeEvent } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Upload, Video, X, CheckCircle2, AlertCircle } from "lucide-react"
+import { Upload, Video, X, CheckCircle2, AlertCircle, XCircle, CheckCircle } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { validateFileSize, validateFileType } from "@/lib/s3"
 import { useVideoUpload } from "@/hooks"
 import { PresignedUrlRequest } from "@/types"
+import { ZodError } from "zod"
 
 interface UploadedFile {
   file: File
@@ -98,39 +99,56 @@ export default function VideoUploadPage() {
     setUploadedFile(null)
     setTitle("")
     setDescription("")
+    reset()
   }
 
-  const simulateUpload = () => {
-    if (!uploadedFile) return
+  const handleUpload = async () => {
+    if (!uploadedFile || uploadedFile.status !== "pending") return
 
-    setUploadedFile((prev) => prev ? { ...prev, status: "uploading" } : null)
-
-    const interval = setInterval(() => {
-      setUploadedFile((prev) => {
-        if (!prev) return null
-        if (prev.progress < 100) {
-          return { ...prev, progress: prev.progress + 10 }
-        } else {
-          clearInterval(interval)
-          return { ...prev, status: "success" }
-        }
-      })
-    }, 200)
-  }
-
-  const handleUpload = () => {
     try {
-      if (uploadedFile && uploadedFile.status === "pending") {
-        const fileMetadata = PresignedUrlRequest.parse({ 
-          title, 
-          description, 
-          file_name: uploadedFile.file.name 
-        })
+      // Validate metadata
+      const fileMetadata = PresignedUrlRequest.parse({
+        title,
+        description,
+        file_name: uploadedFile.file.name
+      })
+
+      // Update local status to uploading
+      setUploadedFile((prev) => prev ? { ...prev, status: "uploading" } : null)
+
+      // Upload video using the hook
+      const success = await uploadVideo(uploadedFile.file, fileMetadata)
+
+      if (success) {
+        setUploadedFile((prev) => prev ? { ...prev, status: "success", progress: 100 } : null)
+      } else {
+        setUploadedFile((prev) => prev ? {
+          ...prev,
+          status: "error",
+          error: error || "Upload failed. Please try again."
+        } : null)
+      }
+    } catch (err) {
+      let errorMessage = "Invalid form data. Please check your inputs."
+
+      // Handle Zod validation errors
+      if (err instanceof ZodError) {
+        const formattedErrors = err.issues.map((issue) => {
+          const field = issue.path.join('.') || 'field'
+          // Capitalize field name for better display
+          const fieldName = field.charAt(0).toUpperCase() + field.slice(1).replace('_', ' ')
+          return `${fieldName}: ${issue.message.toLowerCase()}`
+        }).join('; ')
+        errorMessage = formattedErrors || "Validation failed"
+      } else if (err instanceof Error) {
+        errorMessage = err.message
       }
 
-      // TODO: handle upload video with the useVideoUpload() hook
-    } catch (error) {
-      // TODO: handle errors
+      setUploadedFile((prev) => prev ? {
+        ...prev,
+        status: "error",
+        error: errorMessage
+      } : null)
     }
   }
 
@@ -150,6 +168,44 @@ export default function VideoUploadPage() {
           Share your videos with the world. Upload MP4, WebM, OGG, or MOV files (max 500MB).
         </p>
       </div>
+
+      {/* Success Display */}
+      {uploadedFile?.status === "success" && (
+        <div className="mb-6 flex items-start gap-3 rounded-lg border border-green-500/50 bg-green-500/10 p-4">
+          <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <h3 className="font-semibold text-green-600 mb-1">Upload Successful!</h3>
+            <p className="text-sm text-green-600/90">
+              Your video has been uploaded successfully. It may take a few moments to process.
+            </p>
+          </div>
+          <button
+            onClick={removeFile}
+            className="text-green-600 hover:text-green-600/80"
+            aria-label="Dismiss success message"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+      )}
+
+      {/* Global Error Display */}
+      {error && (
+        <div className="mb-6 flex items-start gap-3 rounded-lg border border-destructive/50 bg-destructive/10 p-4">
+          <XCircle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <h3 className="font-semibold text-destructive mb-1">Upload Error</h3>
+            <p className="text-sm text-destructive/90">{error}</p>
+          </div>
+          <button
+            onClick={() => reset()}
+            className="text-destructive hover:text-destructive/80"
+            aria-label="Dismiss error"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+      )}
 
       <div className="space-y-6">
         {/* Drag and Drop Zone */}
@@ -276,11 +332,11 @@ export default function VideoUploadPage() {
                       <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
                         <div
                           className="bg-primary h-full transition-all duration-300"
-                          style={{ width: `${uploadedFile.progress}%` }}
+                          style={{ width: `${uploading ? progress : uploadedFile.progress}%` }}
                         />
                       </div>
                       <p className="text-xs text-muted-foreground">
-                        {uploadedFile.progress}% uploaded
+                        {uploading ? progress : uploadedFile.progress}% uploaded
                       </p>
                     </div>
                   )}
@@ -291,19 +347,23 @@ export default function VideoUploadPage() {
               <Button
                 onClick={handleUpload}
                 disabled={
+                  uploading ||
                   uploadedFile.status === "uploading" ||
                   uploadedFile.status === "success" ||
-                  uploadedFile.status === "error"
+                  uploadedFile.status === "error" ||
+                  !title.trim() ||
+                  !description.trim()
                 }
                 className="flex-1"
                 size="lg"
               >
-                Upload Video
+                {uploading ? "Uploading..." : "Upload Video"}
               </Button>
               <Button
                 onClick={removeFile}
                 variant="outline"
                 size="lg"
+                disabled={uploading}
               >
                 Clear
               </Button>
