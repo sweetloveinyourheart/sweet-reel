@@ -43,6 +43,14 @@ services:
     image: ${POSTGRES_CONTAINER_IMAGE}
     container_name: ${COMPOSE_PROJECT_NAME:-test}_database
     hostname: srl_database
+    command:
+      - "postgres"
+      - "-c"
+      - "wal_level=logical"
+      - "-c"
+      - "max_wal_senders=10"
+      - "-c"
+      - "max_replication_slots=10"
     environment:
       "POSTGRES_DB": "postgres"
       "POSTGRES_USER": "root_admin"
@@ -55,6 +63,7 @@ services:
         ipv4_address: "172.16.244.31"
     volumes:
       - ./db/create_databases.sh:/docker-entrypoint-initdb.d/create_databases.sh
+      - postgres_data:/var/lib/postgresql/data
     depends_on:
       phase_one_leader:
         condition: service_completed_successfully
@@ -118,6 +127,69 @@ services:
       timeout: 5s
       retries: 10
 
+  srl_elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    container_name: ${COMPOSE_PROJECT_NAME:-test}_elasticsearch
+    hostname: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - cluster.name=srl-cluster
+      - node.name=srl-node-1
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    networks:
+      fs_test_net:
+        ipv4_address: "172.16.244.71"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    depends_on:
+      phase_one_leader:
+        condition: service_completed_successfully
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1" ]
+      start_period: 90s
+      interval: 10s
+      timeout: 5s
+      retries: 30
+
+  srl_debezium:
+    image: debezium/connect:2.5
+    container_name: ${COMPOSE_PROJECT_NAME:-test}_debezium
+    hostname: debezium
+    environment:
+      BOOTSTRAP_SERVERS: kafka:9092
+      GROUP_ID: 1
+      CONFIG_STORAGE_TOPIC: debezium_connect_configs
+      OFFSET_STORAGE_TOPIC: debezium_connect_offsets
+      STATUS_STORAGE_TOPIC: debezium_connect_statuses
+      KEY_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      VALUE_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      CONNECT_KEY_CONVERTER_SCHEMAS_ENABLE: "false"
+      CONNECT_VALUE_CONVERTER_SCHEMAS_ENABLE: "false"
+    ports:
+      - "8083:8083"
+    networks:
+      fs_test_net:
+        ipv4_address: "172.16.244.81"
+    volumes:
+      - ./debezium/connectors:/kafka/connect/debezium-connector-elasticsearch
+    depends_on:
+      srl_kafka:
+        condition: service_healthy
+      srl_database:
+        condition: service_healthy
+      srl_elasticsearch:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -f http://localhost:8083/ || exit 1" ]
+      start_period: 90s
+      interval: 10s
+      timeout: 5s
+      retries: 30
+
   phase_two_leader:
     image: ${ALPINE_CONTAINER_IMAGE}
     container_name: ${COMPOSE_PROJECT_NAME:-test}_phase_two_leader
@@ -134,6 +206,11 @@ services:
         condition: service_healthy
       srl_minio_mock_s3:
         condition: service_healthy
+      srl_elasticsearch:
+        condition: service_healthy
+      srl_debezium:
+        condition: service_healthy
+
 
   api_gateway:
     image: srl:latest
@@ -310,4 +387,8 @@ networks:
 
 volumes:
   minio_data:
+    driver: local
+  postgres_data:
+    driver: local
+  elasticsearch_data:
     driver: local

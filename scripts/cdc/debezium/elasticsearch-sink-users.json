@@ -1,0 +1,19 @@
+{
+  "name": "elasticsearch-sink-users",
+  "config": {
+    "connector.class": "io.confluent.connect.elasticsearch.ElasticsearchSinkConnector",
+    "tasks.max": "1",
+    "topics": "users,user_identities",
+    "connection.url": "http://elasticsearch:9200",
+    "type.name": "_doc",
+    "key.ignore": "false",
+    "schema.ignore": "true",
+    "behavior.on.null.values": "delete",
+    "behavior.on.malformed.documents": "warn",
+    "transforms": "unwrap,extractKey",
+    "transforms.unwrap.type": "io.debezium.transforms.ExtractNewRecordState",
+    "transforms.unwrap.drop.tombstones": "false",
+    "transforms.extractKey.type": "org.apache.kafka.connect.transforms.ExtractField$Key",
+    "transforms.extractKey.field": "id"
+  }
+}

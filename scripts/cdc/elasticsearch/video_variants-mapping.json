@@ -1,0 +1,31 @@
+{
+  "settings": {
+    "number_of_shards": 1,
+    "number_of_replicas": 0
+  },
+  "mappings": {
+    "properties": {
+      "id": {
+        "type": "keyword"
+      },
+      "video_id": {
+        "type": "keyword"
+      },
+      "quality": {
+        "type": "keyword"
+      },
+      "object_key": {
+        "type": "keyword"
+      },
+      "total_segments": {
+        "type": "integer"
+      },
+      "total_duration": {
+        "type": "integer"
+      },
+      "created_at": {
+        "type": "date"
+      }
+    }
+  }
+}
