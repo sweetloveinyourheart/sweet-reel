@@ -1,104 +1,164 @@
-> The example repository is maintained from a [monorepo](https://github.com/nextauthjs/next-auth/tree/main/apps/examples/nextjs). Pull Requests should be opened against [`nextauthjs/next-auth`](https://github.com/nextauthjs/next-auth).
+# Sweet Reel - Web Frontend
 
-<p align="center">
-   <br/>
-   <a href="https://authjs.dev" target="_blank"><img width="150px" src="https://authjs.dev/img/logo-sm.png" /></a>
-   <h3 align="center">NextAuth.js Example App</h3>
-   <p align="center">
-   Open Source. Full Stack. Own Your Data.
-   </p>
-   <p align="center" style="align: center;">
-      <a href="https://npm.im/next-auth">
-        <img alt="npm" src="https://img.shields.io/npm/v/next-auth?color=green&label=next-auth">
-      </a>
-      <a href="https://bundlephobia.com/result?p=next-auth-example">
-        <img src="https://img.shields.io/bundlephobia/minzip/next-auth?label=next-auth" alt="Bundle Size"/>
-      </a>
-      <a href="https://www.npmtrends.com/next-auth">
-        <img src="https://img.shields.io/npm/dm/next-auth?label=next-auth%20downloads" alt="Downloads" />
-      </a>
-      <a href="https://npm.im/next-auth">
-        <img src="https://img.shields.io/badge/npm-TypeScript-blue" alt="TypeScript" />
-      </a>
-   </p>
-</p>
+The web frontend for Sweet Reel, a video processing and management platform built with Next.js.
 
 ## Overview
 
-NextAuth.js is a complete open source authentication solution.
+This is a modern Next.js application that provides the user interface for Sweet Reel's video processing platform. It features:
 
-This is an example application that shows how `next-auth` is applied to a basic Next.js app.
+- **Authentication**: OAuth integration with Google using NextAuth.js
+- **Video Upload**: Direct upload capabilities to S3-compatible storage
+- **Video Management**: Browse, view, and manage uploaded videos
+- **User Profiles**: User profile management and viewing
+- **Responsive UI**: Built with Tailwind CSS and Radix UI components
 
-The deployed version can be found at [`next-auth-example.vercel.app`](https://next-auth-example.vercel.app)
+## Tech Stack
 
-### About NextAuth.js
+- **Framework**: Next.js (latest)
+- **Authentication**: NextAuth.js with Google OAuth
+- **UI Components**: Radix UI, Tailwind CSS
+- **State Management**: React Hooks
+- **TypeScript**: Full TypeScript support
+- **Storage**: S3-compatible object storage integration
 
-NextAuth.js is an easy to implement, full-stack (client/server) open source authentication library originally designed for [Next.js](https://nextjs.org) and [Serverless](https://vercel.com). Our goal is to [support even more frameworks](https://github.com/nextauthjs/next-auth/issues/2294) in the future.
+## Project Structure
 
-Go to [next-auth.js.org](https://authjs.dev) for more information and documentation.
-
-> _NextAuth.js is not officially associated with Vercel or Next.js._
+```
+web/
+├── app/                    # Next.js App Router pages
+│   ├── api/               # API routes
+│   ├── auth/              # Authentication routes
+│   ├── profile/           # User profile pages
+│   ├── signin/            # Sign in page
+│   ├── upload/            # Video upload page
+│   └── video/             # Video viewing pages
+├── components/            # Reusable React components
+├── hooks/                 # Custom React hooks
+├── lib/                   # Utility libraries
+│   ├── api/              # API client and configuration
+│   └── s3/               # S3 storage utilities
+├── types/                 # TypeScript type definitions
+└── auth.ts               # NextAuth configuration
+```
 
 ## Getting Started
 
-### 1. Clone the repository and install dependencies
+### Prerequisites
 
-```
-git clone https://github.com/nextauthjs/next-auth-example.git
-cd next-auth-example
+- Node.js >= 20.0.0
+- pnpm package manager
+- Backend services running (see main project README)
+
+### 1. Install dependencies
+
+From the `web` directory:
+
+```bash
 pnpm install
 ```
 
-### 2. Configure your local environment
+### 2. Configure environment variables
 
-Copy the .env.local.example file in this directory to .env.local (which will be ignored by Git):
+Create a `.env.local` file in the `web` directory with the following variables:
 
+```env
+# NextAuth Configuration
+AUTH_SECRET=your-secret-key-here
+AUTH_GOOGLE_ID=your-google-oauth-client-id
+AUTH_GOOGLE_SECRET=your-google-oauth-client-secret
+
+# API Gateway URL
+NEXT_PUBLIC_API_URL=http://localhost:8080
+
+# S3/MinIO Configuration
+NEXT_PUBLIC_S3_ENDPOINT=http://localhost:9000
+NEXT_PUBLIC_S3_BUCKET=video-uploaded
 ```
-cp .env.local.example .env.local
-```
 
-Add details for one or more providers (e.g. Google, Twitter, GitHub, Email, etc).
+### 3. Set up Google OAuth
 
-#### Database
+1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+2. Create a new project or select an existing one
+3. Enable the Google+ API
+4. Create OAuth 2.0 credentials
+5. Add authorized redirect URI: `http://localhost:3000/auth/callback/google`
+6. Copy the Client ID and Client Secret to your `.env.local`
 
-A database is needed to persist user accounts and to support email sign in. However, you can still use NextAuth.js for authentication without a database by using OAuth for authentication. If you do not specify a database, [JSON Web Tokens](https://jwt.io/introduction) will be enabled by default.
+### 4. Start the development server
 
-You **can** skip configuring a database and come back to it later if you want.
-
-For more information about setting up a database, please check out the following links:
-
-- Docs: [authjs.dev/reference/core/adapters](https://authjs.dev/reference/core/adapters)
-
-### 3. Configure Authentication Providers
-
-1. Review and update options in `auth.ts` as needed.
-
-2. When setting up OAuth, in the developer admin page for each of your OAuth services, you should configure the callback URL to use a callback path of `{server}/api/auth/callback/{provider}`.
-
-e.g. For Google OAuth you would use: `http://localhost:3000/api/auth/callback/google`
-
-A list of configured providers and their callback URLs is available from the endpoint `api/auth/providers`. You can find more information at https://authjs.dev/getting-started/providers/oauth-tutorial
-
-1. You can also choose to specify an SMTP server for passwordless sign in via email.
-
-### 4. Start the application
-
-To run your site locally, use:
-
-```
+```bash
 pnpm run dev
 ```
 
-To run it in production mode, use:
+The application will be available at [http://localhost:3000](http://localhost:3000)
 
-```
+### 5. Build for production
+
+```bash
 pnpm run build
 pnpm run start
 ```
 
-### 5. Preparing for Production
+## Features
 
-Follow the [Deployment documentation](https://authjs.dev/getting-started/deployment)
+### Authentication
+- Google OAuth integration via NextAuth.js
+- JWT-based session management
+- Automatic token refresh
+- Protected routes with middleware
+
+### Video Upload
+- Direct upload to S3-compatible storage
+- Progress tracking
+- File validation
+- Multipart upload support
+
+### Video Management
+- Browse uploaded videos
+- Video playback
+- Video metadata display
+- User-specific video filtering
+
+### User Interface
+- Responsive design with Tailwind CSS
+- Accessible components with Radix UI
+- Dark/light mode support
+- Modern, clean interface
+
+## API Integration
+
+The frontend communicates with the backend services through the API Gateway:
+
+- **Auth Service**: User authentication and token management
+- **User Service**: User profile and account management
+- **Video Management Service**: Video metadata and listing
+- **S3 Storage**: Direct video upload and retrieval
+
+## Development
+
+### Available Scripts
+
+- `pnpm dev` - Start development server
+- `pnpm build` - Build for production
+- `pnpm start` - Start production server
+
+### Code Organization
+
+- **Components**: Reusable UI components following atomic design principles
+- **Hooks**: Custom React hooks for common functionality
+- **API Client**: Type-safe API client with error handling
+- **Types**: Centralized TypeScript definitions
+
+## Contributing
+
+This is part of the Sweet Reel project. Please refer to the main project repository for contribution guidelines.
+
+## Related Documentation
+
+- [NextAuth.js Documentation](https://authjs.dev)
+- [Next.js Documentation](https://nextjs.org/docs)
+- [Tailwind CSS Documentation](https://tailwindcss.com/docs)
+- [Radix UI Documentation](https://www.radix-ui.com/docs)
 
 ## License
 
