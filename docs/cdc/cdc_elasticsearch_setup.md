@@ -106,7 +106,7 @@ The Elasticsearch indices need to be created before data can be synced. Run the 
 
 ```bash
 # From the project root
-make setup-es-indices
+make setup-dbz-indices
 ```
 
 ### 3. Register Debezium Connectors
