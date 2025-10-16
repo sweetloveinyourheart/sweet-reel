@@ -7,7 +7,17 @@ build: # Build everything
 	@make goimports
 	@make build-containers IMAGE_TAG=$(IMAGE_TAG)
 
+build-backend:
+	@make gen
+	@make goimports
+	@make build-backend-containers IMAGE_TAG=$(IMAGE_TAG)
+
 build-containers:
+	@make app-docker optionalReproFlag=$(optionalReproFlag)
+	@make ffmpeg-docker optionalReproFlag=$(optionalReproFlag)
+	@make web-docker
+
+build-backend-containers:
 	@make app-docker optionalReproFlag=$(optionalReproFlag)
 	@make ffmpeg-docker optionalReproFlag=$(optionalReproFlag)
 
@@ -41,6 +51,14 @@ build-docker-ffmpeg:
 	--build-arg ALPINE_CONTAINER_IMAGE=$(ALPINE_CONTAINER_IMAGE) \
 	$(additionalDockerArgs)
 
+build-docker-web:
+	@DOCKER_BUILDKIT=1 docker build $(buildPlatform) \
+	--file web/Dockerfile \
+	--quiet \
+	web \
+	-t srl-web:latest \
+	$(additionalDockerArgs)
+
 app-build:
 	@make build-binary extraArgs=$(extraArgs) directory=cmd/app executablePath=cmd/app/app
 
@@ -51,3 +69,6 @@ app-docker:
 ffmpeg-docker:
 	@make app-build $(optionalReproFlag) extraArgs=$(extraArgs)
 	@make build-docker-ffmpeg buildPlatform=$(buildPlatorm) target=srl-ffmpeg
+
+web-docker:
+	@make build-docker-web buildPlatform=$(buildPlatorm) target=srl-web

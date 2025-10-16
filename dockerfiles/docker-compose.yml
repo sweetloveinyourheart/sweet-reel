@@ -204,7 +204,7 @@ services:
       "VIDEO_MANAGEMENT_AWS_S3_ACCESS_ID": "sweetreel"
       "VIDEO_MANAGEMENT_AWS_S3_SECRET": "sweetreel4000"
       "VIDEO_MANAGEMENT_AWS_S3_BUCKET": "video_processing"
-      "VIDEO_MANAGEMENT_MINIO_URL": "http://172.16.244.140:9000"
+      "VIDEO_MANAGEMENT_MINIO_URL": "http://localhost:9000"
     ports:
       - 50060:50060 # GRPC port
     networks:
@@ -268,6 +268,32 @@ services:
       interval: 5s
       timeout: 4s
       retries: 30
+    depends_on:
+      phase_two_leader:
+        condition: service_completed_successfully
+
+  web:
+    image: srl-web:latest
+    container_name: ${COMPOSE_PROJECT_NAME:-test}_web
+    hostname: web
+    environment:
+      "NODE_ENV": "development"
+      "API_URL": "http://172.16.244.12:8080/api/v1"
+      "NEXT_PUBLIC_API_URL": "http://localhost:8080/api/v1"
+      "NEXT_PUBLIC_AWS_ACCESS_KEY_ID": "sweetreel"
+      "NEXT_PUBLIC_AWS_SECRET_ACCESS_KEY": "sweetreel4000"
+      "NEXT_PUBLIC_AWS_REGION": "us-east-1"
+      "NEXT_PUBLIC_AWS_ENDPOINT_URL": "http://172.16.244.140:9000"
+      "AUTH_SECRET": ${AUTH_NEXTJS_SECRET}
+      "AUTH_GOOGLE_ID": ${AUTH_GOOGLE_OAUTH_CLIENT_ID}
+      "AUTH_GOOGLE_SECRET": ${AUTH_GOOGLE_OAUTH_CLIENT_SECRET}
+      "AUTH_TRUST_HOST": "true"
+      "AUTH_URL": "http://localhost:3000"
+    ports:
+      - 3000:3000 # HTTP port
+    networks:
+      fs_test_net:
+        ipv4_address: "172.16.244.200"
     depends_on:
       phase_two_leader:
         condition: service_completed_successfully

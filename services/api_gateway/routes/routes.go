@@ -33,7 +33,7 @@ func (r *Router) SetupRoutes() {
 
 // setupPublicRoutes sets up public API routes
 func (r *Router) setupPublicRoutes() {
-	r.mux.Handle("/api/v1/oauth", helpers.POST(r.handlers.AuthHandler.GoogleOAuth))
+	r.mux.Handle("/api/v1/oauth/google", helpers.POST(r.handlers.AuthHandler.GoogleOAuth))
 	r.mux.Handle("/api/v1/auth/refresh-token", helpers.GET(r.handlers.AuthHandler.RefreshToken))
 }
 

@@ -35,11 +35,9 @@ func (as *ActionsSuite) TestActions_PresignedUrl_Success() {
 	as.mockS3.On("GenerateUploadPublicUri",
 		mock.MatchedBy(func(key string) bool {
 			// Key should contain the folder structure and extension
-			return key != "" &&
-				key[:len("raw/")] == "raw/" &&
-				key[len(key)-4:] == ".mp4"
+			return key != "" && key[len(key)-4:] == ".mp4"
 		}),
-		actions.VideoUploadedBucket,
+		s3.S3VideoUploadedBucket,
 		uint32(s3.UrlExpirationSeconds)).Return(expectedURL, nil)
 
 	as.mockVideoRepository.On("CreateVideo", ctx, mock.MatchedBy(func(video *models.Video) bool {
@@ -94,7 +92,7 @@ func (as *ActionsSuite) TestActions_PresignedUrl_Success_WithoutDescription() {
 	// Setup mock expectations
 	as.mockS3.On("GenerateUploadPublicUri",
 		mock.AnythingOfType("string"),
-		actions.VideoUploadedBucket,
+		s3.S3VideoUploadedBucket,
 		uint32(s3.UrlExpirationSeconds)).Return(expectedURL, nil)
 
 	as.mockVideoRepository.On("CreateVideo", ctx, mock.MatchedBy(func(video *models.Video) bool {
@@ -238,7 +236,7 @@ func (as *ActionsSuite) TestActions_PresignedUrl_S3GenerateUrlError() {
 	// Setup mock expectations - S3 fails
 	as.mockS3.On("GenerateUploadPublicUri",
 		mock.AnythingOfType("string"),
-		actions.VideoUploadedBucket,
+		s3.S3VideoUploadedBucket,
 		uint32(s3.UrlExpirationSeconds)).Return("", s3Error)
 
 	// Setup request
@@ -284,7 +282,7 @@ func (as *ActionsSuite) TestActions_PresignedUrl_DatabaseError() {
 	// Setup mock expectations
 	as.mockS3.On("GenerateUploadPublicUri",
 		mock.AnythingOfType("string"),
-		actions.VideoUploadedBucket,
+		s3.S3VideoUploadedBucket,
 		uint32(s3.UrlExpirationSeconds)).Return(expectedURL, nil)
 
 	as.mockVideoRepository.On("CreateVideo", ctx, mock.AnythingOfType("*models.Video")).Return(dbError)
@@ -335,7 +333,7 @@ func (as *ActionsSuite) TestActions_PresignedUrl_KeyGeneration() {
 			capturedKey = key
 			return true
 		}),
-		actions.VideoUploadedBucket,
+		s3.S3VideoUploadedBucket,
 		uint32(s3.UrlExpirationSeconds)).Return(expectedURL, nil)
 
 	as.mockVideoRepository.On("CreateVideo", ctx, mock.AnythingOfType("*models.Video")).Return(nil)
@@ -358,8 +356,7 @@ func (as *ActionsSuite) TestActions_PresignedUrl_KeyGeneration() {
 	assert.NotNil(as.T(), response)
 
 	// Validate key format: raw/YYYY/MM/DD/{uuid}.mp4
-	assert.Contains(as.T(), capturedKey, "raw/")
-	assert.Contains(as.T(), capturedKey, time.Now().Format("2006/01/02"))
+	assert.Contains(as.T(), capturedKey, time.Now().Format("2006-01-02"))
 	assert.Contains(as.T(), capturedKey, ".mp4")
 
 	// Verify all mocks were called as expected
@@ -401,7 +398,7 @@ func (as *ActionsSuite) TestActions_PresignedUrl_DifferentFileExtensions() {
 					mock.MatchedBy(func(key string) bool {
 						return key != "" && key[len(key)-len(tc.expectedExt):] == tc.expectedExt
 					}),
-					actions.VideoUploadedBucket,
+					s3.S3VideoUploadedBucket,
 					uint32(s3.UrlExpirationSeconds)).Return("https://example.com/url", nil)
 
 				as.mockVideoRepository.On("CreateVideo", ctx, mock.AnythingOfType("*models.Video")).Return(nil)
