@@ -43,47 +43,19 @@ PostgreSQL is configured with the following parameters for CDC:
 
 ## Indices
 
-The following Elasticsearch indices are created automatically:
+Elasticsearch indices are created automatically from the corresponding PostgreSQL tables captured by Debezium connectors.
 
-### Video Management Indices
+**Configuration**: See `scripts/cdc/elasticsearch/indices.conf` for the list of indices and their mapping files.
 
-1. **videos** - Main video metadata
-   - Fields: id, uploader_id, title, description, status, object_key, processed_at, created_at, updated_at
-   - Full-text search on: title, description
-
-2. **video_manifests** - HLS manifest files
-   - Fields: id, video_id, object_key, size_bytes, created_at
-
-3. **video_variants** - Video quality variants
-   - Fields: id, video_id, quality, object_key, total_segments, total_duration, created_at
-
-4. **video_thumbnails** - Video thumbnail metadata
-   - Fields: id, video_id, object_key, width, height, created_at
-
-### User Indices
-
-5. **users** - User profiles
-   - Fields: id, email, name, picture, created_at, updated_at
-   - Full-text search on: name
-
-6. **user_identities** - OAuth provider identities
-   - Fields: id, user_id, provider, provider_user_id, access_token (not indexed), refresh_token (not indexed), expires_at, created_at, updated_at
+**Security Note**: Sensitive tables containing authentication credentials (OAuth tokens, passwords, etc.) should be excluded from CDC.
 
 ## Debezium Connectors
 
-### Video Management Connector
-- **Name**: `video-management-connector`
-- **Database**: `video-management`
-- **Tables**: videos, video_manifests, video_variants, video_thumbnails
-- **Slot**: `debezium_video_management`
-- **Topics**: videos, video_manifests, video_variants, video_thumbnails
+Debezium source connectors capture changes from PostgreSQL tables and publish them to Kafka topics.
 
-### User Connector
-- **Name**: `user-connector`
-- **Database**: `user`
-- **Tables**: users, user_identities
-- **Slot**: `debezium_user`
-- **Topics**: users, user_identities
+**Configuration**: See `scripts/cdc/debezium/connectors.conf` for the list of connectors to register.
+
+**Topic Naming**: All CDC topics use the `cdc-` prefix with hyphens (following Kafka best practices) to differentiate them from application topics.
 
 ## Setup Instructions
 
@@ -100,7 +72,18 @@ This will:
 - Start Debezium Connect
 - Wait for all services to be healthy
 
-### 2. Initialize Elasticsearch Indices
+### 2. Initialize Kafka Topics
+
+Create the required Kafka topics before registering connectors:
+
+```bash
+# From the project root
+make setup-dbz-topics
+```
+
+This creates all CDC topics defined in `scripts/cdc/kafka/cdc-topics.conf` (prefixed with `cdc-`) plus Debezium Connect internal topics.
+
+### 3. Initialize Elasticsearch Indices
 
 The Elasticsearch indices need to be created before data can be synced. Run the initialization script:
 
@@ -109,7 +92,7 @@ The Elasticsearch indices need to be created before data can be synced. Run the 
 make setup-dbz-indices
 ```
 
-### 3. Register Debezium Connectors
+### 4. Register Debezium Connectors
 
 Register the CDC connectors to start capturing database changes:
 
@@ -118,7 +101,7 @@ Register the CDC connectors to start capturing database changes:
 make setup-es-connectors
 ```
 
-### 4. Verify Setup
+### 5. Verify Setup
 
 #### Check Elasticsearch Health
 ```bash
@@ -137,8 +120,11 @@ curl http://localhost:8083/connectors
 
 #### Check Connector Status
 ```bash
-curl http://localhost:8083/connectors/video-management-connector/status | jq '.'
-curl http://localhost:8083/connectors/user-connector/status | jq '.'
+# List all connectors
+curl http://localhost:8083/connectors | jq '.'
+
+# Check specific connector status (replace <connector-name>)
+curl http://localhost:8083/connectors/<connector-name>/status | jq '.'
 ```
 
 #### List Kafka Topics
@@ -148,66 +134,24 @@ docker exec srl-kafka /opt/kafka/bin/kafka-topics.sh --bootstrap-server localhos
 
 ## Usage Examples
 
-### Search Videos by Title
+### Search Documents
 
 ```bash
-curl -X GET "http://localhost:9200/videos/_search?pretty" \
+curl -X GET "http://localhost:9200/<index-name>/_search?pretty" \
   -H 'Content-Type: application/json' \
   -d '{
     "query": {
       "match": {
-        "title": "tutorial"
+        "<field-name>": "<search-term>"
       }
     }
   }'
 ```
 
-### Search Users by Name
+### Get Document by ID
 
 ```bash
-curl -X GET "http://localhost:9200/users/_search?pretty" \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "query": {
-      "match": {
-        "name": "john"
-      }
-    }
-  }'
-```
-
-### Get Video by ID
-
-```bash
-curl -X GET "http://localhost:9200/videos/_doc/{VIDEO_UUID}?pretty"
-```
-
-### Get All Videos by Uploader
-
-```bash
-curl -X GET "http://localhost:9200/videos/_search?pretty" \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "query": {
-      "term": {
-        "uploader_id": "USER_UUID"
-      }
-    }
-  }'
-```
-
-### Filter Videos by Status
-
-```bash
-curl -X GET "http://localhost:9200/videos/_search?pretty" \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "query": {
-      "term": {
-        "status": "ready"
-      }
-    }
-  }'
+curl -X GET "http://localhost:9200/<index-name>/_doc/<document-id>?pretty"
 ```
 
 ## Monitoring
@@ -215,18 +159,18 @@ curl -X GET "http://localhost:9200/videos/_search?pretty" \
 ### View CDC Events in Kafka
 
 ```bash
-# Monitor videos topic
+# Monitor a specific CDC topic (replace <topic-name>)
 docker exec srl-kafka /opt/kafka/bin/kafka-console-consumer.sh \
   --bootstrap-server localhost:9092 \
-  --topic videos \
+  --topic <topic-name> \
   --from-beginning
 ```
 
 ### Check Elasticsearch Document Count
 
 ```bash
-curl -X GET "http://localhost:9200/videos/_count?pretty"
-curl -X GET "http://localhost:9200/users/_count?pretty"
+# Check document count for an index (replace <index-name>)
+curl -X GET "http://localhost:9200/<index-name>/_count?pretty"
 ```
 
 ### View Debezium Connect Logs
@@ -237,6 +181,23 @@ docker logs -f srl_debezium
 
 ## Troubleshooting
 
+### Unknown Topic or Partition Warning
+
+If you see warnings like:
+```
+WARN Error while fetching metadata with correlation id X : {cdc-<table-name>=UNKNOWN_TOPIC_OR_PARTITION}
+```
+
+This means the Kafka topics haven't been created yet. Run:
+```bash
+make setup-dbz-topics
+```
+
+Then restart the affected connector:
+```bash
+curl -X POST http://localhost:8083/connectors/<connector-name>/restart
+```
+
 ### Connectors Not Starting
 
 1. Check Debezium logs:
@@ -246,26 +207,26 @@ docker logs -f srl_debezium
 
 2. Verify database permissions:
    ```bash
-   docker exec srl_database psql -U root_admin -d video-management -c "SELECT * FROM pg_replication_slots;"
+   docker exec srl_database psql -U root_admin -d <database-name> -c "SELECT * FROM pg_replication_slots;"
    ```
 
 3. Restart the connector:
    ```bash
-   curl -X POST http://localhost:8083/connectors/video-management-connector/restart
+   curl -X POST http://localhost:8083/connectors/<connector-name>/restart
    ```
 
 ### Missing Data in Elasticsearch
 
 1. Check if connector is running:
    ```bash
-   curl http://localhost:8083/connectors/video-management-connector/status
+   curl http://localhost:8083/connectors/<connector-name>/status
    ```
 
 2. Verify Kafka topics have data:
    ```bash
    docker exec srl-kafka /opt/kafka/bin/kafka-console-consumer.sh \
      --bootstrap-server localhost:9092 \
-     --topic videos \
+     --topic <topic-name> \
      --from-beginning \
      --max-messages 10
    ```
@@ -281,27 +242,27 @@ If you need to reset the replication slot:
 
 ```bash
 # Connect to PostgreSQL
-docker exec -it srl_database psql -U root_admin -d video-management
+docker exec -it srl_database psql -U root_admin -d <database-name>
 
-# Drop the replication slot
-SELECT pg_drop_replication_slot('debezium_video_management');
+# Drop the replication slot (check connector config for slot name)
+SELECT pg_drop_replication_slot('<slot-name>');
 
 # Exit psql
 \q
 ```
 
-Then restart the Debezium connector.
+Then delete and recreate the Debezium connector.
 
 ### Delete and Recreate Connector
 
 ```bash
 # Delete connector
-curl -X DELETE http://localhost:8083/connectors/video-management-connector
+curl -X DELETE http://localhost:8083/connectors/<connector-name>
 
 # Wait a few seconds, then recreate
 curl -X POST http://localhost:8083/connectors \
   -H 'Content-Type: application/json' \
-  -d @dockerfiles/debezium/video-management-connector.json
+  -d @scripts/cdc/debezium/<connector-name>.json
 ```
 
 ## Data Consistency

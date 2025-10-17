@@ -14,40 +14,35 @@ done
 
 app_echo "Elasticsearch is ready. Creating indices..."
 
-# Create videos index
-app_echo "Creating 'videos' index..."
-curl -X PUT "$ELASTICSEARCH_HOST/videos" \
-  -H 'Content-Type: application/json' \
-  -d @"$SCRIPT_DIR/videos-mapping.json" || app_echo "Index 'videos' may already exist"
+# Read indices from configuration file
+INDICES_CONFIG="$SCRIPT_DIR/indices.conf"
 
-# Create video_manifests index
-app_echo "Creating 'video_manifests' index..."
-curl -X PUT "$ELASTICSEARCH_HOST/video_manifests" \
-  -H 'Content-Type: application/json' \
-  -d @"$SCRIPT_DIR/video_manifests-mapping.json" || app_echo "Index 'video_manifests' may already exist"
+if [ -f "$INDICES_CONFIG" ]; then
+    app_echo "Reading indices from $INDICES_CONFIG"
+    while IFS=':' read -r index_name mapping_name || [ -n "$index_name" ]; do
+        # Skip comments and empty lines
+        [[ "$index_name" =~ ^#.*$ ]] || [ -z "$index_name" ] && continue
 
-# Create video_variants index
-app_echo "Creating 'video_variants' index..."
-curl -X PUT "$ELASTICSEARCH_HOST/video_variants" \
-  -H 'Content-Type: application/json' \
-  -d @"$SCRIPT_DIR/video_variants-mapping.json" || app_echo "Index 'video_variants' may already exist"
+        # Trim whitespace
+        index_name=$(echo "$index_name" | xargs)
+        mapping_name=$(echo "$mapping_name" | xargs)
 
-# Create video_thumbnails index
-app_echo "Creating 'video_thumbnails' index..."
-curl -X PUT "$ELASTICSEARCH_HOST/video_thumbnails" \
-  -H 'Content-Type: application/json' \
-  -d @"$SCRIPT_DIR/video_thumbnails-mapping.json" || app_echo "Index 'video_thumbnails' may already exist"
+        # Use index_name as mapping_name if not specified
+        mapping_name=${mapping_name:-$index_name}
 
-# Create users index
-app_echo "Creating 'users' index..."
-curl -X PUT "$ELASTICSEARCH_HOST/users" \
-  -H 'Content-Type: application/json' \
-  -d @"$SCRIPT_DIR/users-mapping.json" || app_echo "Index 'users' may already exist"
+        mapping_file="$SCRIPT_DIR/${mapping_name}-mapping.json"
 
-# Create user_identities index
-app_echo "Creating 'user_identities' index..."
-curl -X PUT "$ELASTICSEARCH_HOST/user_identities" \
-  -H 'Content-Type: application/json' \
-  -d @"$SCRIPT_DIR/user_identities-mapping.json" || app_echo "Index 'user_identities' may already exist"
+        if [ -f "$mapping_file" ]; then
+            app_echo "Creating '$index_name' index..."
+            curl -X PUT "$ELASTICSEARCH_HOST/$index_name" \
+              -H 'Content-Type: application/json' \
+              -d @"$mapping_file" || app_echo "Index '$index_name' may already exist"
+        else
+            app_echo "Warning: Mapping file not found: $mapping_file"
+        fi
+    done < "$INDICES_CONFIG"
+else
+    app_echo "Warning: Indices configuration file not found at $INDICES_CONFIG"
+fi
 
 app_echo "All indices created successfully!"

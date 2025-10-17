@@ -3,7 +3,7 @@
   "config": {
     "connector.class": "io.confluent.connect.elasticsearch.ElasticsearchSinkConnector",
     "tasks.max": "1",
-    "topics": "users,user_identities",
+    "topics": "cdc-users",
     "connection.url": "http://elasticsearch:9200",
     "type.name": "_doc",
     "key.ignore": "false",

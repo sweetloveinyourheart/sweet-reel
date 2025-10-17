@@ -8,7 +8,7 @@
     "database.password": "admin@123",
     "database.dbname": "user",
     "database.server.name": "user_server",
-    "table.include.list": "public.users,public.user_identities",
+    "table.include.list": "public.users",
     "plugin.name": "pgoutput",
     "slot.name": "debezium_user",
     "publication.name": "dbz_publication_user",
@@ -17,6 +17,6 @@
     "transforms": "route",
     "transforms.route.type": "org.apache.kafka.connect.transforms.RegexRouter",
     "transforms.route.regex": "([^.]+)\\.([^.]+)\\.([^.]+)",
-    "transforms.route.replacement": "$3"
+    "transforms.route.replacement": "cdc-$3"
   }
 }
