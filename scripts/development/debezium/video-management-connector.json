@@ -8,7 +8,7 @@
     "database.password": "admin@123",
     "database.dbname": "video-management",
     "database.server.name": "video_management_server",
-    "table.include.list": "public.videos,public.video_manifests,public.video_variants,public.video_thumbnails",
+    "table.include.list": "public.videos,public.video_thumbnails",
     "plugin.name": "pgoutput",
     "slot.name": "debezium_video_management",
     "publication.name": "dbz_publication_video_management",
