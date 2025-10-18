@@ -5,6 +5,7 @@ set -e
 
 KAFKA_CONTAINER=${KAFKA_CONTAINER:-"srl-kafka"}
 KAFKA_BROKER=${KAFKA_BROKER:-"localhost:9092"}
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/kafka"
 
 app_echo "Waiting for Kafka to be ready..."
 until docker exec "$KAFKA_CONTAINER" /opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server "$KAFKA_BROKER" > /dev/null 2>&1; do
@@ -32,7 +33,7 @@ create_topic() {
 }
 
 # CDC topics from configuration file
-CDC_TOPICS_CONFIG="./scripts/cdc/kafka/cdc-topics.conf"
+CDC_TOPICS_CONFIG="$SCRIPT_DIR/cdc-topics.conf"
 
 if [ -f "$CDC_TOPICS_CONFIG" ]; then
     app_echo "Reading CDC topics from $CDC_TOPICS_CONFIG"
