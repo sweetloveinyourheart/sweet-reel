@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-(minio server /data --console-address ":9001" &)
+(minio server /data &)
 
 # Wait for MinIO to be ready
 echo "Waiting for MinIO to start..."

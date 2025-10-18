@@ -13,3 +13,9 @@ compose-up: # Start the full-server stack
 
 compose-down: 
 	@make base-compose-down COMPOSE_FILE=$(FULL_SERVER_STACK_COMPOSE_FILE)
+
+# Commands for setup cdc with debezium and elasticsearch in local development
+cdc-setup:
+	@./scripts/development/init_topics.sh
+	@./scripts/development/init_indices.sh
+	@./scripts/development/init_connectors.sh
