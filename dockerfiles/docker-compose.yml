@@ -175,7 +175,7 @@ services:
       retries: 20
 
   srl_debezium:
-    image: debezium/connect:2.5
+    image: srl-debezium:latest
     container_name: ${COMPOSE_PROJECT_NAME:-test}_debezium
     hostname: debezium
     environment:

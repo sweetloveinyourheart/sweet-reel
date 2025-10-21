@@ -7,17 +7,15 @@ build: # Build everything
 	@make goimports
 	@make build-containers IMAGE_TAG=$(IMAGE_TAG)
 
-build-backend:
-	@make gen
-	@make goimports
-	@make build-backend-containers IMAGE_TAG=$(IMAGE_TAG)
-
 build-containers:
-	@make app-docker optionalReproFlag=$(optionalReproFlag)
-	@make ffmpeg-docker optionalReproFlag=$(optionalReproFlag)
+	@make build-frontend
+	@make build-backend
+
+build-frontend:
 	@make web-docker
 
-build-backend-containers:
+build-backend:
+	@make debezium-docker
 	@make app-docker optionalReproFlag=$(optionalReproFlag)
 	@make ffmpeg-docker optionalReproFlag=$(optionalReproFlag)
 
@@ -59,12 +57,23 @@ build-docker-web:
 	-t srl-web:latest \
 	$(additionalDockerArgs)
 
+build-docker-debezium:
+	@DOCKER_BUILDKIT=1 docker build $(buildPlatform) \
+	--file dockerfiles/debezium/Dockerfile \
+	--quiet \
+	dockerfiles/debezium \
+	-t srl-debezium:latest \
+	$(additionalDockerArgs)
+
 app-build:
 	@make build-binary extraArgs=$(extraArgs) directory=cmd/app executablePath=cmd/app/app
 
 app-docker:
 	@make app-build $(optionalReproFlag) extraArgs=$(extraArgs)
 	@make build-docker buildPlatform=$(buildPlatorm) target=srl
+
+debezium-docker:
+	@make build-docker-debezium buildPlatform=$(buildPlatorm) target=srl-debezium
 
 ffmpeg-docker:
 	@make app-build $(optionalReproFlag) extraArgs=$(extraArgs)
