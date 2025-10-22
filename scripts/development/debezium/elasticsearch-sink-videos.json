@@ -10,6 +10,7 @@
     "schema.ignore": "true",
     "behavior.on.null.values": "delete",
     "behavior.on.malformed.documents": "warn",
+    "topic.index.map": "cdc-videos:videos,cdc-video-thumbnails:video_thumbnails",
     "transforms": "unwrap,extractKey",
     "transforms.unwrap.type": "io.debezium.transforms.ExtractNewRecordState",
     "transforms.unwrap.drop.tombstones": "false",

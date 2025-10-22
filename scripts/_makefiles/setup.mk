@@ -5,6 +5,5 @@ go-deps: # Install dependencies for Go
 
 # Commands for setup cdc with debezium and elasticsearch in local development
 cdc-setup:
-	@./scripts/development/init_topics.sh
 	@./scripts/development/init_indices.sh
 	@./scripts/development/init_connectors.sh
