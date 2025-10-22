@@ -39,3 +39,6 @@ go.work.sum
 minio_data*
 tests/*
 .gobincache
+
+# Docker mounting data
+debezium
