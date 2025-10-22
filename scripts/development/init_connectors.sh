@@ -41,13 +41,10 @@ else
     app_echo "Warning: Connectors configuration file not found at $CONNECTORS_CONFIG"
 fi
 
-# Wait a bit for connectors to be fully initialized
-sleep 10
-
 # Note: Elasticsearch sink connectors require the Confluent Elasticsearch connector
 # which may need to be installed separately in the Debezium image
 app_echo "Note: Elasticsearch sink connectors require additional setup."
-app_echo "You may need to register them manually after installing the Confluent connector."
+app_echo "You may need to register them manually after installing the Confluent connector. See: docs/cdc/cdc_elasticsearch_setup.md"
 
 app_echo "Checking connector status..."
 curl -s "$DEBEZIUM_HOST/connectors" | jq '.'
