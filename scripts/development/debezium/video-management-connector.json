@@ -1,0 +1,27 @@
+{
+  "name": "video-management-connector",
+  "config": {
+    "connector.class": "io.debezium.connector.postgresql.PostgresConnector",
+    "database.hostname": "srl_database",
+    "database.port": "5432",
+    "database.user": "root_admin",
+    "database.password": "admin@123",
+    "database.dbname": "video-management",
+    "database.server.name": "video_management_server",
+    "table.include.list": "public.videos,public.video_thumbnails",
+    "plugin.name": "pgoutput",
+    "slot.name": "debezium_video_management",
+    "publication.name": "dbz_publication_video_management",
+    "publication.autocreate.mode": "filtered",
+    "topic.prefix": "srl",
+    "transforms": "unwrap,route,replaceUnderscore",
+    "transforms.unwrap.type": "io.debezium.transforms.ExtractNewRecordState",
+    "transforms.unwrap.drop.tombstones": "false",
+    "transforms.route.type": "org.apache.kafka.connect.transforms.RegexRouter",
+    "transforms.route.regex": "([^.]+)\\.([^.]+)\\.([^.]+)",
+    "transforms.route.replacement": "$3",
+    "transforms.replaceUnderscore.type": "org.apache.kafka.connect.transforms.RegexRouter",
+    "transforms.replaceUnderscore.regex": "video_thumbnails",
+    "transforms.replaceUnderscore.replacement": "video-thumbnails"
+  }
+}

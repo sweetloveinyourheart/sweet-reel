@@ -1,0 +1,24 @@
+{
+  "name": "user-connector",
+  "config": {
+    "connector.class": "io.debezium.connector.postgresql.PostgresConnector",
+    "database.hostname": "srl_database",
+    "database.port": "5432",
+    "database.user": "root_admin",
+    "database.password": "admin@123",
+    "database.dbname": "user",
+    "database.server.name": "user_server",
+    "table.include.list": "public.users",
+    "plugin.name": "pgoutput",
+    "slot.name": "debezium_user",
+    "publication.name": "dbz_publication_user",
+    "publication.autocreate.mode": "filtered",
+    "topic.prefix": "srl",
+    "transforms": "unwrap,route",
+    "transforms.unwrap.type": "io.debezium.transforms.ExtractNewRecordState",
+    "transforms.unwrap.drop.tombstones": "false",
+    "transforms.route.type": "org.apache.kafka.connect.transforms.RegexRouter",
+    "transforms.route.regex": "([^.]+)\\.([^.]+)\\.([^.]+)",
+    "transforms.route.replacement": "$3"
+  }
+}

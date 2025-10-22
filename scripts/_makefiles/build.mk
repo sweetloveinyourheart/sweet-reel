@@ -7,17 +7,14 @@ build: # Build everything
 	@make goimports
 	@make build-containers IMAGE_TAG=$(IMAGE_TAG)
 
-build-backend:
-	@make gen
-	@make goimports
-	@make build-backend-containers IMAGE_TAG=$(IMAGE_TAG)
-
 build-containers:
-	@make app-docker optionalReproFlag=$(optionalReproFlag)
-	@make ffmpeg-docker optionalReproFlag=$(optionalReproFlag)
+	@make build-frontend
+	@make build-backend
+
+build-frontend:
 	@make web-docker
 
-build-backend-containers:
+build-backend:
 	@make app-docker optionalReproFlag=$(optionalReproFlag)
 	@make ffmpeg-docker optionalReproFlag=$(optionalReproFlag)
 
