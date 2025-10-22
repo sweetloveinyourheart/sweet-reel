@@ -114,3 +114,8 @@ func (v Video) Validate() error {
 
 	return nil
 }
+
+type VideoWithThumbnails struct {
+	Video
+	Thumbnails []VideoThumbnail `json:"thumbnails"`
+}

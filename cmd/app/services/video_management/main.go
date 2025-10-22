@@ -123,10 +123,10 @@ func setupDependencies(ctx context.Context) error {
 		return err
 	}
 
-	videoRepo := repos.NewVideoRepository(dbConn)
+	videoAggregateRepo := repos.NewVideoAggregateRepository(dbConn)
 
-	do.Provide(nil, func(i *do.Injector) (repos.IVideoRepository, error) {
-		return videoRepo, nil
+	do.Provide(nil, func(i *do.Injector) (repos.IVideoAggregateRepository, error) {
+		return videoAggregateRepo, nil
 	})
 
 	do.Provide(nil, func(i *do.Injector) (*kafka.Client, error) {

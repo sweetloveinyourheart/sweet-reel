@@ -43,7 +43,6 @@ type IVideoRepository interface {
 	DeleteVideoThumbnailsByVideoID(ctx context.Context, videoID uuid.UUID) error
 
 	// Aggregate operations
-	GetVideoWithRelations(ctx context.Context, videoID uuid.UUID) (*models.Video, *models.VideoManifest, []*models.VideoVariant, []*models.VideoThumbnail, error)
 	GetVideoCount(ctx context.Context) (int64, error)
 	GetVideoCountByUploaderID(ctx context.Context, uploaderID uuid.UUID) (int64, error)
 }
@@ -364,19 +363,6 @@ func (r *VideoRepository) DeleteVideoThumbnailsByVideoID(ctx context.Context, vi
 }
 
 // Aggregate operations
-
-func (r *VideoRepository) GetVideoWithRelations(ctx context.Context, videoID uuid.UUID) (*models.Video, *models.VideoManifest, []*models.VideoVariant, []*models.VideoThumbnail, error) {
-	video, err := r.GetVideoByID(ctx, videoID)
-	if err != nil {
-		return nil, nil, nil, nil, err
-	}
-
-	manifest, _ := r.GetVideoManifestByVideoID(ctx, videoID)     // May not exist
-	variants, _ := r.GetVideoVariantsByVideoID(ctx, videoID)     // May be empty
-	thumbnails, _ := r.GetVideoThumbnailsByVideoID(ctx, videoID) // May be empty
-
-	return video, manifest, variants, thumbnails, nil
-}
 
 func (r *VideoRepository) GetVideoCount(ctx context.Context) (int64, error) {
 	query := `SELECT COUNT(*) FROM videos`

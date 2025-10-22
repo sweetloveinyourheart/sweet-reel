@@ -149,6 +149,170 @@ func (x *PresignedUrlResponse) GetExpiresIn() int32 {
 	return 0
 }
 
+type GetUserVideosRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	Limit         int32                  `protobuf:"varint,2,opt,name=limit,proto3" json:"limit,omitempty"`
+	Offset        int32                  `protobuf:"varint,3,opt,name=offset,proto3" json:"offset,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetUserVideosRequest) Reset() {
+	*x = GetUserVideosRequest{}
+	mi := &file_video_management_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetUserVideosRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetUserVideosRequest) ProtoMessage() {}
+
+func (x *GetUserVideosRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_video_management_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetUserVideosRequest.ProtoReflect.Descriptor instead.
+func (*GetUserVideosRequest) Descriptor() ([]byte, []int) {
+	return file_video_management_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *GetUserVideosRequest) GetUserId() string {
+	if x != nil {
+		return x.UserId
+	}
+	return ""
+}
+
+func (x *GetUserVideosRequest) GetLimit() int32 {
+	if x != nil {
+		return x.Limit
+	}
+	return 0
+}
+
+func (x *GetUserVideosRequest) GetOffset() int32 {
+	if x != nil {
+		return x.Offset
+	}
+	return 0
+}
+
+type UserVideo struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	VideoId       string                 `protobuf:"bytes,1,opt,name=video_id,json=videoId,proto3" json:"video_id,omitempty"`
+	VideoTitle    string                 `protobuf:"bytes,2,opt,name=video_title,json=videoTitle,proto3" json:"video_title,omitempty"`
+	ThumbnailUrl  string                 `protobuf:"bytes,3,opt,name=thumbnail_url,json=thumbnailUrl,proto3" json:"thumbnail_url,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UserVideo) Reset() {
+	*x = UserVideo{}
+	mi := &file_video_management_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UserVideo) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UserVideo) ProtoMessage() {}
+
+func (x *UserVideo) ProtoReflect() protoreflect.Message {
+	mi := &file_video_management_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UserVideo.ProtoReflect.Descriptor instead.
+func (*UserVideo) Descriptor() ([]byte, []int) {
+	return file_video_management_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *UserVideo) GetVideoId() string {
+	if x != nil {
+		return x.VideoId
+	}
+	return ""
+}
+
+func (x *UserVideo) GetVideoTitle() string {
+	if x != nil {
+		return x.VideoTitle
+	}
+	return ""
+}
+
+func (x *UserVideo) GetThumbnailUrl() string {
+	if x != nil {
+		return x.ThumbnailUrl
+	}
+	return ""
+}
+
+type GetUserVideosResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Videos        []*UserVideo           `protobuf:"bytes,1,rep,name=videos,proto3" json:"videos,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetUserVideosResponse) Reset() {
+	*x = GetUserVideosResponse{}
+	mi := &file_video_management_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetUserVideosResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetUserVideosResponse) ProtoMessage() {}
+
+func (x *GetUserVideosResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_video_management_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetUserVideosResponse.ProtoReflect.Descriptor instead.
+func (*GetUserVideosResponse) Descriptor() ([]byte, []int) {
+	return file_video_management_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *GetUserVideosResponse) GetVideos() []*UserVideo {
+	if x != nil {
+		return x.Videos
+	}
+	return nil
+}
+
 var File_video_management_proto protoreflect.FileDescriptor
 
 const file_video_management_proto_rawDesc = "" +
@@ -164,9 +328,21 @@ const file_video_management_proto_rawDesc = "" +
 	"\bvideo_id\x18\x01 \x01(\tR\avideoId\x12#\n" +
 	"\rpresigned_url\x18\x02 \x01(\tR\fpresignedUrl\x12\x1d\n" +
 	"\n" +
-	"expires_in\x18\x03 \x01(\x05R\texpiresIn2\xc5\x01\n" +
+	"expires_in\x18\x03 \x01(\x05R\texpiresIn\"]\n" +
+	"\x14GetUserVideosRequest\x12\x17\n" +
+	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x14\n" +
+	"\x05limit\x18\x02 \x01(\x05R\x05limit\x12\x16\n" +
+	"\x06offset\x18\x03 \x01(\x05R\x06offset\"l\n" +
+	"\tUserVideo\x12\x19\n" +
+	"\bvideo_id\x18\x01 \x01(\tR\avideoId\x12\x1f\n" +
+	"\vvideo_title\x18\x02 \x01(\tR\n" +
+	"videoTitle\x12#\n" +
+	"\rthumbnail_url\x18\x03 \x01(\tR\fthumbnailUrl\"v\n" +
+	"\x15GetUserVideosResponse\x12]\n" +
+	"\x06videos\x18\x01 \x03(\v2E.com.sweetloveinyourheart.srl.videomanagement.dataproviders.UserVideoR\x06videos2\xfc\x02\n" +
 	"\x0fVideoManagement\x12\xb1\x01\n" +
-	"\fPresignedUrl\x12O.com.sweetloveinyourheart.srl.videomanagement.dataproviders.PresignedUrlRequest\x1aP.com.sweetloveinyourheart.srl.videomanagement.dataproviders.PresignedUrlResponseBPZNgithub.com/sweetloveinyourheart/sweet-reel/proto/code/video_management/go;grpcb\x06proto3"
+	"\fPresignedUrl\x12O.com.sweetloveinyourheart.srl.videomanagement.dataproviders.PresignedUrlRequest\x1aP.com.sweetloveinyourheart.srl.videomanagement.dataproviders.PresignedUrlResponse\x12\xb4\x01\n" +
+	"\rGetUserVideos\x12P.com.sweetloveinyourheart.srl.videomanagement.dataproviders.GetUserVideosRequest\x1aQ.com.sweetloveinyourheart.srl.videomanagement.dataproviders.GetUserVideosResponseBPZNgithub.com/sweetloveinyourheart/sweet-reel/proto/code/video_management/go;grpcb\x06proto3"
 
 var (
 	file_video_management_proto_rawDescOnce sync.Once
@@ -180,19 +356,25 @@ func file_video_management_proto_rawDescGZIP() []byte {
 	return file_video_management_proto_rawDescData
 }
 
-var file_video_management_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
+var file_video_management_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
 var file_video_management_proto_goTypes = []any{
-	(*PresignedUrlRequest)(nil),  // 0: com.sweetloveinyourheart.srl.videomanagement.dataproviders.PresignedUrlRequest
-	(*PresignedUrlResponse)(nil), // 1: com.sweetloveinyourheart.srl.videomanagement.dataproviders.PresignedUrlResponse
+	(*PresignedUrlRequest)(nil),   // 0: com.sweetloveinyourheart.srl.videomanagement.dataproviders.PresignedUrlRequest
+	(*PresignedUrlResponse)(nil),  // 1: com.sweetloveinyourheart.srl.videomanagement.dataproviders.PresignedUrlResponse
+	(*GetUserVideosRequest)(nil),  // 2: com.sweetloveinyourheart.srl.videomanagement.dataproviders.GetUserVideosRequest
+	(*UserVideo)(nil),             // 3: com.sweetloveinyourheart.srl.videomanagement.dataproviders.UserVideo
+	(*GetUserVideosResponse)(nil), // 4: com.sweetloveinyourheart.srl.videomanagement.dataproviders.GetUserVideosResponse
 }
 var file_video_management_proto_depIdxs = []int32{
-	0, // 0: com.sweetloveinyourheart.srl.videomanagement.dataproviders.VideoManagement.PresignedUrl:input_type -> com.sweetloveinyourheart.srl.videomanagement.dataproviders.PresignedUrlRequest
-	1, // 1: com.sweetloveinyourheart.srl.videomanagement.dataproviders.VideoManagement.PresignedUrl:output_type -> com.sweetloveinyourheart.srl.videomanagement.dataproviders.PresignedUrlResponse
-	1, // [1:2] is the sub-list for method output_type
-	0, // [0:1] is the sub-list for method input_type
-	0, // [0:0] is the sub-list for extension type_name
-	0, // [0:0] is the sub-list for extension extendee
-	0, // [0:0] is the sub-list for field type_name
+	3, // 0: com.sweetloveinyourheart.srl.videomanagement.dataproviders.GetUserVideosResponse.videos:type_name -> com.sweetloveinyourheart.srl.videomanagement.dataproviders.UserVideo
+	0, // 1: com.sweetloveinyourheart.srl.videomanagement.dataproviders.VideoManagement.PresignedUrl:input_type -> com.sweetloveinyourheart.srl.videomanagement.dataproviders.PresignedUrlRequest
+	2, // 2: com.sweetloveinyourheart.srl.videomanagement.dataproviders.VideoManagement.GetUserVideos:input_type -> com.sweetloveinyourheart.srl.videomanagement.dataproviders.GetUserVideosRequest
+	1, // 3: com.sweetloveinyourheart.srl.videomanagement.dataproviders.VideoManagement.PresignedUrl:output_type -> com.sweetloveinyourheart.srl.videomanagement.dataproviders.PresignedUrlResponse
+	4, // 4: com.sweetloveinyourheart.srl.videomanagement.dataproviders.VideoManagement.GetUserVideos:output_type -> com.sweetloveinyourheart.srl.videomanagement.dataproviders.GetUserVideosResponse
+	3, // [3:5] is the sub-list for method output_type
+	1, // [1:3] is the sub-list for method input_type
+	1, // [1:1] is the sub-list for extension type_name
+	1, // [1:1] is the sub-list for extension extendee
+	0, // [0:1] is the sub-list for field type_name
 }
 
 func init() { file_video_management_proto_init() }
@@ -206,7 +388,7 @@ func file_video_management_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_video_management_proto_rawDesc), len(file_video_management_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   2,
+			NumMessages:   5,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

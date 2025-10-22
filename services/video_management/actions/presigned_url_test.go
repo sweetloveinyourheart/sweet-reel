@@ -9,7 +9,6 @@ import (
 
 	"connectrpc.com/connect"
 	"github.com/gofrs/uuid"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
 	"github.com/sweetloveinyourheart/sweet-reel/pkg/s3"
@@ -40,7 +39,7 @@ func (as *ActionsSuite) TestActions_PresignedUrl_Success() {
 		s3.S3VideoUploadedBucket,
 		uint32(s3.UrlExpirationSeconds)).Return(expectedURL, nil)
 
-	as.mockVideoRepository.On("CreateVideo", ctx, mock.MatchedBy(func(video *models.Video) bool {
+	as.mockVideoAggregateRepository.On("CreateVideo", ctx, mock.MatchedBy(func(video *models.Video) bool {
 		return video.Title == title &&
 			video.Description != nil && *video.Description == description &&
 			video.UploaderID == userID &&
@@ -62,19 +61,19 @@ func (as *ActionsSuite) TestActions_PresignedUrl_Success() {
 	response, err := actionsInstance.PresignedUrl(ctx, request)
 
 	// Assertions
-	assert.NoError(as.T(), err)
-	assert.NotNil(as.T(), response)
-	assert.NotEmpty(as.T(), response.Msg.VideoId)
-	assert.Equal(as.T(), expectedURL, response.Msg.PresignedUrl)
-	assert.Equal(as.T(), int32(s3.UrlExpirationSeconds), response.Msg.ExpiresIn)
+	as.NoError(err)
+	as.NotNil(response)
+	as.NotEmpty(response.Msg.VideoId)
+	as.Equal(expectedURL, response.Msg.PresignedUrl)
+	as.Equal(int32(s3.UrlExpirationSeconds), response.Msg.ExpiresIn)
 
 	// Verify the video ID is a valid UUID
 	_, err = uuid.FromString(response.Msg.VideoId)
-	assert.NoError(as.T(), err)
+	as.NoError(err)
 
 	// Verify all mocks were called as expected
 	as.mockS3.AssertExpectations(as.T())
-	as.mockVideoRepository.AssertExpectations(as.T())
+	as.mockVideoAggregateRepository.AssertExpectations(as.T())
 }
 
 func (as *ActionsSuite) TestActions_PresignedUrl_Success_WithoutDescription() {
@@ -95,7 +94,7 @@ func (as *ActionsSuite) TestActions_PresignedUrl_Success_WithoutDescription() {
 		s3.S3VideoUploadedBucket,
 		uint32(s3.UrlExpirationSeconds)).Return(expectedURL, nil)
 
-	as.mockVideoRepository.On("CreateVideo", ctx, mock.MatchedBy(func(video *models.Video) bool {
+	as.mockVideoAggregateRepository.On("CreateVideo", ctx, mock.MatchedBy(func(video *models.Video) bool {
 		return video.Title == title &&
 			video.Description == nil &&
 			video.UploaderID == userID
@@ -115,14 +114,14 @@ func (as *ActionsSuite) TestActions_PresignedUrl_Success_WithoutDescription() {
 	response, err := actionsInstance.PresignedUrl(ctx, request)
 
 	// Assertions
-	assert.NoError(as.T(), err)
-	assert.NotNil(as.T(), response)
-	assert.NotEmpty(as.T(), response.Msg.VideoId)
-	assert.Equal(as.T(), expectedURL, response.Msg.PresignedUrl)
+	as.NoError(err)
+	as.NotNil(response)
+	as.NotEmpty(response.Msg.VideoId)
+	as.Equal(expectedURL, response.Msg.PresignedUrl)
 
 	// Verify all mocks were called as expected
 	as.mockS3.AssertExpectations(as.T())
-	as.mockVideoRepository.AssertExpectations(as.T())
+	as.mockVideoAggregateRepository.AssertExpectations(as.T())
 }
 
 func (as *ActionsSuite) TestActions_PresignedUrl_InvalidFileName_NoExtension() {
@@ -144,17 +143,17 @@ func (as *ActionsSuite) TestActions_PresignedUrl_InvalidFileName_NoExtension() {
 	response, err := actionsInstance.PresignedUrl(ctx, request)
 
 	// Assertions
-	assert.Error(as.T(), err)
-	assert.Nil(as.T(), response)
+	as.Error(err)
+	as.Nil(response)
 
 	// Verify error is invalid argument
 	var connectErr *connect.Error
-	assert.True(as.T(), errors.As(err, &connectErr))
-	assert.Equal(as.T(), connect.CodeInvalidArgument, connectErr.Code())
+	as.True(errors.As(err, &connectErr))
+	as.Equal(connect.CodeInvalidArgument, connectErr.Code())
 
 	// Verify no mocks were called
 	as.mockS3.AssertNotCalled(as.T(), "GenerateUploadPublicUri")
-	as.mockVideoRepository.AssertNotCalled(as.T(), "CreateVideo")
+	as.mockVideoAggregateRepository.AssertNotCalled(as.T(), "CreateVideo")
 }
 
 func (as *ActionsSuite) TestActions_PresignedUrl_InvalidFileName_Empty() {
@@ -176,17 +175,17 @@ func (as *ActionsSuite) TestActions_PresignedUrl_InvalidFileName_Empty() {
 	response, err := actionsInstance.PresignedUrl(ctx, request)
 
 	// Assertions
-	assert.Error(as.T(), err)
-	assert.Nil(as.T(), response)
+	as.Error(err)
+	as.Nil(response)
 
 	// Verify error is invalid argument
 	var connectErr *connect.Error
-	assert.True(as.T(), errors.As(err, &connectErr))
-	assert.Equal(as.T(), connect.CodeInvalidArgument, connectErr.Code())
+	as.True(errors.As(err, &connectErr))
+	as.Equal(connect.CodeInvalidArgument, connectErr.Code())
 
 	// Verify no mocks were called
 	as.mockS3.AssertNotCalled(as.T(), "GenerateUploadPublicUri")
-	as.mockVideoRepository.AssertNotCalled(as.T(), "CreateVideo")
+	as.mockVideoAggregateRepository.AssertNotCalled(as.T(), "CreateVideo")
 }
 
 func (as *ActionsSuite) TestActions_PresignedUrl_VideoValidationError() {
@@ -208,17 +207,17 @@ func (as *ActionsSuite) TestActions_PresignedUrl_VideoValidationError() {
 	response, err := actionsInstance.PresignedUrl(ctx, request)
 
 	// Assertions
-	assert.Error(as.T(), err)
-	assert.Nil(as.T(), response)
+	as.Error(err)
+	as.Nil(response)
 
 	// Verify error is invalid argument
 	var connectErr *connect.Error
-	assert.True(as.T(), errors.As(err, &connectErr))
-	assert.Equal(as.T(), connect.CodeInvalidArgument, connectErr.Code())
+	as.True(errors.As(err, &connectErr))
+	as.Equal(connect.CodeInvalidArgument, connectErr.Code())
 
 	// Verify no mocks were called
 	as.mockS3.AssertNotCalled(as.T(), "GenerateUploadPublicUri")
-	as.mockVideoRepository.AssertNotCalled(as.T(), "CreateVideo")
+	as.mockVideoAggregateRepository.AssertNotCalled(as.T(), "CreateVideo")
 }
 
 func (as *ActionsSuite) TestActions_PresignedUrl_S3GenerateUrlError() {
@@ -253,17 +252,17 @@ func (as *ActionsSuite) TestActions_PresignedUrl_S3GenerateUrlError() {
 	response, err := actionsInstance.PresignedUrl(ctx, request)
 
 	// Assertions
-	assert.Error(as.T(), err)
-	assert.Nil(as.T(), response)
+	as.Error(err)
+	as.Nil(response)
 
 	// Verify error is internal error
 	var connectErr *connect.Error
-	assert.True(as.T(), errors.As(err, &connectErr))
-	assert.Equal(as.T(), connect.CodeInternal, connectErr.Code())
+	as.True(errors.As(err, &connectErr))
+	as.Equal(connect.CodeInternal, connectErr.Code())
 
 	// Verify S3 was called but video repository was not
 	as.mockS3.AssertExpectations(as.T())
-	as.mockVideoRepository.AssertNotCalled(as.T(), "CreateVideo")
+	as.mockVideoAggregateRepository.AssertNotCalled(as.T(), "CreateVideo")
 }
 
 func (as *ActionsSuite) TestActions_PresignedUrl_DatabaseError() {
@@ -285,7 +284,7 @@ func (as *ActionsSuite) TestActions_PresignedUrl_DatabaseError() {
 		s3.S3VideoUploadedBucket,
 		uint32(s3.UrlExpirationSeconds)).Return(expectedURL, nil)
 
-	as.mockVideoRepository.On("CreateVideo", ctx, mock.AnythingOfType("*models.Video")).Return(dbError)
+	as.mockVideoAggregateRepository.On("CreateVideo", ctx, mock.AnythingOfType("*models.Video")).Return(dbError)
 
 	// Setup request
 	request := &connect.Request[proto.PresignedUrlRequest]{
@@ -301,17 +300,17 @@ func (as *ActionsSuite) TestActions_PresignedUrl_DatabaseError() {
 	response, err := actionsInstance.PresignedUrl(ctx, request)
 
 	// Assertions
-	assert.Error(as.T(), err)
-	assert.Nil(as.T(), response)
+	as.Error(err)
+	as.Nil(response)
 
 	// Verify error is internal error
 	var connectErr *connect.Error
-	assert.True(as.T(), errors.As(err, &connectErr))
-	assert.Equal(as.T(), connect.CodeInternal, connectErr.Code())
+	as.True(errors.As(err, &connectErr))
+	as.Equal(connect.CodeInternal, connectErr.Code())
 
 	// Verify all mocks were called as expected
 	as.mockS3.AssertExpectations(as.T())
-	as.mockVideoRepository.AssertExpectations(as.T())
+	as.mockVideoAggregateRepository.AssertExpectations(as.T())
 }
 
 func (as *ActionsSuite) TestActions_PresignedUrl_KeyGeneration() {
@@ -336,7 +335,7 @@ func (as *ActionsSuite) TestActions_PresignedUrl_KeyGeneration() {
 		s3.S3VideoUploadedBucket,
 		uint32(s3.UrlExpirationSeconds)).Return(expectedURL, nil)
 
-	as.mockVideoRepository.On("CreateVideo", ctx, mock.AnythingOfType("*models.Video")).Return(nil)
+	as.mockVideoAggregateRepository.On("CreateVideo", ctx, mock.AnythingOfType("*models.Video")).Return(nil)
 
 	// Setup request
 	request := &connect.Request[proto.PresignedUrlRequest]{
@@ -352,16 +351,16 @@ func (as *ActionsSuite) TestActions_PresignedUrl_KeyGeneration() {
 	response, err := actionsInstance.PresignedUrl(ctx, request)
 
 	// Assertions
-	assert.NoError(as.T(), err)
-	assert.NotNil(as.T(), response)
+	as.NoError(err)
+	as.NotNil(response)
 
 	// Validate key format: raw/YYYY/MM/DD/{uuid}.mp4
-	assert.Contains(as.T(), capturedKey, time.Now().Format("2006-01-02"))
-	assert.Contains(as.T(), capturedKey, ".mp4")
+	as.Contains(capturedKey, time.Now().Format("2006-01-02"))
+	as.Contains(capturedKey, ".mp4")
 
 	// Verify all mocks were called as expected
 	as.mockS3.AssertExpectations(as.T())
-	as.mockVideoRepository.AssertExpectations(as.T())
+	as.mockVideoAggregateRepository.AssertExpectations(as.T())
 }
 
 func (as *ActionsSuite) TestActions_PresignedUrl_DifferentFileExtensions() {
@@ -385,7 +384,7 @@ func (as *ActionsSuite) TestActions_PresignedUrl_DifferentFileExtensions() {
 		as.T().Run(fmt.Sprintf("FileName_%s", tc.fileName), func(t *testing.T) {
 			// Reset mocks for each test case
 			as.mockS3.ExpectedCalls = nil
-			as.mockVideoRepository.ExpectedCalls = nil
+			as.mockVideoAggregateRepository.ExpectedCalls = nil
 
 			userID := uuid.Must(uuid.NewV7())
 
@@ -401,7 +400,7 @@ func (as *ActionsSuite) TestActions_PresignedUrl_DifferentFileExtensions() {
 					s3.S3VideoUploadedBucket,
 					uint32(s3.UrlExpirationSeconds)).Return("https://example.com/url", nil)
 
-				as.mockVideoRepository.On("CreateVideo", ctx, mock.AnythingOfType("*models.Video")).Return(nil)
+				as.mockVideoAggregateRepository.On("CreateVideo", ctx, mock.AnythingOfType("*models.Video")).Return(nil)
 			}
 
 			request := &connect.Request[proto.PresignedUrlRequest]{
@@ -416,17 +415,17 @@ func (as *ActionsSuite) TestActions_PresignedUrl_DifferentFileExtensions() {
 			response, err := actionsInstance.PresignedUrl(ctx, request)
 
 			if tc.shouldSucceed {
-				assert.NoError(t, err)
-				assert.NotNil(t, response)
+				as.NoError(err)
+				as.NotNil(response)
 				as.mockS3.AssertExpectations(t)
-				as.mockVideoRepository.AssertExpectations(t)
+				as.mockVideoAggregateRepository.AssertExpectations(t)
 			} else {
-				assert.Error(t, err)
-				assert.Nil(t, response)
+				as.Error(err)
+				as.Nil(response)
 
 				var connectErr *connect.Error
-				assert.True(t, errors.As(err, &connectErr))
-				assert.Equal(t, connect.CodeInvalidArgument, connectErr.Code())
+				as.True(errors.As(err, &connectErr))
+				as.Equal(connect.CodeInvalidArgument, connectErr.Code())
 			}
 		})
 	}

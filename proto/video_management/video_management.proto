@@ -6,6 +6,7 @@ package com.sweetloveinyourheart.srl.videomanagement.dataproviders;
 
 service VideoManagement {
     rpc PresignedUrl(PresignedUrlRequest) returns(PresignedUrlResponse);
+    rpc GetUserVideos(GetUserVideosRequest) returns(GetUserVideosResponse);
 }
 
 message PresignedUrlRequest {
@@ -19,4 +20,20 @@ message PresignedUrlResponse {
     string video_id = 1;
     string presigned_url = 2;
     int32 expires_in = 3;
+}
+
+message GetUserVideosRequest {
+    string user_id = 1;
+    int32 limit = 2;
+    int32 offset = 3;
+}
+
+message UserVideo {
+    string video_id = 1;
+    string video_title = 2;
+    string thumbnail_url = 3;
+}
+
+message GetUserVideosResponse {
+    repeated UserVideo videos = 1;
 }

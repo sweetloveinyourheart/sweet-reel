@@ -153,26 +153,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 30
-      
-  srl_kibana:
-    image: docker.elastic.co/kibana/kibana:8.11.0
-    container_name: ${COMPOSE_PROJECT_NAME:-test}_kibana
-    hostname: kibana
-    environment:
-      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
-    ports:
-      - "5601:5601"
-    networks:
-      fs_test_net:
-        ipv4_address: "172.16.244.72"
-    depends_on:
-      srl_elasticsearch:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:5601/api/status || exit 1"]
-      interval: 10s
-      timeout: 5s
-      retries: 20
 
   srl_debezium:
     image: debezium/connect:2.5
@@ -215,7 +195,7 @@ services:
     entrypoint: echo "Phase Two Leader Launch - Core Services" && exit 0
     networks:
       fs_test_net:
-        ipv4_address: "172.16.244.7"
+        ipv4_address: "172.16.244.3"
     depends_on:
       srl_database:
         condition: service_healthy

@@ -4,8 +4,11 @@
 ## Table of Contents
 
 - [video_management.proto](#video_management-proto)
+    - [GetUserVideosRequest](#com-sweetloveinyourheart-srl-videomanagement-dataproviders-GetUserVideosRequest)
+    - [GetUserVideosResponse](#com-sweetloveinyourheart-srl-videomanagement-dataproviders-GetUserVideosResponse)
     - [PresignedUrlRequest](#com-sweetloveinyourheart-srl-videomanagement-dataproviders-PresignedUrlRequest)
     - [PresignedUrlResponse](#com-sweetloveinyourheart-srl-videomanagement-dataproviders-PresignedUrlResponse)
+    - [UserVideo](#com-sweetloveinyourheart-srl-videomanagement-dataproviders-UserVideo)
   
     - [VideoManagement](#com-sweetloveinyourheart-srl-videomanagement-dataproviders-VideoManagement)
   
@@ -17,6 +20,38 @@
 <p align="right"><a href="#top">Top</a></p>
 
 ## video_management.proto
+
+
+
+<a name="com-sweetloveinyourheart-srl-videomanagement-dataproviders-GetUserVideosRequest"></a>
+
+### GetUserVideosRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| user_id | [string](#string) |  |  |
+| limit | [int32](#int32) |  |  |
+| offset | [int32](#int32) |  |  |
+
+
+
+
+
+
+<a name="com-sweetloveinyourheart-srl-videomanagement-dataproviders-GetUserVideosResponse"></a>
+
+### GetUserVideosResponse
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| videos | [UserVideo](#com-sweetloveinyourheart-srl-videomanagement-dataproviders-UserVideo) | repeated |  |
+
+
+
 
 
 
@@ -54,6 +89,23 @@
 
 
 
+
+<a name="com-sweetloveinyourheart-srl-videomanagement-dataproviders-UserVideo"></a>
+
+### UserVideo
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| video_id | [string](#string) |  |  |
+| video_title | [string](#string) |  |  |
+| thumbnail_url | [string](#string) |  |  |
+
+
+
+
+
  
 
  
@@ -69,6 +121,7 @@
 | Method Name | Request Type | Response Type | Description |
 | ----------- | ------------ | ------------- | ------------|
 | PresignedUrl | [PresignedUrlRequest](#com-sweetloveinyourheart-srl-videomanagement-dataproviders-PresignedUrlRequest) | [PresignedUrlResponse](#com-sweetloveinyourheart-srl-videomanagement-dataproviders-PresignedUrlResponse) |  |
+| GetUserVideos | [GetUserVideosRequest](#com-sweetloveinyourheart-srl-videomanagement-dataproviders-GetUserVideosRequest) | [GetUserVideosResponse](#com-sweetloveinyourheart-srl-videomanagement-dataproviders-GetUserVideosResponse) |  |
 
  
 
