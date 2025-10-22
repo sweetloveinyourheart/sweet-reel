@@ -14,9 +14,14 @@
     "publication.name": "dbz_publication_video_management",
     "publication.autocreate.mode": "filtered",
     "topic.prefix": "srl",
-    "transforms": "route",
+    "transforms": "unwrap,route,replaceUnderscore",
+    "transforms.unwrap.type": "io.debezium.transforms.ExtractNewRecordState",
+    "transforms.unwrap.drop.tombstones": "false",
     "transforms.route.type": "org.apache.kafka.connect.transforms.RegexRouter",
     "transforms.route.regex": "([^.]+)\\.([^.]+)\\.([^.]+)",
-    "transforms.route.replacement": "cdc-$3"
+    "transforms.route.replacement": "$3",
+    "transforms.replaceUnderscore.type": "org.apache.kafka.connect.transforms.RegexRouter",
+    "transforms.replaceUnderscore.regex": "video_thumbnails",
+    "transforms.replaceUnderscore.replacement": "video-thumbnails"
   }
 }

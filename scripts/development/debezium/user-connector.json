@@ -14,9 +14,11 @@
     "publication.name": "dbz_publication_user",
     "publication.autocreate.mode": "filtered",
     "topic.prefix": "srl",
-    "transforms": "route",
+    "transforms": "unwrap,route",
+    "transforms.unwrap.type": "io.debezium.transforms.ExtractNewRecordState",
+    "transforms.unwrap.drop.tombstones": "false",
     "transforms.route.type": "org.apache.kafka.connect.transforms.RegexRouter",
     "transforms.route.regex": "([^.]+)\\.([^.]+)\\.([^.]+)",
-    "transforms.route.replacement": "cdc-$3"
+    "transforms.route.replacement": "$3"
   }
 }
