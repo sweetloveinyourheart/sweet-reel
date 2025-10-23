@@ -47,7 +47,7 @@ func (r *VideoRepository) GetVideosWithThumbnailByUploaderID(ctx context.Context
 			video_thumbnails.created_at
 		FROM videos 
 		LEFT JOIN video_thumbnails ON videos.id = video_thumbnails.video_id
-		WHERE uploader_id = $1 
+		WHERE uploader_id = $1 AND status = 'ready'
 		ORDER BY videos.created_at DESC, video_thumbnails.created_at ASC 
 		LIMIT $2 OFFSET $3`
 

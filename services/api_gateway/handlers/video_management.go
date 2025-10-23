@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"strconv"
 
 	"connectrpc.com/connect"
 	"github.com/samber/do"
@@ -19,6 +20,7 @@ import (
 
 type IVideoManagementHandler interface {
 	GeneratePresignedURL(w http.ResponseWriter, r *http.Request)
+	GetUserVideos(w http.ResponseWriter, r *http.Request)
 }
 
 type VideoManagementHandler struct {
@@ -67,6 +69,55 @@ func (h *VideoManagementHandler) GeneratePresignedURL(w http.ResponseWriter, r *
 		VideoId:      presignedUrlRes.Msg.GetVideoId(),
 		PresignedUrl: presignedUrlRes.Msg.GetPresignedUrl(),
 		ExpiresIn:    presignedUrlRes.Msg.GetExpiresIn(),
+	}
+
+	helpers.WriteJSONSuccess(w, responseData)
+}
+
+// GetUserVideos handles GET /api/v1/videos/user
+func (h *VideoManagementHandler) GetUserVideos(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	userID := helpers.GetUserID(r)
+
+	limit := r.URL.Query().Get("limit")
+	limitBy, err := strconv.ParseInt(limit, 0, 32)
+	if err != nil {
+		helpers.WriteErrorResponse(w, errors.NewHTTPError(http.StatusBadRequest, "Invalid refresh token", "INVALID REFRESH TOKEN"))
+		return
+	}
+
+	offset := r.URL.Query().Get("offset")
+	offsetBy, err := strconv.ParseInt(offset, 0, 32)
+	if err != nil {
+		helpers.WriteErrorResponse(w, errors.NewHTTPError(http.StatusBadRequest, "Invalid refresh token", "INVALID REFRESH TOKEN"))
+		return
+	}
+
+	getVideosReq := connect.NewRequest(&videoManagementProto.GetUserVideosRequest{
+		UserId: userID,
+		Limit:  int32(limitBy),
+		Offset: int32(offsetBy),
+	})
+
+	presignedUrlRes, err := h.videoManagementServiceClient.GetUserVideos(ctx, getVideosReq)
+	if err != nil {
+		logger.Global().Error("error performing pre-signed url request", zap.Error(err))
+		helpers.WriteErrorResponse(w, errors.ErrHTTPInternalServer)
+		return
+	}
+
+	// Build response
+	videos := make([]response.UserVideoResponse, 0)
+	for _, video := range presignedUrlRes.Msg.GetVideos() {
+		videos = append(videos, response.UserVideoResponse{
+			VideoID:      video.GetVideoId(),
+			Title:        video.GetVideoTitle(),
+			ThumbnailUrl: video.GetThumbnailUrl(),
+		})
+	}
+
+	responseData := response.GetUserVideosResponse{
+		Videos: videos,
 	}
 
 	helpers.WriteJSONSuccess(w, responseData)

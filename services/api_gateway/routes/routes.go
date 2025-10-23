@@ -48,5 +48,6 @@ func (r *Router) setupProtectedRoutes() {
 	})
 
 	// Video management routes
+	r.mux.Handle("/api/v1/videos/user", authMiddleware(helpers.GET(r.handlers.VideoManagement.GetUserVideos)))
 	r.mux.Handle("/api/v1/videos/presigned-url", authMiddleware(helpers.POST(r.handlers.VideoManagement.GeneratePresignedURL)))
 }
