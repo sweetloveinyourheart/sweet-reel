@@ -16,18 +16,18 @@ type IVideoAggregateRepository interface {
 }
 
 type VideoAggregateRepository struct {
-	VideoRepository
+	*VideoRepository
 }
 
 func NewVideoAggregateRepository(tx db.DbOrTx) IVideoAggregateRepository {
 	return &VideoAggregateRepository{
-		VideoRepository: VideoRepository{
+		VideoRepository: &VideoRepository{
 			Tx: tx,
 		},
 	}
 }
 
-func (r *VideoRepository) GetVideosWithThumbnailByUploaderID(ctx context.Context, uploaderID uuid.UUID, limit, offset int) ([]*models.VideoWithThumbnails, error) {
+func (r *VideoAggregateRepository) GetVideosWithThumbnailByUploaderID(ctx context.Context, uploaderID uuid.UUID, limit, offset int) ([]*models.VideoWithThumbnails, error) {
 	query := `
 		SELECT 
 			videos.id, 

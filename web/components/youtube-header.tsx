@@ -31,10 +31,12 @@ export function YouTubeHeader({
         <Button variant="ghost" size="icon" className="hidden lg:flex">
           <Menu className="h-6 w-6" />
         </Button>
-        <div className="flex items-center gap-1">
-          <Video className="h-7 w-7 text-red-600" />
-          <span className="text-xl font-bold">Sweet Reel</span>
-        </div>
+        <Link href={"/"}>
+          <div className="flex items-center gap-1">
+            <Video className="h-7 w-7 text-red-600" />
+            <span className="text-xl font-bold">Sweet Reel</span>
+          </div>
+        </Link>
       </div>
 
       <div className="flex flex-1 max-w-2xl mx-4">

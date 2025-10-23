@@ -26,7 +26,7 @@ func NewActions(ctx context.Context, signingToken string) *actions {
 
 	videoAggregateRepo, err := do.Invoke[repos.IVideoAggregateRepository](nil)
 	if err != nil {
-		logger.Global().Fatal("unable to get s3 client")
+		logger.Global().Fatal("unable to get video aggregate repo")
 	}
 
 	return &actions{

@@ -101,7 +101,7 @@ func (h *VideoManagementHandler) GetUserVideos(w http.ResponseWriter, r *http.Re
 
 	presignedUrlRes, err := h.videoManagementServiceClient.GetUserVideos(ctx, getVideosReq)
 	if err != nil {
-		logger.Global().Error("error performing pre-signed url request", zap.Error(err))
+		logger.Global().Error("error performing get user videos request", zap.Error(err))
 		helpers.WriteErrorResponse(w, errors.ErrHTTPInternalServer)
 		return
 	}
