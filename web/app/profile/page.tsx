@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button"
 import { VideoCard } from "@/components/video-card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Video, Users, Eye, Calendar } from "lucide-react"
+import { getServerApiClient } from "@/lib/api/server"
+import { UserVideos } from "@/types"
 
 // Mock user videos - in a real app, this would come from a database
 const mockUserVideos = [
@@ -60,12 +62,14 @@ const mockUserVideos = [
 
 export default async function ProfilePage() {
   const session = await auth()
+  const api = await getServerApiClient()
 
-  if (!session?.user) {
+  if (!session?.user || !api) {
     redirect("/signin")
   }
 
   const user = session.user
+  const videos = await api.get<UserVideos[]>("/videos/user", { params: { limit: 25, offset: 0 } })
 
   return (
     <div className="w-full">

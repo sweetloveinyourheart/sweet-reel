@@ -13,3 +13,13 @@ export type PresignedUrlResponse = {
     presigned_url: string
     expires_in: string
 }
+
+export type UserVideos = {
+  video_id: string
+  title: string
+  thumbnail_url: string
+}
+
+export type GetUserVideosResponse = {
+  videos: UserVideos[]
+}
