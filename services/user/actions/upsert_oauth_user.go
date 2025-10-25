@@ -3,6 +3,7 @@ package actions
 import (
 	"context"
 	"database/sql"
+	"time"
 
 	"connectrpc.com/connect"
 	"github.com/cockroachdb/errors"
@@ -15,6 +16,7 @@ import (
 	proto "github.com/sweetloveinyourheart/sweet-reel/proto/code/user/go"
 	"github.com/sweetloveinyourheart/sweet-reel/services/user/models"
 	"github.com/sweetloveinyourheart/sweet-reel/services/user/repos"
+	"github.com/sweetloveinyourheart/sweet-reel/services/user/utils"
 )
 
 func (a *actions) UpsertOAuthUser(ctx context.Context, request *connect.Request[proto.UpsertOAuthUserRequest]) (*connect.Response[proto.UpsertOAuthUserResponse], error) {
@@ -42,10 +44,26 @@ func (a *actions) UpsertOAuthUser(ctx context.Context, request *connect.Request[
 			ProviderUserID: request.Msg.ProviderUserId,
 		}
 
+		// Generate unique channel handle from user name with UUID suffix to ensure uniqueness
+		baseHandle := utils.GenerateHandleFromName(request.Msg.Name)
+		uniqueHandle := utils.GenerateUniqueHandle(baseHandle, int(time.Now().UnixNano()%10000))
+
+		// Create default channel for the new user
+		newChannel := &models.Channel{
+			ID:              uuid.Must(uuid.NewV7()),
+			OwnerID:         newUserID,
+			Name:            request.Msg.Name,
+			Handle:          uniqueHandle,
+			SubscriberCount: 0,
+			TotalViews:      0,
+			TotalVideos:     0,
+		}
+
 		// Execute transaction
 		err = a.dbConn.AcquireFunc(ctx, func(conn *pgxpool.Conn) error {
-			return db.TransactionC(ctx, conn.Conn(), "CreateUserAndIdentity", func(tx pgx.Tx) error {
+			return db.TransactionC(ctx, conn.Conn(), "CreateUserChannelAndIdentity", func(tx pgx.Tx) error {
 				userRepoTx := repos.NewUserRepository(tx)
+				channelRepoTx := repos.NewChannelRepository(tx)
 
 				err := userRepoTx.CreateUser(ctx, newUser)
 				if err != nil {
@@ -53,6 +71,12 @@ func (a *actions) UpsertOAuthUser(ctx context.Context, request *connect.Request[
 				}
 
 				err = userRepoTx.CreateIdentity(ctx, newUserIdentity)
+				if err != nil {
+					return err
+				}
+
+				// Create channel for the user
+				err = channelRepoTx.CreateChannel(ctx, newChannel)
 				if err != nil {
 					return err
 				}

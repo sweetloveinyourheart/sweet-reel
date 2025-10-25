@@ -43,3 +43,11 @@ func ToMachineName(s string) string {
 	}
 	return sb.String()
 }
+
+// GetStringValue safely returns empty string for nil pointers
+func GetStringValue(s *string) string {
+	if s == nil {
+		return ""
+	}
+	return *s
+}

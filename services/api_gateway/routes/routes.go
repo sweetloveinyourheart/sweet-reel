@@ -35,6 +35,9 @@ func (r *Router) SetupRoutes() {
 func (r *Router) setupPublicRoutes() {
 	r.mux.Handle("/api/v1/oauth/google", helpers.POST(r.handlers.AuthHandler.GoogleOAuth))
 	r.mux.Handle("/api/v1/auth/refresh-token", helpers.GET(r.handlers.AuthHandler.RefreshToken))
+
+	// Channel routes
+	r.mux.Handle("/api/v1/channels/{handle}", helpers.GET(r.handlers.UserHandler.GetChannelByHandle))
 }
 
 // setupProtectedRoutes sets up authenticated API routes

@@ -11,6 +11,9 @@ service UserService {
 
     // Fetch user info by ID (used internally by other services).
     rpc GetUserByID(GetUserByIDRequest) returns (GetUserByIDResponse);
+
+    // Fetch channel info by handle (e.g., @username).
+    rpc GetChannelByHandle(GetChannelByHandleRequest) returns (GetChannelByHandleResponse);
 }
 
 message User {
@@ -41,4 +44,27 @@ message GetUserByIDRequest {
 
 message GetUserByIDResponse {
     User user = 1;
+}
+
+message Channel {
+    string id = 1;
+    string owner_id = 2;
+    string name = 3;
+    string handle = 4;
+    string description = 5;
+    string banner_url = 6;
+    int32 subscriber_count = 7;
+    int64 total_views = 8;
+    int32 total_videos = 9;
+    string created_at = 10;
+    string updated_at = 11;
+}
+
+message GetChannelByHandleRequest {
+    string handle = 1;  // e.g., "@johndoe"
+}
+
+message GetChannelByHandleResponse {
+    Channel channel = 1;
+    User owner = 2;
 }
