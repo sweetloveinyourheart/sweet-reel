@@ -45,6 +45,13 @@ type IVideoRepository interface {
 	// Aggregate operations
 	GetVideoCount(ctx context.Context) (int64, error)
 	GetVideoCountByUploaderID(ctx context.Context, uploaderID uuid.UUID) (int64, error)
+
+	// Video view operations
+	CreateVideoView(ctx context.Context, view *models.VideoView) error
+	IncrementVideoViewCount(ctx context.Context, videoID uuid.UUID) error
+	GetVideoViewCount(ctx context.Context, videoID uuid.UUID) (int64, error)
+	GetTotalViewsByUploaderID(ctx context.Context, uploaderID uuid.UUID) (int64, error)
+	HasViewedRecently(ctx context.Context, videoID uuid.UUID, viewerID *uuid.UUID, ipAddress *string, duration time.Duration) (bool, error)
 }
 
 type VideoRepository struct {
@@ -376,4 +383,75 @@ func (r *VideoRepository) GetVideoCountByUploaderID(ctx context.Context, uploade
 	var count int64
 	err := r.Tx.QueryRow(ctx, query, uploaderID).Scan(&count)
 	return count, err
+}
+
+// Video view operations
+
+func (r *VideoRepository) CreateVideoView(ctx context.Context, view *models.VideoView) error {
+	query := `
+		INSERT INTO video_views (id, video_id, viewer_id, viewed_at, watch_duration, ip_address, user_agent)
+		VALUES ($1, $2, $3, $4, $5, $6, $7)`
+
+	_, err := r.Tx.Exec(ctx, query,
+		view.ID, view.VideoID, view.ViewerID, view.ViewedAt,
+		view.WatchDuration, view.IPAddress, view.UserAgent)
+	return err
+}
+
+func (r *VideoRepository) IncrementVideoViewCount(ctx context.Context, videoID uuid.UUID) error {
+	query := `UPDATE videos SET view_count = view_count + 1, updated_at = NOW() WHERE id = $1`
+	_, err := r.Tx.Exec(ctx, query, videoID)
+	return err
+}
+
+func (r *VideoRepository) GetVideoViewCount(ctx context.Context, videoID uuid.UUID) (int64, error) {
+	query := `SELECT view_count FROM videos WHERE id = $1`
+
+	var count int64
+	err := r.Tx.QueryRow(ctx, query, videoID).Scan(&count)
+	if err != nil {
+		return 0, err
+	}
+	return count, nil
+}
+
+func (r *VideoRepository) GetTotalViewsByUploaderID(ctx context.Context, uploaderID uuid.UUID) (int64, error) {
+	query := `
+		SELECT COALESCE(SUM(view_count), 0)
+		FROM videos
+		WHERE uploader_id = $1`
+
+	var count int64
+	err := r.Tx.QueryRow(ctx, query, uploaderID).Scan(&count)
+	if err != nil {
+		return 0, err
+	}
+	return count, nil
+}
+
+func (r *VideoRepository) HasViewedRecently(ctx context.Context, videoID uuid.UUID, viewerID *uuid.UUID, ipAddress *string, duration time.Duration) (bool, error) {
+	since := time.Now().Add(-duration)
+
+	var query string
+	var args []interface{}
+
+	if viewerID != nil {
+		// Check by viewer_id if authenticated
+		query = `SELECT EXISTS(SELECT 1 FROM video_views WHERE video_id = $1 AND viewer_id = $2 AND viewed_at >= $3)`
+		args = []interface{}{videoID, viewerID, since}
+	} else if ipAddress != nil {
+		// Check by IP address for anonymous viewers
+		query = `SELECT EXISTS(SELECT 1 FROM video_views WHERE video_id = $1 AND ip_address = $2 AND viewed_at >= $3)`
+		args = []interface{}{videoID, ipAddress, since}
+	} else {
+		// No way to deduplicate
+		return false, nil
+	}
+
+	var exists bool
+	err := r.Tx.QueryRow(ctx, query, args...).Scan(&exists)
+	if err != nil {
+		return false, err
+	}
+	return exists, nil
 }
