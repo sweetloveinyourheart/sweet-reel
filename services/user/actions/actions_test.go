@@ -15,18 +15,21 @@ import (
 
 type ActionsSuite struct {
 	*testingPkg.Suite
-	mockUserRepository *mocks.MockUserRepository
-	mockConnPool       *mock.MockPgxPool
+	mockUserRepository    *mocks.MockUserRepository
+	mockChannelRepository *mocks.MockChannelRepository
+	mockConnPool          *mock.MockPgxPool
 }
 
 func (as *ActionsSuite) SetupTest() {
 	as.mockUserRepository = new(mocks.MockUserRepository)
+	as.mockChannelRepository = new(mocks.MockChannelRepository)
 	as.mockConnPool = new(mock.MockPgxPool)
 }
 
 func (as *ActionsSuite) TearDownTest() {
 	as.mockUserRepository = nil
 	as.mockConnPool = nil
+	as.mockChannelRepository = nil
 }
 
 func TestActionsSuite(t *testing.T) {
@@ -40,6 +43,10 @@ func TestActionsSuite(t *testing.T) {
 func (as *ActionsSuite) setupEnvironment() {
 	do.Override(nil, func(i *do.Injector) (repos.IUserRepository, error) {
 		return as.mockUserRepository, nil
+	})
+
+	do.Override(nil, func(i *do.Injector) (repos.IChannelRepository, error) {
+		return as.mockChannelRepository, nil
 	})
 
 	do.Override(nil, func(i *do.Injector) (db.ConnPool, error) {

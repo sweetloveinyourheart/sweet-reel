@@ -8,6 +8,7 @@ import (
 	"connectrpc.com/connect"
 
 	"github.com/sweetloveinyourheart/sweet-reel/pkg/grpc"
+	"github.com/sweetloveinyourheart/sweet-reel/pkg/stringsutil"
 	proto "github.com/sweetloveinyourheart/sweet-reel/proto/code/user/go"
 )
 
@@ -39,8 +40,8 @@ func (a *actions) GetChannelByHandle(ctx context.Context, request *connect.Reque
 			OwnerId:         channel.OwnerID.String(),
 			Name:            channel.Name,
 			Handle:          channel.Handle,
-			Description:     getStringValue(channel.Description),
-			BannerUrl:       getStringValue(channel.BannerURL),
+			Description:     stringsutil.GetStringValue(channel.Description),
+			BannerUrl:       stringsutil.GetStringValue(channel.BannerURL),
 			SubscriberCount: int32(channel.SubscriberCount),
 			TotalViews:      channel.TotalViews,
 			TotalVideos:     int32(channel.TotalVideos),
@@ -58,12 +59,4 @@ func (a *actions) GetChannelByHandle(ctx context.Context, request *connect.Reque
 	}
 
 	return connect.NewResponse(response), nil
-}
-
-// getStringValue safely returns empty string for nil pointers
-func getStringValue(s *string) string {
-	if s == nil {
-		return ""
-	}
-	return *s
 }
