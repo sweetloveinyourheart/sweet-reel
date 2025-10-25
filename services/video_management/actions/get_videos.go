@@ -32,6 +32,11 @@ func (a *actions) GetUserVideos(ctx context.Context, request *connect.Request[pr
 			continue
 		}
 
+		if video.ProcessedAt != nil {
+			logger.Global().Warn("the video has not processed yet")
+			continue
+		}
+
 		thumbnailUrl, err := a.s3Client.GenerateDownloadPublicUri(video.GetThumbnailObjectKey(), s3.S3VideoProcessedBucket, s3.UrlExpirationSeconds)
 		if err != nil {
 			logger.Global().Error("unable to generate download url for video thumbnail", zap.Error(err))
