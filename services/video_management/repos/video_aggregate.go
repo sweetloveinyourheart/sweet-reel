@@ -29,25 +29,26 @@ func NewVideoAggregateRepository(tx db.DbOrTx) IVideoAggregateRepository {
 
 func (r *VideoAggregateRepository) GetUploadedVideos(ctx context.Context, uploaderID uuid.UUID, limit, offset int) ([]*models.UploadedVideo, error) {
 	query := `
-		SELECT 
-			videos.id, 
-			uploader_id, 
-			title, 
-			description, 
-			status, 
-			videos.object_key, 
-			processed_at, 
-			videos.created_at, 
+		SELECT
+			videos.id,
+			uploader_id,
+			title,
+			description,
+			status,
+			videos.object_key,
+			processed_at,
+			videos.created_at,
 			videos.updated_at,
+			videos.view_count,
 			video_thumbnails.video_id,
 			video_thumbnails.object_key,
 			video_variants.video_id,
 			video_variants.total_duration
-		FROM videos 
+		FROM videos
 		LEFT JOIN video_thumbnails ON videos.id = video_thumbnails.video_id
 		LEFT JOIN video_variants ON videos.id = video_variants.video_id
 		WHERE uploader_id = $1 AND status = 'ready'
-		ORDER BY videos.created_at DESC, video_thumbnails.created_at ASC 
+		ORDER BY videos.created_at DESC, video_thumbnails.created_at ASC
 		LIMIT $2 OFFSET $3`
 
 	rows, err := r.Tx.Query(ctx, query, uploaderID, limit, offset)
@@ -71,6 +72,7 @@ func (r *VideoAggregateRepository) GetUploadedVideos(ctx context.Context, upload
 			processedAt          *time.Time
 			createdAt            time.Time
 			updatedAt            time.Time
+			viewCount            int64
 			thumbnailID          *uuid.UUID
 			thumbnailObjectKey   *string
 			variantID            *uuid.UUID
@@ -80,7 +82,7 @@ func (r *VideoAggregateRepository) GetUploadedVideos(ctx context.Context, upload
 		err := rows.Scan(
 			&videoID, &uploaderID, &title, &description,
 			&status, &objectKey, &processedAt,
-			&createdAt, &updatedAt,
+			&createdAt, &updatedAt, &viewCount,
 			&thumbnailID, &thumbnailObjectKey,
 			&variantID, &variantTotalDuration)
 		if err != nil {
@@ -105,6 +107,7 @@ func (r *VideoAggregateRepository) GetUploadedVideos(ctx context.Context, upload
 				},
 				ThumbnailObjectKey: "",
 				TotalDuration:      0,
+				TotalView:          int(viewCount),
 			}
 			videoMap[videoID] = video
 			videoOrder = append(videoOrder, videoID)

@@ -102,7 +102,7 @@
 | video_title | [string](#string) |  |  |
 | thumbnail_url | [string](#string) |  |  |
 | total_duration | [int32](#int32) |  |  |
-| total_views | [int64](#int64) |  |  |
+| total_view | [int64](#int64) |  |  |
 | processed_at | [int64](#int64) |  |  |
 
 

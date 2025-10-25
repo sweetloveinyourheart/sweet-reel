@@ -20,13 +20,13 @@ func (a *actions) GetUserVideos(ctx context.Context, request *connect.Request[pr
 		return nil, grpc.InvalidArgumentError(errors.Errorf("user id is not recognized, id: ", request.Msg.GetUserId()))
 	}
 
-	videosWithThumbnail, err := a.videoAggregateRepo.GetUploadedVideos(ctx, userID, int(request.Msg.GetLimit()), int(request.Msg.Offset))
+	uploadedVideos, err := a.videoAggregateRepo.GetUploadedVideos(ctx, userID, int(request.Msg.GetLimit()), int(request.Msg.Offset))
 	if err != nil {
 		return nil, grpc.InternalError(err)
 	}
 
 	var userVideos []*proto.UserVideo
-	for _, video := range videosWithThumbnail {
+	for _, video := range uploadedVideos {
 		if video.ThumbnailObjectKey == "" {
 			logger.Global().Warn("no video thumbnail was found")
 			continue
@@ -47,6 +47,7 @@ func (a *actions) GetUserVideos(ctx context.Context, request *connect.Request[pr
 			VideoId:       video.ID.String(),
 			VideoTitle:    video.Title,
 			ThumbnailUrl:  thumbnailUrl,
+			TotalView:     int64(video.TotalView),
 			TotalDuration: int32(video.TotalDuration),
 			ProcessedAt:   video.ProcessedAt.Unix(),
 		})

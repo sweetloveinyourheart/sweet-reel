@@ -215,7 +215,7 @@ type UserVideo struct {
 	VideoTitle    string                 `protobuf:"bytes,2,opt,name=video_title,json=videoTitle,proto3" json:"video_title,omitempty"`
 	ThumbnailUrl  string                 `protobuf:"bytes,3,opt,name=thumbnail_url,json=thumbnailUrl,proto3" json:"thumbnail_url,omitempty"`
 	TotalDuration int32                  `protobuf:"varint,4,opt,name=total_duration,json=totalDuration,proto3" json:"total_duration,omitempty"`
-	TotalViews    int64                  `protobuf:"varint,5,opt,name=total_views,json=totalViews,proto3" json:"total_views,omitempty"`
+	TotalView     int64                  `protobuf:"varint,5,opt,name=total_view,json=totalView,proto3" json:"total_view,omitempty"`
 	ProcessedAt   int64                  `protobuf:"varint,6,opt,name=processed_at,json=processedAt,proto3" json:"processed_at,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -279,9 +279,9 @@ func (x *UserVideo) GetTotalDuration() int32 {
 	return 0
 }
 
-func (x *UserVideo) GetTotalViews() int64 {
+func (x *UserVideo) GetTotalView() int64 {
 	if x != nil {
-		return x.TotalViews
+		return x.TotalView
 	}
 	return 0
 }
@@ -356,15 +356,15 @@ const file_video_management_proto_rawDesc = "" +
 	"\x14GetUserVideosRequest\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x14\n" +
 	"\x05limit\x18\x02 \x01(\x05R\x05limit\x12\x16\n" +
-	"\x06offset\x18\x03 \x01(\x05R\x06offset\"\xd7\x01\n" +
+	"\x06offset\x18\x03 \x01(\x05R\x06offset\"\xd5\x01\n" +
 	"\tUserVideo\x12\x19\n" +
 	"\bvideo_id\x18\x01 \x01(\tR\avideoId\x12\x1f\n" +
 	"\vvideo_title\x18\x02 \x01(\tR\n" +
 	"videoTitle\x12#\n" +
 	"\rthumbnail_url\x18\x03 \x01(\tR\fthumbnailUrl\x12%\n" +
-	"\x0etotal_duration\x18\x04 \x01(\x05R\rtotalDuration\x12\x1f\n" +
-	"\vtotal_views\x18\x05 \x01(\x03R\n" +
-	"totalViews\x12!\n" +
+	"\x0etotal_duration\x18\x04 \x01(\x05R\rtotalDuration\x12\x1d\n" +
+	"\n" +
+	"total_view\x18\x05 \x01(\x03R\ttotalView\x12!\n" +
 	"\fprocessed_at\x18\x06 \x01(\x03R\vprocessedAt\"v\n" +
 	"\x15GetUserVideosResponse\x12]\n" +
 	"\x06videos\x18\x01 \x03(\v2E.com.sweetloveinyourheart.srl.videomanagement.dataproviders.UserVideoR\x06videos2\xfc\x02\n" +
