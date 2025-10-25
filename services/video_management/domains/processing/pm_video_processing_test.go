@@ -43,7 +43,7 @@ func (as *VideoProcessingSuite) TestHandleMessage_Success() {
 	eventData, err := json.Marshal(eventMessage)
 	as.NoError(err)
 
-	as.mockVideoRepository.On("UpdateVideoProgress", mock.Anything,
+	as.mockVideoAggregateRepository.On("UpdateVideoProgress", mock.Anything,
 		eventMessage.VideoID,
 		eventMessage.ObjectKey,
 		eventMessage.Status,
