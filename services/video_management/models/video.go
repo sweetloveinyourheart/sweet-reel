@@ -115,7 +115,18 @@ func (v Video) Validate() error {
 	return nil
 }
 
-type VideoWithThumbnails struct {
+type UploadedVideo struct {
 	Video
-	Thumbnails []VideoThumbnail `json:"thumbnails"`
+	TotalDuration      int    `json:"total_duration"`
+	ThumbnailObjectKey string `json:"thumbnail_object_key"`
+}
+
+// GetTotalDuration returns the total duration of the video
+func (v UploadedVideo) GetTotalDuration() int {
+	return v.TotalDuration
+}
+
+// GetThumbnailObjectKey returns the thumbnail object key of the video
+func (v UploadedVideo) GetThumbnailObjectKey() string {
+	return v.ThumbnailObjectKey
 }

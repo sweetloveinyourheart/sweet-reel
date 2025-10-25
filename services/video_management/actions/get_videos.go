@@ -20,29 +20,30 @@ func (a *actions) GetUserVideos(ctx context.Context, request *connect.Request[pr
 		return nil, grpc.InvalidArgumentError(errors.Errorf("user id is not recognized, id: ", request.Msg.GetUserId()))
 	}
 
-	videosWithThumbnail, err := a.videoAggregateRepo.GetVideosWithThumbnailByUploaderID(ctx, userID, int(request.Msg.GetLimit()), int(request.Msg.Offset))
+	videosWithThumbnail, err := a.videoAggregateRepo.GetUploadedVideos(ctx, userID, int(request.Msg.GetLimit()), int(request.Msg.Offset))
 	if err != nil {
 		return nil, grpc.InternalError(err)
 	}
 
 	var userVideos []*proto.UserVideo
 	for _, video := range videosWithThumbnail {
-		if len(video.Thumbnails) == 0 {
+		if video.ThumbnailObjectKey == "" {
 			logger.Global().Warn("no video thumbnail was found")
 			continue
 		}
 
-		firstThumbnail := video.Thumbnails[0]
-		thumbnailUrl, err := a.s3Client.GenerateDownloadPublicUri(firstThumbnail.GetObjectKey(), s3.S3VideoProcessedBucket, s3.UrlExpirationSeconds)
+		thumbnailUrl, err := a.s3Client.GenerateDownloadPublicUri(video.GetThumbnailObjectKey(), s3.S3VideoProcessedBucket, s3.UrlExpirationSeconds)
 		if err != nil {
 			logger.Global().Error("unable to generate download url for video thumbnail", zap.Error(err))
 			continue
 		}
 
 		userVideos = append(userVideos, &proto.UserVideo{
-			VideoId:      video.ID.String(),
-			VideoTitle:   video.Title,
-			ThumbnailUrl: thumbnailUrl,
+			VideoId:       video.ID.String(),
+			VideoTitle:    video.Title,
+			ThumbnailUrl:  thumbnailUrl,
+			TotalDuration: int32(video.TotalDuration),
+			ProcessedAt:   video.ProcessedAt.Unix(),
 		})
 	}
 

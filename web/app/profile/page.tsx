@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Video, Users, Eye, Calendar } from "lucide-react"
 import { getServerApiClient } from "@/lib/api/server"
 import { GetUserVideosResponse } from "@/types"
+import moment from "moment"
 
 export default async function ProfilePage() {
   const session = await auth()
@@ -32,9 +33,9 @@ export default async function ProfilePage() {
       name: user.name ?? "Your Channel",
       avatar: user.image ?? `https://api.dicebear.com/9.x/thumbs/svg?seed=${user.email}&randomizeIds=true`,
     },
+    timestamp: moment(video.processed_at * 1000).fromNow(),
+    duration: moment.utc(video.total_duration * 1000).format('mm:ss'),
     views: "0", // Placeholder - not implemented in API yet
-    timestamp: "Recently", // Placeholder - not implemented in API yet
-    duration: "0:00", // Placeholder - not implemented in API yet
   }))
 
   return (

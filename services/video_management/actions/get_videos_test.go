@@ -26,18 +26,14 @@ func (as *ActionsSuite) TestActions_GetUserVideos_Success() {
 	// Setup mock expectations
 	as.mockS3.On("GenerateDownloadPublicUri", mock.Anything, mock.Anything, mock.Anything).Return(thumbnailUrl, nil)
 
-	as.mockVideoAggregateRepository.On("GetVideosWithThumbnailByUploaderID",
-		mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return([]*models.VideoWithThumbnails{
+	as.mockVideoAggregateRepository.On("GetUploadedVideos",
+		mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return([]*models.UploadedVideo{
 		{
 			Video: models.Video{
 				ID:    videoID,
 				Title: "Test",
 			},
-			Thumbnails: []models.VideoThumbnail{
-				{
-					ObjectKey: "test",
-				},
-			},
+			ThumbnailObjectKey: "test",
 		},
 	}, nil)
 

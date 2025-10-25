@@ -110,9 +110,11 @@ func (h *VideoManagementHandler) GetUserVideos(w http.ResponseWriter, r *http.Re
 	videos := make([]response.UserVideoResponse, 0)
 	for _, video := range presignedUrlRes.Msg.GetVideos() {
 		videos = append(videos, response.UserVideoResponse{
-			VideoID:      video.GetVideoId(),
-			Title:        video.GetVideoTitle(),
-			ThumbnailUrl: video.GetThumbnailUrl(),
+			VideoID:       video.GetVideoId(),
+			Title:         video.GetVideoTitle(),
+			ThumbnailUrl:  video.GetThumbnailUrl(),
+			TotalDuration: video.GetTotalDuration(),
+			ProcessedAt:   video.GetProcessedAt(),
 		})
 	}
 

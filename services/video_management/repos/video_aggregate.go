@@ -12,7 +12,7 @@ import (
 
 type IVideoAggregateRepository interface {
 	IVideoRepository
-	GetVideosWithThumbnailByUploaderID(ctx context.Context, uploaderID uuid.UUID, limit, offset int) ([]*models.VideoWithThumbnails, error)
+	GetUploadedVideos(ctx context.Context, uploaderID uuid.UUID, limit, offset int) ([]*models.UploadedVideo, error)
 }
 
 type VideoAggregateRepository struct {
@@ -27,7 +27,7 @@ func NewVideoAggregateRepository(tx db.DbOrTx) IVideoAggregateRepository {
 	}
 }
 
-func (r *VideoAggregateRepository) GetVideosWithThumbnailByUploaderID(ctx context.Context, uploaderID uuid.UUID, limit, offset int) ([]*models.VideoWithThumbnails, error) {
+func (r *VideoAggregateRepository) GetUploadedVideos(ctx context.Context, uploaderID uuid.UUID, limit, offset int) ([]*models.UploadedVideo, error) {
 	query := `
 		SELECT 
 			videos.id, 
@@ -39,14 +39,13 @@ func (r *VideoAggregateRepository) GetVideosWithThumbnailByUploaderID(ctx contex
 			processed_at, 
 			videos.created_at, 
 			videos.updated_at,
-			video_thumbnails.id, 
-			video_id, 
-			video_thumbnails.object_key, 
-			width,
-			height, 
-			video_thumbnails.created_at
+			video_thumbnails.video_id,
+			video_thumbnails.object_key,
+			video_variants.video_id,
+			video_variants.total_duration
 		FROM videos 
 		LEFT JOIN video_thumbnails ON videos.id = video_thumbnails.video_id
+		LEFT JOIN video_variants ON videos.id = video_variants.video_id
 		WHERE uploader_id = $1 AND status = 'ready'
 		ORDER BY videos.created_at DESC, video_thumbnails.created_at ASC 
 		LIMIT $2 OFFSET $3`
@@ -58,35 +57,32 @@ func (r *VideoAggregateRepository) GetVideosWithThumbnailByUploaderID(ctx contex
 	defer rows.Close()
 
 	// Map to group thumbnails by video ID
-	videoMap := make(map[uuid.UUID]*models.VideoWithThumbnails)
+	videoMap := make(map[uuid.UUID]*models.UploadedVideo)
 	var videoOrder []uuid.UUID
 
 	for rows.Next() {
 		var (
-			videoID            uuid.UUID
-			uploaderID         uuid.UUID
-			title              string
-			description        *string
-			status             models.VideoStatus
-			objectKey          *string
-			processedAt        *time.Time
-			createdAt          time.Time
-			updatedAt          time.Time
-			thumbnailID        *uuid.UUID
-			thumbnailVideoID   *uuid.UUID
-			thumbnailObjectKey *string
-			thumbnailWidth     *int
-			thumbnailHeight    *int
-			thumbnailCreatedAt *time.Time
+			videoID              uuid.UUID
+			uploaderID           uuid.UUID
+			title                string
+			description          *string
+			status               models.VideoStatus
+			objectKey            *string
+			processedAt          *time.Time
+			createdAt            time.Time
+			updatedAt            time.Time
+			thumbnailID          *uuid.UUID
+			thumbnailObjectKey   *string
+			variantID            *uuid.UUID
+			variantTotalDuration *int
 		)
 
 		err := rows.Scan(
 			&videoID, &uploaderID, &title, &description,
 			&status, &objectKey, &processedAt,
 			&createdAt, &updatedAt,
-			&thumbnailID, &thumbnailVideoID,
-			&thumbnailObjectKey, &thumbnailWidth, &thumbnailHeight,
-			&thumbnailCreatedAt)
+			&thumbnailID, &thumbnailObjectKey,
+			&variantID, &variantTotalDuration)
 		if err != nil {
 			return nil, err
 		}
@@ -95,7 +91,7 @@ func (r *VideoAggregateRepository) GetVideosWithThumbnailByUploaderID(ctx contex
 		video, exists := videoMap[videoID]
 		if !exists {
 			// Create new video entry
-			video = &models.VideoWithThumbnails{
+			video = &models.UploadedVideo{
 				Video: models.Video{
 					ID:          videoID,
 					UploaderID:  uploaderID,
@@ -107,7 +103,8 @@ func (r *VideoAggregateRepository) GetVideosWithThumbnailByUploaderID(ctx contex
 					CreatedAt:   createdAt,
 					UpdatedAt:   updatedAt,
 				},
-				Thumbnails: []models.VideoThumbnail{},
+				ThumbnailObjectKey: "",
+				TotalDuration:      0,
 			}
 			videoMap[videoID] = video
 			videoOrder = append(videoOrder, videoID)
@@ -115,15 +112,12 @@ func (r *VideoAggregateRepository) GetVideosWithThumbnailByUploaderID(ctx contex
 
 		// Add thumbnail if it exists (LEFT JOIN may return NULL thumbnails)
 		if thumbnailID != nil && thumbnailObjectKey != nil {
-			thumbnail := models.VideoThumbnail{
-				ID:        *thumbnailID,
-				VideoID:   *thumbnailVideoID,
-				ObjectKey: *thumbnailObjectKey,
-				Width:     thumbnailWidth,
-				Height:    thumbnailHeight,
-				CreatedAt: *thumbnailCreatedAt,
-			}
-			video.Thumbnails = append(video.Thumbnails, thumbnail)
+			video.ThumbnailObjectKey = *thumbnailObjectKey
+		}
+
+		// Add duration if it exists (LEFT JOIN may return NULL variants)
+		if variantID != nil && variantTotalDuration != nil {
+			video.TotalDuration = *variantTotalDuration
 		}
 	}
 
@@ -132,7 +126,7 @@ func (r *VideoAggregateRepository) GetVideosWithThumbnailByUploaderID(ctx contex
 	}
 
 	// Convert map to slice preserving order
-	videos := make([]*models.VideoWithThumbnails, 0, len(videoOrder))
+	videos := make([]*models.UploadedVideo, 0, len(videoOrder))
 	for _, videoID := range videoOrder {
 		videos = append(videos, videoMap[videoID])
 	}

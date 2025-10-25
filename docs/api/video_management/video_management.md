@@ -101,6 +101,8 @@
 | video_id | [string](#string) |  |  |
 | video_title | [string](#string) |  |  |
 | thumbnail_url | [string](#string) |  |  |
+| total_duration | [int32](#int32) |  |  |
+| processed_at | [int64](#int64) |  |  |
 
 
 

@@ -18,6 +18,8 @@ export type UserVideos = {
   video_id: string
   title: string
   thumbnail_url: string
+  total_duration: number
+  processed_at: number
 }
 
 export type GetUserVideosResponse = {

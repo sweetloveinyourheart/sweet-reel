@@ -12,10 +12,10 @@ type MockVideoAggregateRepository struct {
 	MockVideoRepository
 }
 
-func (m *MockVideoAggregateRepository) GetVideosWithThumbnailByUploaderID(ctx context.Context, uploaderID uuid.UUID, limit, offset int) ([]*models.VideoWithThumbnails, error) {
+func (m *MockVideoAggregateRepository) GetUploadedVideos(ctx context.Context, uploaderID uuid.UUID, limit, offset int) ([]*models.UploadedVideo, error) {
 	args := m.Called(ctx, uploaderID, limit, offset)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
-	return args.Get(0).([]*models.VideoWithThumbnails), args.Error(1)
+	return args.Get(0).([]*models.UploadedVideo), args.Error(1)
 }
