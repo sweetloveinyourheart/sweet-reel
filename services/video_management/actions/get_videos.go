@@ -32,7 +32,7 @@ func (a *actions) GetUserVideos(ctx context.Context, request *connect.Request[pr
 			continue
 		}
 
-		if video.ProcessedAt != nil {
+		if video.ProcessedAt == nil {
 			logger.Global().Warn("the video has not processed yet")
 			continue
 		}
