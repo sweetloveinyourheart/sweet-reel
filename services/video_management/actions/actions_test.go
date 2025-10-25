@@ -15,17 +15,17 @@ import (
 
 type ActionsSuite struct {
 	*testingPkg.Suite
-	mockVideoRepository *mocks.MockVideoRepository
-	mockS3              *mockPkg.MockS3
+	mockVideoAggregateRepository *mocks.MockVideoAggregateRepository
+	mockS3                       *mockPkg.MockS3
 }
 
 func (as *ActionsSuite) SetupTest() {
 	as.mockS3 = new(mockPkg.MockS3)
-	as.mockVideoRepository = new(mocks.MockVideoRepository)
+	as.mockVideoAggregateRepository = new(mocks.MockVideoAggregateRepository)
 }
 
 func (as *ActionsSuite) TearDownTest() {
-	as.mockVideoRepository = nil
+	as.mockVideoAggregateRepository = nil
 	as.mockS3 = nil
 }
 
@@ -38,8 +38,8 @@ func TestActionsSuite(t *testing.T) {
 }
 
 func (as *ActionsSuite) setupEnvironment() {
-	do.Override(nil, func(i *do.Injector) (repos.IVideoRepository, error) {
-		return as.mockVideoRepository, nil
+	do.Override(nil, func(i *do.Injector) (repos.IVideoAggregateRepository, error) {
+		return as.mockVideoAggregateRepository, nil
 	})
 
 	do.Override(nil, func(i *do.Injector) (s3.S3Storage, error) {

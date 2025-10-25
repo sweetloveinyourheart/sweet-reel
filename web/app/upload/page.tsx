@@ -209,45 +209,47 @@ export default function VideoUploadPage() {
 
       <div className="space-y-6">
         {/* Drag and Drop Zone */}
-        <div
-          onDragEnter={handleDragEnter}
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
-          onDrop={handleDrop}
-          className={cn(
-            "border-2 border-dashed rounded-lg p-12 text-center transition-colors",
-            isDragging
-              ? "border-primary bg-primary/5"
-              : "border-muted-foreground/25 hover:border-muted-foreground/50"
-          )}
-        >
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="video/*"
-            onChange={handleFileInputChange}
-            className="hidden"
-          />
-          <div className="flex flex-col items-center gap-4">
-            <div className="rounded-full bg-primary/10 p-6">
-              <Upload className="h-12 w-12 text-primary" />
+        {!uploadedFile && (
+          <div
+            onDragEnter={handleDragEnter}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            className={cn(
+              "border-2 border-dashed rounded-lg p-12 text-center transition-colors",
+              isDragging
+                ? "border-primary bg-primary/5"
+                : "border-muted-foreground/25 hover:border-muted-foreground/50"
+            )}
+          >
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="video/*"
+              onChange={handleFileInputChange}
+              className="hidden"
+            />
+            <div className="flex flex-col items-center gap-4">
+              <div className="rounded-full bg-primary/10 p-6">
+                <Upload className="h-12 w-12 text-primary" />
+              </div>
+              <div>
+                <p className="text-lg font-medium mb-1">
+                  Drag and drop a video file here
+                </p>
+                <p className="text-sm text-muted-foreground mb-4">
+                  or click the button below to browse
+                </p>
+              </div>
+              <Button
+                onClick={() => fileInputRef.current?.click()}
+                size="lg"
+              >
+                Select File
+              </Button>
             </div>
-            <div>
-              <p className="text-lg font-medium mb-1">
-                Drag and drop a video file here
-              </p>
-              <p className="text-sm text-muted-foreground mb-4">
-                or click the button below to browse
-              </p>
-            </div>
-            <Button
-              onClick={() => fileInputRef.current?.click()}
-              size="lg"
-            >
-              Select File
-            </Button>
           </div>
-        </div>
+        )}
 
         {/* Video Details Form */}
         {uploadedFile && (

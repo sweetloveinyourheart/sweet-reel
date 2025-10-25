@@ -165,30 +165,6 @@ func (m *MockVideoRepository) DeleteVideoThumbnailsByVideoID(ctx context.Context
 
 // Aggregate operations
 
-func (m *MockVideoRepository) GetVideoWithRelations(ctx context.Context, videoID uuid.UUID) (*models.Video, *models.VideoManifest, []*models.VideoVariant, []*models.VideoThumbnail, error) {
-	args := m.Called(ctx, videoID)
-
-	var video *models.Video
-	var manifest *models.VideoManifest
-	var variants []*models.VideoVariant
-	var thumbnails []*models.VideoThumbnail
-
-	if args.Get(0) != nil {
-		video = args.Get(0).(*models.Video)
-	}
-	if args.Get(1) != nil {
-		manifest = args.Get(1).(*models.VideoManifest)
-	}
-	if args.Get(2) != nil {
-		variants = args.Get(2).([]*models.VideoVariant)
-	}
-	if args.Get(3) != nil {
-		thumbnails = args.Get(3).([]*models.VideoThumbnail)
-	}
-
-	return video, manifest, variants, thumbnails, args.Error(4)
-}
-
 func (m *MockVideoRepository) GetVideoCount(ctx context.Context) (int64, error) {
 	args := m.Called(ctx)
 	return args.Get(0).(int64), args.Error(1)

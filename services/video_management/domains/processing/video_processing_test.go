@@ -19,11 +19,11 @@ type VideoProcessingSuite struct {
 	ctx    context.Context
 	cancel context.CancelFunc
 
-	mockVideoRepository *mocks.MockVideoRepository
+	mockVideoAggregateRepository *mocks.MockVideoAggregateRepository
 }
 
 func (as *VideoProcessingSuite) SetupTest() {
-	as.mockVideoRepository = new(mocks.MockVideoRepository)
+	as.mockVideoAggregateRepository = new(mocks.MockVideoAggregateRepository)
 	as.ctx, as.cancel = context.WithTimeout(context.Background(), 10*time.Second)
 }
 
@@ -32,7 +32,7 @@ func (as *VideoProcessingSuite) TearDownTest() {
 		as.cancel()
 	}
 
-	as.mockVideoRepository = nil
+	as.mockVideoAggregateRepository = nil
 }
 
 func TestVideoProcessingSuite(t *testing.T) {
@@ -49,7 +49,7 @@ func (as *VideoProcessingSuite) setupEnvironment() {
 		return client, nil
 	})
 
-	do.Override(nil, func(i *do.Injector) (repos.IVideoRepository, error) {
-		return as.mockVideoRepository, nil
+	do.Override(nil, func(i *do.Injector) (repos.IVideoAggregateRepository, error) {
+		return as.mockVideoAggregateRepository, nil
 	})
 }

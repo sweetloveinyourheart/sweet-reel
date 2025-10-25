@@ -25,7 +25,7 @@ type VideoProcessManager struct {
 	ctx                 context.Context
 	progressUpdateQueue chan lo.Tuple2[context.Context, *kafka.ConsumedMessage]
 	videoProcessedQueue chan lo.Tuple2[context.Context, *kafka.ConsumedMessage]
-	videoRepo           repos.IVideoRepository
+	videoAggregateRepo  repos.IVideoAggregateRepository
 }
 
 func NewVideoProcessManager(ctx context.Context) (*VideoProcessManager, error) {
@@ -34,16 +34,16 @@ func NewVideoProcessManager(ctx context.Context) (*VideoProcessManager, error) {
 		return nil, err
 	}
 
-	videoRepo, err := do.Invoke[repos.IVideoRepository](nil)
+	videoAggregateRepo, err := do.Invoke[repos.IVideoAggregateRepository](nil)
 	if err != nil {
-		logger.Global().Fatal("unable to get s3 client")
+		logger.Global().Fatal("unable to get video aggregate repo")
 	}
 
 	vsp := &VideoProcessManager{
 		ctx:                 ctx,
 		progressUpdateQueue: make(chan lo.Tuple2[context.Context, *kafka.ConsumedMessage], BatchSize*2),
 		videoProcessedQueue: make(chan lo.Tuple2[context.Context, *kafka.ConsumedMessage], BatchSize*2),
-		videoRepo:           videoRepo,
+		videoAggregateRepo:  videoAggregateRepo,
 	}
 
 	go func() {
@@ -114,7 +114,7 @@ func (vsp *VideoProcessManager) HandleProgressUpdateMessage(ctx context.Context,
 		return err
 	}
 
-	err = vsp.videoRepo.UpdateVideoProgress(ctx,
+	err = vsp.videoAggregateRepo.UpdateVideoProgress(ctx,
 		msg.VideoID,
 		msg.ObjectKey,
 		models.VideoStatus(msg.Status),
@@ -155,7 +155,7 @@ func (vsp *VideoProcessManager) HandleVideoProcessedMessage(ctx context.Context,
 			Width:     &data.Width,
 			Height:    &data.Height,
 		}
-		err = vsp.videoRepo.CreateVideoThumbnail(ctx, newVideoThumbnail)
+		err = vsp.videoAggregateRepo.CreateVideoThumbnail(ctx, newVideoThumbnail)
 		if err != nil {
 			return err
 		}
@@ -172,7 +172,7 @@ func (vsp *VideoProcessManager) HandleVideoProcessedMessage(ctx context.Context,
 			ObjectKey: msg.ObjectKey,
 			SizeBytes: &data.SizeBytes,
 		}
-		err = vsp.videoRepo.CreateVideoManifest(ctx, newVideoManifest)
+		err = vsp.videoAggregateRepo.CreateVideoManifest(ctx, newVideoManifest)
 		if err != nil {
 			return err
 		}
@@ -191,7 +191,7 @@ func (vsp *VideoProcessManager) HandleVideoProcessedMessage(ctx context.Context,
 			TotalSegments: &data.TotalSegments,
 			TotalDuration: &data.TotalDuration,
 		}
-		err = vsp.videoRepo.CreateVideoVariant(ctx, newVideoManifest)
+		err = vsp.videoAggregateRepo.CreateVideoVariant(ctx, newVideoManifest)
 		if err != nil {
 			return err
 		}

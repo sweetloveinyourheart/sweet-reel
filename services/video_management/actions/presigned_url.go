@@ -59,7 +59,7 @@ func (a *actions) PresignedUrl(ctx context.Context, request *connect.Request[pro
 		return nil, grpc.InternalError(errors.Wrapf(err, "failed to generate presigned URL for bucket %s, key %s", s3.S3VideoUploadedBucket, key))
 	}
 
-	if err := a.videoRepo.CreateVideo(ctx, &newVideo); err != nil {
+	if err := a.videoAggregateRepo.CreateVideo(ctx, &newVideo); err != nil {
 		logger.Global().Error("Failed to create video in database",
 			zap.String("videoID", newVideo.GetID().String()),
 			zap.String("uploaderID", uploaderID.String()),

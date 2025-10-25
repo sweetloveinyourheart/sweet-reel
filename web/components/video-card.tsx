@@ -27,11 +27,10 @@ export function VideoCard({
   return (
     <Link href={`/video/${id}`} className="group flex flex-col gap-2">
       <div className="relative aspect-video w-full overflow-hidden rounded-xl bg-muted">
-        <Image
+        <img
           src={thumbnail}
           alt={title}
-          fill
-          className="object-cover transition-transform group-hover:scale-105"
+          className="absolute inset-0 h-full w-full object-cover transition-transform group-hover:scale-105"
         />
         {duration && (
           <div className="absolute bottom-2 right-2 rounded bg-black/80 px-1.5 py-0.5 text-xs font-semibold text-white">
