@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/gofrs/uuid"
+
 	"github.com/sweetloveinyourheart/sweet-reel/services/video_management/models"
 )
 
