@@ -65,7 +65,7 @@ export default async function ChannelPage() {
               <div>
                 <h1 className="text-2xl sm:text-3xl font-bold">{channel.name}</h1>
                 <div className="flex flex-wrap gap-2 text-sm text-muted-foreground mt-1">
-                  <span>@{channel.handle}</span>
+                  <span>{channel.handle}</span>
                   <span>•</span>
                   <span>{channel.total_videos} videos</span>
                   <span>•</span>
