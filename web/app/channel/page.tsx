@@ -18,15 +18,12 @@ export default async function ChannelPage() {
     redirect("/signin")
   }
 
-  const user = session.user
-
   // Fetch channel and channel videos from API
+  const channel = await api.get<ChannelResponse>("/channels")
+  
   const videosResponse = await api.get<GetChannelVideosResponse>("/channels/videos", {
     params: { limit: 25, offset: 0 }
   })
-
-  const channelResponse = await api.get<ChannelResponse>("/channels")
-  const channel = channelResponse
 
   // Transform API data to match VideoCard component props
   const userVideos = videosResponse.videos.map((video) => ({
@@ -163,10 +160,6 @@ export default async function ChannelPage() {
               <div>
                 <h3 className="text-lg font-semibold mb-2">Details</h3>
                 <div className="space-y-2 text-sm">
-                  <div className="flex gap-2">
-                    <span className="text-muted-foreground">Email:</span>
-                    <span>{user.email}</span>
-                  </div>
                   <div className="flex gap-2">
                     <span className="text-muted-foreground">Joined:</span>
                     <span>{moment(channel.created_at).format('MMMM D, YYYY')}</span>
