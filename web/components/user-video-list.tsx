@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Video, Loader2 } from "lucide-react"
 import { GetChannelVideosResponse, ChannelVideos } from "@/types"
 import { useApiClient } from "@/lib/api/client"
+import Link from "next/link"
 
 interface UserVideoListProps {
   initialVideos: Array<{
@@ -72,7 +73,9 @@ export function UserVideoList({ initialVideos, userName, userAvatar }: UserVideo
         <p className="text-muted-foreground mb-4">
           Upload your first video to get started
         </p>
-        <Button>Upload Video</Button>
+        <Link href={"/upload"}>
+          <Button>Upload Video</Button>
+        </Link>
       </div>
     )
   }
