@@ -108,6 +108,7 @@ func setupDependencies(ctx context.Context) error {
 	}
 
 	userRepo := repos.NewUserRepository(dbConn)
+	channelRepo := repos.NewChannelRepository(dbConn)
 
 	do.Provide(nil, func(i *do.Injector) (db.ConnPool, error) {
 		return dbConn, nil
@@ -115,6 +116,10 @@ func setupDependencies(ctx context.Context) error {
 
 	do.Provide(nil, func(i *do.Injector) (repos.IUserRepository, error) {
 		return userRepo, nil
+	})
+
+	do.Provide(nil, func(i *do.Injector) (repos.IChannelRepository, error) {
+		return channelRepo, nil
 	})
 
 	return nil

@@ -12,7 +12,7 @@ import (
 
 type IVideoAggregateRepository interface {
 	IVideoRepository
-	GetUploadedVideos(ctx context.Context, uploaderID uuid.UUID, limit, offset int) ([]*models.UploadedVideo, error)
+	GetChannelVideos(ctx context.Context, uploaderID uuid.UUID, limit, offset int) ([]*models.ChannelVideo, error)
 }
 
 type VideoAggregateRepository struct {
@@ -27,11 +27,12 @@ func NewVideoAggregateRepository(tx db.DbOrTx) IVideoAggregateRepository {
 	}
 }
 
-func (r *VideoAggregateRepository) GetUploadedVideos(ctx context.Context, uploaderID uuid.UUID, limit, offset int) ([]*models.UploadedVideo, error) {
+func (r *VideoAggregateRepository) GetChannelVideos(ctx context.Context, channelID uuid.UUID, limit, offset int) ([]*models.ChannelVideo, error) {
 	query := `
 		SELECT
 			videos.id,
 			uploader_id,
+			channel_id,
 			title,
 			description,
 			status,
@@ -47,24 +48,25 @@ func (r *VideoAggregateRepository) GetUploadedVideos(ctx context.Context, upload
 		FROM videos
 		LEFT JOIN video_thumbnails ON videos.id = video_thumbnails.video_id
 		LEFT JOIN video_variants ON videos.id = video_variants.video_id
-		WHERE uploader_id = $1 AND status = 'ready'
+		WHERE channel_id = $1 AND status = 'ready'
 		ORDER BY videos.created_at DESC, video_thumbnails.created_at ASC
 		LIMIT $2 OFFSET $3`
 
-	rows, err := r.Tx.Query(ctx, query, uploaderID, limit, offset)
+	rows, err := r.Tx.Query(ctx, query, channelID, limit, offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
 	// Map to group thumbnails by video ID
-	videoMap := make(map[uuid.UUID]*models.UploadedVideo)
+	videoMap := make(map[uuid.UUID]*models.ChannelVideo)
 	var videoOrder []uuid.UUID
 
 	for rows.Next() {
 		var (
 			videoID              uuid.UUID
 			uploaderID           uuid.UUID
+			channelID            uuid.UUID
 			title                string
 			description          *string
 			status               models.VideoStatus
@@ -80,7 +82,7 @@ func (r *VideoAggregateRepository) GetUploadedVideos(ctx context.Context, upload
 		)
 
 		err := rows.Scan(
-			&videoID, &uploaderID, &title, &description,
+			&videoID, &uploaderID, &channelID, &title, &description,
 			&status, &objectKey, &processedAt,
 			&createdAt, &updatedAt, &viewCount,
 			&thumbnailID, &thumbnailObjectKey,
@@ -93,10 +95,11 @@ func (r *VideoAggregateRepository) GetUploadedVideos(ctx context.Context, upload
 		video, exists := videoMap[videoID]
 		if !exists {
 			// Create new video entry
-			video = &models.UploadedVideo{
+			video = &models.ChannelVideo{
 				Video: models.Video{
 					ID:          videoID,
 					UploaderID:  uploaderID,
+					ChannelID:   channelID,
 					Title:       title,
 					Description: description,
 					Status:      status,
@@ -129,7 +132,7 @@ func (r *VideoAggregateRepository) GetUploadedVideos(ctx context.Context, upload
 	}
 
 	// Convert map to slice preserving order
-	videos := make([]*models.UploadedVideo, 0, len(videoOrder))
+	videos := make([]*models.ChannelVideo, 0, len(videoOrder))
 	for _, videoID := range videoOrder {
 		videos = append(videos, videoMap[videoID])
 	}

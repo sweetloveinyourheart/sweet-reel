@@ -22,5 +22,3 @@ CREATE INDEX idx_video_views_viewer_id ON video_views(viewer_id) WHERE viewer_id
 CREATE INDEX idx_video_views_viewed_at ON video_views(viewed_at);
 CREATE INDEX idx_videos_view_count ON videos(view_count);
 
--- 4. Create index on uploader_id for aggregating channel statistics
-CREATE INDEX idx_videos_uploader_id ON videos(uploader_id);

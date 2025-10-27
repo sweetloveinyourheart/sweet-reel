@@ -21,6 +21,7 @@ const (
 type Video struct {
 	ID          uuid.UUID   `json:"id"`
 	UploaderID  uuid.UUID   `json:"uploader_id"`
+	ChannelID   uuid.UUID   `json:"channel_id"`
 	Title       string      `json:"title"`
 	Description *string     `json:"description"`
 	Status      VideoStatus `json:"status"`
@@ -38,6 +39,11 @@ func (v Video) GetID() uuid.UUID {
 // GetUploaderID returns the uploader ID of the video
 func (v Video) GetUploaderID() uuid.UUID {
 	return v.UploaderID
+}
+
+// GetChannelID returns the channel ID of the video
+func (v Video) GetChannelID() uuid.UUID {
+	return v.ChannelID
 }
 
 // GetTitle returns the title of the video
@@ -115,7 +121,7 @@ func (v Video) Validate() error {
 	return nil
 }
 
-type UploadedVideo struct {
+type ChannelVideo struct {
 	Video
 	TotalDuration      int    `json:"total_duration"`
 	TotalView          int    `json:"total_view"`
@@ -123,16 +129,16 @@ type UploadedVideo struct {
 }
 
 // GetTotalDuration returns the total duration of the video
-func (v UploadedVideo) GetTotalDuration() int {
+func (v ChannelVideo) GetTotalDuration() int {
 	return v.TotalDuration
 }
 
 // GetTotalView returns the total view count of the video
-func (v UploadedVideo) GetTotalView() int {
+func (v ChannelVideo) GetTotalView() int {
 	return v.TotalView
 }
 
 // GetThumbnailObjectKey returns the thumbnail object key of the video
-func (v UploadedVideo) GetThumbnailObjectKey() string {
+func (v ChannelVideo) GetThumbnailObjectKey() string {
 	return v.ThumbnailObjectKey
 }

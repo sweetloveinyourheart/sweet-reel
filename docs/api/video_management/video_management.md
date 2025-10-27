@@ -4,11 +4,11 @@
 ## Table of Contents
 
 - [video_management.proto](#video_management-proto)
-    - [GetUserVideosRequest](#com-sweetloveinyourheart-srl-videomanagement-dataproviders-GetUserVideosRequest)
-    - [GetUserVideosResponse](#com-sweetloveinyourheart-srl-videomanagement-dataproviders-GetUserVideosResponse)
+    - [ChannelVideo](#com-sweetloveinyourheart-srl-videomanagement-dataproviders-ChannelVideo)
+    - [GetChannelVideosRequest](#com-sweetloveinyourheart-srl-videomanagement-dataproviders-GetChannelVideosRequest)
+    - [GetChannelVideosResponse](#com-sweetloveinyourheart-srl-videomanagement-dataproviders-GetChannelVideosResponse)
     - [PresignedUrlRequest](#com-sweetloveinyourheart-srl-videomanagement-dataproviders-PresignedUrlRequest)
     - [PresignedUrlResponse](#com-sweetloveinyourheart-srl-videomanagement-dataproviders-PresignedUrlResponse)
-    - [UserVideo](#com-sweetloveinyourheart-srl-videomanagement-dataproviders-UserVideo)
   
     - [VideoManagement](#com-sweetloveinyourheart-srl-videomanagement-dataproviders-VideoManagement)
   
@@ -23,15 +23,35 @@
 
 
 
-<a name="com-sweetloveinyourheart-srl-videomanagement-dataproviders-GetUserVideosRequest"></a>
+<a name="com-sweetloveinyourheart-srl-videomanagement-dataproviders-ChannelVideo"></a>
 
-### GetUserVideosRequest
+### ChannelVideo
 
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| user_id | [string](#string) |  |  |
+| video_id | [string](#string) |  |  |
+| video_title | [string](#string) |  |  |
+| thumbnail_url | [string](#string) |  |  |
+| total_duration | [int32](#int32) |  |  |
+| total_view | [int64](#int64) |  |  |
+| processed_at | [int64](#int64) |  |  |
+
+
+
+
+
+
+<a name="com-sweetloveinyourheart-srl-videomanagement-dataproviders-GetChannelVideosRequest"></a>
+
+### GetChannelVideosRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| channel_id | [string](#string) |  |  |
 | limit | [int32](#int32) |  |  |
 | offset | [int32](#int32) |  |  |
 
@@ -40,15 +60,15 @@
 
 
 
-<a name="com-sweetloveinyourheart-srl-videomanagement-dataproviders-GetUserVideosResponse"></a>
+<a name="com-sweetloveinyourheart-srl-videomanagement-dataproviders-GetChannelVideosResponse"></a>
 
-### GetUserVideosResponse
+### GetChannelVideosResponse
 
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| videos | [UserVideo](#com-sweetloveinyourheart-srl-videomanagement-dataproviders-UserVideo) | repeated |  |
+| videos | [ChannelVideo](#com-sweetloveinyourheart-srl-videomanagement-dataproviders-ChannelVideo) | repeated |  |
 
 
 
@@ -67,6 +87,7 @@
 | description | [string](#string) |  |  |
 | file_name | [string](#string) |  |  |
 | uploader_id | [string](#string) |  |  |
+| channel_id | [string](#string) |  |  |
 
 
 
@@ -89,26 +110,6 @@
 
 
 
-
-<a name="com-sweetloveinyourheart-srl-videomanagement-dataproviders-UserVideo"></a>
-
-### UserVideo
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| video_id | [string](#string) |  |  |
-| video_title | [string](#string) |  |  |
-| thumbnail_url | [string](#string) |  |  |
-| total_duration | [int32](#int32) |  |  |
-| total_view | [int64](#int64) |  |  |
-| processed_at | [int64](#int64) |  |  |
-
-
-
-
-
  
 
  
@@ -124,7 +125,7 @@
 | Method Name | Request Type | Response Type | Description |
 | ----------- | ------------ | ------------- | ------------|
 | PresignedUrl | [PresignedUrlRequest](#com-sweetloveinyourheart-srl-videomanagement-dataproviders-PresignedUrlRequest) | [PresignedUrlResponse](#com-sweetloveinyourheart-srl-videomanagement-dataproviders-PresignedUrlResponse) |  |
-| GetUserVideos | [GetUserVideosRequest](#com-sweetloveinyourheart-srl-videomanagement-dataproviders-GetUserVideosRequest) | [GetUserVideosResponse](#com-sweetloveinyourheart-srl-videomanagement-dataproviders-GetUserVideosResponse) |  |
+| GetChannelVideos | [GetChannelVideosRequest](#com-sweetloveinyourheart-srl-videomanagement-dataproviders-GetChannelVideosRequest) | [GetChannelVideosResponse](#com-sweetloveinyourheart-srl-videomanagement-dataproviders-GetChannelVideosResponse) |  |
 
  
 

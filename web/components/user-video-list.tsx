@@ -4,7 +4,7 @@ import { useState } from "react"
 import { VideoCard } from "@/components/video-card"
 import { Button } from "@/components/ui/button"
 import { Video, Loader2 } from "lucide-react"
-import { GetUserVideosResponse, UserVideos } from "@/types"
+import { GetChannelVideosResponse, ChannelVideos } from "@/types"
 import { useApiClient } from "@/lib/api/client"
 
 interface UserVideoListProps {
@@ -26,6 +26,7 @@ interface UserVideoListProps {
 
 export function UserVideoList({ initialVideos, userName, userAvatar }: UserVideoListProps) {
   const api = useApiClient()
+
   const [videos, setVideos] = useState(initialVideos)
   const [offset, setOffset] = useState(25)
   const [isLoading, setIsLoading] = useState(false)
@@ -34,11 +35,11 @@ export function UserVideoList({ initialVideos, userName, userAvatar }: UserVideo
   const loadMore = async () => {
     setIsLoading(true)
     try {
-      const data = await api.get<GetUserVideosResponse>("/videos/user", {
+      const data = await api.get<GetChannelVideosResponse>("/videos/user", {
         params: { limit: 25, offset }
       })
 
-      const newVideos = data.videos.map((video: UserVideos) => ({
+      const newVideos = data.videos.map((video: ChannelVideos) => ({
         id: video.video_id,
         thumbnail: video.thumbnail_url || "https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=500&h=281&fit=crop",
         title: video.title,

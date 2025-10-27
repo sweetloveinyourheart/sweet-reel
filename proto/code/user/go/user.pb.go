@@ -541,6 +541,102 @@ func (x *GetChannelByHandleResponse) GetOwner() *User {
 	return nil
 }
 
+type GetChannelByUserRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetChannelByUserRequest) Reset() {
+	*x = GetChannelByUserRequest{}
+	mi := &file_user_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetChannelByUserRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetChannelByUserRequest) ProtoMessage() {}
+
+func (x *GetChannelByUserRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_user_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetChannelByUserRequest.ProtoReflect.Descriptor instead.
+func (*GetChannelByUserRequest) Descriptor() ([]byte, []int) {
+	return file_user_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *GetChannelByUserRequest) GetUserId() string {
+	if x != nil {
+		return x.UserId
+	}
+	return ""
+}
+
+type GetChannelByUserResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Channel       *Channel               `protobuf:"bytes,1,opt,name=channel,proto3" json:"channel,omitempty"`
+	Owner         *User                  `protobuf:"bytes,2,opt,name=owner,proto3" json:"owner,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetChannelByUserResponse) Reset() {
+	*x = GetChannelByUserResponse{}
+	mi := &file_user_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetChannelByUserResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetChannelByUserResponse) ProtoMessage() {}
+
+func (x *GetChannelByUserResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_user_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetChannelByUserResponse.ProtoReflect.Descriptor instead.
+func (*GetChannelByUserResponse) Descriptor() ([]byte, []int) {
+	return file_user_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *GetChannelByUserResponse) GetChannel() *Channel {
+	if x != nil {
+		return x.Channel
+	}
+	return nil
+}
+
+func (x *GetChannelByUserResponse) GetOwner() *User {
+	if x != nil {
+		return x.Owner
+	}
+	return nil
+}
+
 var File_user_proto protoreflect.FileDescriptor
 
 const file_user_proto_rawDesc = "" +
@@ -590,10 +686,16 @@ const file_user_proto_rawDesc = "" +
 	"\x06handle\x18\x01 \x01(\tR\x06handle\"\xa1\x01\n" +
 	"\x1aGetChannelByHandleResponse\x12D\n" +
 	"\achannel\x18\x01 \x01(\v2*.com.sweetloveinyourheart.srl.user.ChannelR\achannel\x12=\n" +
-	"\x05owner\x18\x02 \x01(\v2'.com.sweetloveinyourheart.srl.user.UserR\x05owner2\xaa\x03\n" +
+	"\x05owner\x18\x02 \x01(\v2'.com.sweetloveinyourheart.srl.user.UserR\x05owner\"2\n" +
+	"\x17GetChannelByUserRequest\x12\x17\n" +
+	"\auser_id\x18\x01 \x01(\tR\x06userId\"\x9f\x01\n" +
+	"\x18GetChannelByUserResponse\x12D\n" +
+	"\achannel\x18\x01 \x01(\v2*.com.sweetloveinyourheart.srl.user.ChannelR\achannel\x12=\n" +
+	"\x05owner\x18\x02 \x01(\v2'.com.sweetloveinyourheart.srl.user.UserR\x05owner2\xb8\x04\n" +
 	"\vUserService\x12\x88\x01\n" +
 	"\x0fUpsertOAuthUser\x129.com.sweetloveinyourheart.srl.user.UpsertOAuthUserRequest\x1a:.com.sweetloveinyourheart.srl.user.UpsertOAuthUserResponse\x12|\n" +
-	"\vGetUserByID\x125.com.sweetloveinyourheart.srl.user.GetUserByIDRequest\x1a6.com.sweetloveinyourheart.srl.user.GetUserByIDResponse\x12\x91\x01\n" +
+	"\vGetUserByID\x125.com.sweetloveinyourheart.srl.user.GetUserByIDRequest\x1a6.com.sweetloveinyourheart.srl.user.GetUserByIDResponse\x12\x8b\x01\n" +
+	"\x10GetChannelByUser\x12:.com.sweetloveinyourheart.srl.user.GetChannelByUserRequest\x1a;.com.sweetloveinyourheart.srl.user.GetChannelByUserResponse\x12\x91\x01\n" +
 	"\x12GetChannelByHandle\x12<.com.sweetloveinyourheart.srl.user.GetChannelByHandleRequest\x1a=.com.sweetloveinyourheart.srl.user.GetChannelByHandleResponseBDZBgithub.com/sweetloveinyourheart/sweet-reel/proto/code/user/go;grpcb\x06proto3"
 
 var (
@@ -608,7 +710,7 @@ func file_user_proto_rawDescGZIP() []byte {
 	return file_user_proto_rawDescData
 }
 
-var file_user_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
+var file_user_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
 var file_user_proto_goTypes = []any{
 	(*User)(nil),                       // 0: com.sweetloveinyourheart.srl.user.User
 	(*UpsertOAuthUserRequest)(nil),     // 1: com.sweetloveinyourheart.srl.user.UpsertOAuthUserRequest
@@ -618,23 +720,29 @@ var file_user_proto_goTypes = []any{
 	(*Channel)(nil),                    // 5: com.sweetloveinyourheart.srl.user.Channel
 	(*GetChannelByHandleRequest)(nil),  // 6: com.sweetloveinyourheart.srl.user.GetChannelByHandleRequest
 	(*GetChannelByHandleResponse)(nil), // 7: com.sweetloveinyourheart.srl.user.GetChannelByHandleResponse
+	(*GetChannelByUserRequest)(nil),    // 8: com.sweetloveinyourheart.srl.user.GetChannelByUserRequest
+	(*GetChannelByUserResponse)(nil),   // 9: com.sweetloveinyourheart.srl.user.GetChannelByUserResponse
 }
 var file_user_proto_depIdxs = []int32{
-	0, // 0: com.sweetloveinyourheart.srl.user.UpsertOAuthUserResponse.user:type_name -> com.sweetloveinyourheart.srl.user.User
-	0, // 1: com.sweetloveinyourheart.srl.user.GetUserByIDResponse.user:type_name -> com.sweetloveinyourheart.srl.user.User
-	5, // 2: com.sweetloveinyourheart.srl.user.GetChannelByHandleResponse.channel:type_name -> com.sweetloveinyourheart.srl.user.Channel
-	0, // 3: com.sweetloveinyourheart.srl.user.GetChannelByHandleResponse.owner:type_name -> com.sweetloveinyourheart.srl.user.User
-	1, // 4: com.sweetloveinyourheart.srl.user.UserService.UpsertOAuthUser:input_type -> com.sweetloveinyourheart.srl.user.UpsertOAuthUserRequest
-	3, // 5: com.sweetloveinyourheart.srl.user.UserService.GetUserByID:input_type -> com.sweetloveinyourheart.srl.user.GetUserByIDRequest
-	6, // 6: com.sweetloveinyourheart.srl.user.UserService.GetChannelByHandle:input_type -> com.sweetloveinyourheart.srl.user.GetChannelByHandleRequest
-	2, // 7: com.sweetloveinyourheart.srl.user.UserService.UpsertOAuthUser:output_type -> com.sweetloveinyourheart.srl.user.UpsertOAuthUserResponse
-	4, // 8: com.sweetloveinyourheart.srl.user.UserService.GetUserByID:output_type -> com.sweetloveinyourheart.srl.user.GetUserByIDResponse
-	7, // 9: com.sweetloveinyourheart.srl.user.UserService.GetChannelByHandle:output_type -> com.sweetloveinyourheart.srl.user.GetChannelByHandleResponse
-	7, // [7:10] is the sub-list for method output_type
-	4, // [4:7] is the sub-list for method input_type
-	4, // [4:4] is the sub-list for extension type_name
-	4, // [4:4] is the sub-list for extension extendee
-	0, // [0:4] is the sub-list for field type_name
+	0,  // 0: com.sweetloveinyourheart.srl.user.UpsertOAuthUserResponse.user:type_name -> com.sweetloveinyourheart.srl.user.User
+	0,  // 1: com.sweetloveinyourheart.srl.user.GetUserByIDResponse.user:type_name -> com.sweetloveinyourheart.srl.user.User
+	5,  // 2: com.sweetloveinyourheart.srl.user.GetChannelByHandleResponse.channel:type_name -> com.sweetloveinyourheart.srl.user.Channel
+	0,  // 3: com.sweetloveinyourheart.srl.user.GetChannelByHandleResponse.owner:type_name -> com.sweetloveinyourheart.srl.user.User
+	5,  // 4: com.sweetloveinyourheart.srl.user.GetChannelByUserResponse.channel:type_name -> com.sweetloveinyourheart.srl.user.Channel
+	0,  // 5: com.sweetloveinyourheart.srl.user.GetChannelByUserResponse.owner:type_name -> com.sweetloveinyourheart.srl.user.User
+	1,  // 6: com.sweetloveinyourheart.srl.user.UserService.UpsertOAuthUser:input_type -> com.sweetloveinyourheart.srl.user.UpsertOAuthUserRequest
+	3,  // 7: com.sweetloveinyourheart.srl.user.UserService.GetUserByID:input_type -> com.sweetloveinyourheart.srl.user.GetUserByIDRequest
+	8,  // 8: com.sweetloveinyourheart.srl.user.UserService.GetChannelByUser:input_type -> com.sweetloveinyourheart.srl.user.GetChannelByUserRequest
+	6,  // 9: com.sweetloveinyourheart.srl.user.UserService.GetChannelByHandle:input_type -> com.sweetloveinyourheart.srl.user.GetChannelByHandleRequest
+	2,  // 10: com.sweetloveinyourheart.srl.user.UserService.UpsertOAuthUser:output_type -> com.sweetloveinyourheart.srl.user.UpsertOAuthUserResponse
+	4,  // 11: com.sweetloveinyourheart.srl.user.UserService.GetUserByID:output_type -> com.sweetloveinyourheart.srl.user.GetUserByIDResponse
+	9,  // 12: com.sweetloveinyourheart.srl.user.UserService.GetChannelByUser:output_type -> com.sweetloveinyourheart.srl.user.GetChannelByUserResponse
+	7,  // 13: com.sweetloveinyourheart.srl.user.UserService.GetChannelByHandle:output_type -> com.sweetloveinyourheart.srl.user.GetChannelByHandleResponse
+	10, // [10:14] is the sub-list for method output_type
+	6,  // [6:10] is the sub-list for method input_type
+	6,  // [6:6] is the sub-list for extension type_name
+	6,  // [6:6] is the sub-list for extension extendee
+	0,  // [0:6] is the sub-list for field type_name
 }
 
 func init() { file_user_proto_init() }
@@ -648,7 +756,7 @@ func file_user_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_user_proto_rawDesc), len(file_user_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   8,
+			NumMessages:   10,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

@@ -9,6 +9,7 @@ import { validateFileSize, validateFileType } from "@/lib/s3"
 import { useVideoUpload } from "@/hooks"
 import { PresignedUrlRequest } from "@/types"
 import { ZodError } from "zod"
+import { useAccount } from "@/contexts/account-context"
 
 interface UploadedFile {
   file: File
@@ -23,6 +24,7 @@ const allowedTypes = ["video/mp4", "video/webm", "video/ogg", "video/quicktime"]
 
 export default function VideoUploadPage() {
   const { uploading, progress, error, uploadVideo, reset } = useVideoUpload()
+  const { channel } = useAccount()
 
   const [uploadedFile, setUploadedFile] = useState<UploadedFile | null>(null)
   const [isDragging, setIsDragging] = useState(false)
@@ -103,11 +105,12 @@ export default function VideoUploadPage() {
   }
 
   const handleUpload = async () => {
-    if (!uploadedFile || uploadedFile.status !== "pending") return
+    if (!uploadedFile || uploadedFile.status !== "pending" || !channel) return
 
     try {
       // Validate metadata
       const fileMetadata = PresignedUrlRequest.parse({
+        channel_id: channel.id,
         title,
         description,
         file_name: uploadedFile.file.name

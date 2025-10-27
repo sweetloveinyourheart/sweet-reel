@@ -1,5 +1,4 @@
 -- Drop indexes
-DROP INDEX IF EXISTS idx_videos_uploader_id;
 DROP INDEX IF EXISTS idx_videos_view_count;
 DROP INDEX IF EXISTS idx_video_views_viewed_at;
 DROP INDEX IF EXISTS idx_video_views_viewer_id;

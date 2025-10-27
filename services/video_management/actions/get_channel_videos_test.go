@@ -13,7 +13,7 @@ import (
 	"github.com/sweetloveinyourheart/sweet-reel/services/video_management/models"
 )
 
-func (as *ActionsSuite) TestActions_GetUserVideos_Success() {
+func (as *ActionsSuite) TestActions_GetChannelVideos_Success() {
 	as.setupEnvironment()
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -28,8 +28,8 @@ func (as *ActionsSuite) TestActions_GetUserVideos_Success() {
 	// Setup mock expectations
 	as.mockS3.On("GenerateDownloadPublicUri", mock.Anything, mock.Anything, mock.Anything).Return(thumbnailUrl, nil)
 
-	as.mockVideoAggregateRepository.On("GetUploadedVideos",
-		mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return([]*models.UploadedVideo{
+	as.mockVideoAggregateRepository.On("GetChannelVideos",
+		mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return([]*models.ChannelVideo{
 		{
 			Video: models.Video{
 				ID:          videoID,
@@ -42,15 +42,15 @@ func (as *ActionsSuite) TestActions_GetUserVideos_Success() {
 	}, nil)
 
 	// Setup request
-	request := &connect.Request[proto.GetUserVideosRequest]{
-		Msg: &proto.GetUserVideosRequest{
-			UserId: userID.String(),
+	request := &connect.Request[proto.GetChannelVideosRequest]{
+		Msg: &proto.GetChannelVideosRequest{
+			ChannelId: userID.String(),
 		},
 	}
 
 	// Execute
 	actionsInstance := actions.NewActions(ctx, "test-token")
-	response, err := actionsInstance.GetUserVideos(ctx, request)
+	response, err := actionsInstance.GetChannelVideos(ctx, request)
 
 	// Assertions
 	as.NoError(err)

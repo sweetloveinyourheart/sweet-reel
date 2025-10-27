@@ -39,6 +39,14 @@ func (m *MockVideoRepository) GetVideosByUploaderID(ctx context.Context, uploade
 	return args.Get(0).([]*models.Video), args.Error(1)
 }
 
+func (m *MockVideoRepository) GetVideosByChannelID(ctx context.Context, channelID uuid.UUID, limit, offset int) ([]*models.Video, error) {
+	args := m.Called(ctx, channelID, limit, offset)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]*models.Video), args.Error(1)
+}
+
 func (m *MockVideoRepository) UpdateVideo(ctx context.Context, video *models.Video) error {
 	args := m.Called(ctx, video)
 	return args.Error(0)
@@ -175,6 +183,11 @@ func (m *MockVideoRepository) GetVideoCountByUploaderID(ctx context.Context, upl
 	return args.Get(0).(int64), args.Error(1)
 }
 
+func (m *MockVideoRepository) GetVideoCountByChannelID(ctx context.Context, channelID uuid.UUID) (int64, error) {
+	args := m.Called(ctx, channelID)
+	return args.Get(0).(int64), args.Error(1)
+}
+
 // Video view operations
 
 func (m *MockVideoRepository) CreateVideoView(ctx context.Context, view *models.VideoView) error {
@@ -194,6 +207,11 @@ func (m *MockVideoRepository) GetVideoViewCount(ctx context.Context, videoID uui
 
 func (m *MockVideoRepository) GetTotalViewsByUploaderID(ctx context.Context, uploaderID uuid.UUID) (int64, error) {
 	args := m.Called(ctx, uploaderID)
+	return args.Get(0).(int64), args.Error(1)
+}
+
+func (m *MockVideoRepository) GetTotalViewsByChannelID(ctx context.Context, channelID uuid.UUID) (int64, error) {
+	args := m.Called(ctx, channelID)
 	return args.Get(0).(int64), args.Error(1)
 }
 

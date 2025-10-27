@@ -1,6 +1,7 @@
 import * as z from "zod"; 
  
-export const PresignedUrlRequest = z.object({ 
+export const PresignedUrlRequest = z.object({
+  channel_id: z.uuidv7(),
   title: z.string().min(3),
   description: z.string().min(3),
   file_name: z.string().nonempty()
@@ -14,7 +15,7 @@ export type PresignedUrlResponse = {
     expires_in: string
 }
 
-export type UserVideos = {
+export type ChannelVideos = {
   video_id: string
   title: string
   thumbnail_url: string
@@ -22,6 +23,6 @@ export type UserVideos = {
   processed_at: number
 }
 
-export type GetUserVideosResponse = {
-  videos: UserVideos[]
+export type GetChannelVideosResponse = {
+  videos: ChannelVideos[]
 }

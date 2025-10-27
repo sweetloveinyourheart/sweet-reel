@@ -6,10 +6,11 @@ import { UserVideoList } from "@/components/user-video-list"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Video, Users, Eye, Calendar } from "lucide-react"
 import { getServerApiClient } from "@/lib/api/server"
-import { GetUserVideosResponse } from "@/types"
+import { GetChannelVideosResponse } from "@/types"
 import moment from "moment"
+import { ChannelResponse } from "@/types/channel"
 
-export default async function ProfilePage() {
+export default async function ChannelPage() {
   const session = await auth()
   const api = await getServerApiClient()
 
@@ -19,10 +20,13 @@ export default async function ProfilePage() {
 
   const user = session.user
 
-  // Fetch user videos from API
-  const videosResponse = await api.get<GetUserVideosResponse>("/videos/user", {
+  // Fetch channel and channel videos from API
+  const videosResponse = await api.get<GetChannelVideosResponse>("/channels/videos", {
     params: { limit: 25, offset: 0 }
   })
+
+  const channelResponse = await api.get<ChannelResponse>("/channels")
+  const channel = channelResponse
 
   // Transform API data to match VideoCard component props
   const userVideos = videosResponse.videos.map((video) => ({
@@ -30,8 +34,8 @@ export default async function ProfilePage() {
     thumbnail: video.thumbnail_url || "https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=500&h=281&fit=crop",
     title: video.title,
     channel: {
-      name: user.name ?? "Your Channel",
-      avatar: user.image ?? `https://api.dicebear.com/9.x/thumbs/svg?seed=${user.email}&randomizeIds=true`,
+      name: channel.name,
+      avatar: channel.owner.picture,
     },
     timestamp: moment(video.processed_at * 1000).fromNow(),
     duration: moment.utc(video.total_duration * 1000).format('mm:ss'),
@@ -42,43 +46,40 @@ export default async function ProfilePage() {
     <div className="w-full">
       {/* Channel Header */}
       <div className="relative">
-        {/* Profile Info */}
+        {/* Channel Info */}
         <div className="px-4 sm:px-6 lg:px-8 pb-4">
           <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
             {/* Avatar */}
             <Avatar className="h-24 w-24 sm:h-32 sm:w-32 border-4 border-background">
               <AvatarImage
-                src={
-                  user.image ??
-                  `https://api.dicebear.com/9.x/thumbs/svg?seed=${user.email}&randomizeIds=true`
-                }
-                alt={user.name ?? "User"}
+                src={channel.owner.picture}
+                alt={channel.name}
               />
               <AvatarFallback className="text-2xl sm:text-4xl">
-                {user.name?.[0]?.toUpperCase() ?? "U"}
+                {channel.name?.[0]?.toUpperCase() ?? "U"}
               </AvatarFallback>
             </Avatar>
 
             {/* Channel Info */}
             <div className="flex-1 flex flex-col justify-end gap-2">
               <div>
-                <h1 className="text-2xl sm:text-3xl font-bold">{user.name}</h1>
+                <h1 className="text-2xl sm:text-3xl font-bold">{channel.name}</h1>
                 <div className="flex flex-wrap gap-2 text-sm text-muted-foreground mt-1">
-                  <span>@{user.email?.split("@")[0]}</span>
+                  <span>@{channel.handle}</span>
                   <span>•</span>
-                  <span>{userVideos.length} videos</span>
+                  <span>{channel.total_videos} videos</span>
                   <span>•</span>
-                  <span>N/A views</span> {/* Placeholder - not implemented in API yet */}
+                  <span>{channel.total_views.toLocaleString()} views</span>
                 </div>
               </div>
               <p className="text-sm text-muted-foreground max-w-2xl">
-                Welcome to my channel! I create content about web development, programming tutorials, and tech reviews.
+                {channel.description || "Welcome to my channel! I create content about web development, programming tutorials, and tech reviews."}
               </p>
             </div>
 
             {/* Action Buttons */}
             <div className="flex gap-2 sm:self-end">
-              <Button variant="outline">Edit Profile</Button>
+              <Button variant="outline">Edit Channel</Button>
             </div>
           </div>
 
@@ -89,7 +90,7 @@ export default async function ProfilePage() {
                 <Video className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <div className="text-2xl font-bold">{userVideos.length}</div>
+                <div className="text-2xl font-bold">{channel.total_videos}</div>
                 <div className="text-xs text-muted-foreground">Videos</div>
               </div>
             </div>
@@ -98,7 +99,7 @@ export default async function ProfilePage() {
                 <Eye className="h-5 w-5 text-blue-500" />
               </div>
               <div>
-                <div className="text-2xl font-bold">N/A</div> {/* Placeholder - not implemented in API yet */}
+                <div className="text-2xl font-bold">{channel.total_views.toLocaleString()}</div>
                 <div className="text-xs text-muted-foreground">Total Views</div>
               </div>
             </div>
@@ -107,7 +108,7 @@ export default async function ProfilePage() {
                 <Users className="h-5 w-5 text-green-500" />
               </div>
               <div>
-                <div className="text-2xl font-bold">N/A</div> {/* Placeholder - not implemented in API yet */}
+                <div className="text-2xl font-bold">{channel.subscriber_count.toLocaleString()}</div>
                 <div className="text-xs text-muted-foreground">Subscribers</div>
               </div>
             </div>
@@ -116,7 +117,7 @@ export default async function ProfilePage() {
                 <Calendar className="h-5 w-5 text-purple-500" />
               </div>
               <div>
-                <div className="text-2xl font-bold">N/A</div> {/* Placeholder - not implemented in API yet */}
+                <div className="text-2xl font-bold">{moment(channel.created_at).format('MMM YYYY')}</div>
                 <div className="text-xs text-muted-foreground">Joined</div>
               </div>
             </div>
@@ -145,8 +146,8 @@ export default async function ProfilePage() {
           <TabsContent value="videos" className="mt-6">
             <UserVideoList
               initialVideos={userVideos}
-              userName={user.name ?? "Your Channel"}
-              userAvatar={user.image ?? `https://api.dicebear.com/9.x/thumbs/svg?seed=${user.email}&randomizeIds=true`}
+              userName={channel.name}
+              userAvatar={channel.owner.picture}
             />
           </TabsContent>
 
@@ -155,8 +156,7 @@ export default async function ProfilePage() {
               <div>
                 <h3 className="text-lg font-semibold mb-2">Description</h3>
                 <p className="text-muted-foreground">
-                  Welcome to my channel! I create content about web development, programming tutorials,
-                  and tech reviews. Subscribe to stay updated with the latest videos.
+                  {channel.description || "Welcome to my channel! I create content about web development, programming tutorials, and tech reviews. Subscribe to stay updated with the latest videos."}
                 </p>
               </div>
 
@@ -169,11 +169,11 @@ export default async function ProfilePage() {
                   </div>
                   <div className="flex gap-2">
                     <span className="text-muted-foreground">Joined:</span>
-                    <span>N/A</span> {/* Placeholder - not implemented in API yet */}
+                    <span>{moment(channel.created_at).format('MMMM D, YYYY')}</span>
                   </div>
                   <div className="flex gap-2">
                     <span className="text-muted-foreground">Total views:</span>
-                    <span>N/A</span> {/* Placeholder - not implemented in API yet */}
+                    <span>{channel.total_views.toLocaleString()}</span>
                   </div>
                 </div>
               </div>
@@ -182,11 +182,11 @@ export default async function ProfilePage() {
                 <h3 className="text-lg font-semibold mb-2">Stats</h3>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="border rounded-lg p-4">
-                    <div className="text-2xl font-bold">{userVideos.length}</div>
+                    <div className="text-2xl font-bold">{channel.total_videos}</div>
                     <div className="text-sm text-muted-foreground">Total Videos</div>
                   </div>
                   <div className="border rounded-lg p-4">
-                    <div className="text-2xl font-bold">N/A</div> {/* Placeholder - not implemented in API yet */}
+                    <div className="text-2xl font-bold">{channel.subscriber_count.toLocaleString()}</div>
                     <div className="text-sm text-muted-foreground">Subscribers</div>
                   </div>
                 </div>

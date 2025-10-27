@@ -7,6 +7,8 @@
     - [Channel](#com-sweetloveinyourheart-srl-user-Channel)
     - [GetChannelByHandleRequest](#com-sweetloveinyourheart-srl-user-GetChannelByHandleRequest)
     - [GetChannelByHandleResponse](#com-sweetloveinyourheart-srl-user-GetChannelByHandleResponse)
+    - [GetChannelByUserRequest](#com-sweetloveinyourheart-srl-user-GetChannelByUserRequest)
+    - [GetChannelByUserResponse](#com-sweetloveinyourheart-srl-user-GetChannelByUserResponse)
     - [GetUserByIDRequest](#com-sweetloveinyourheart-srl-user-GetUserByIDRequest)
     - [GetUserByIDResponse](#com-sweetloveinyourheart-srl-user-GetUserByIDResponse)
     - [UpsertOAuthUserRequest](#com-sweetloveinyourheart-srl-user-UpsertOAuthUserRequest)
@@ -69,6 +71,37 @@
 <a name="com-sweetloveinyourheart-srl-user-GetChannelByHandleResponse"></a>
 
 ### GetChannelByHandleResponse
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| channel | [Channel](#com-sweetloveinyourheart-srl-user-Channel) |  |  |
+| owner | [User](#com-sweetloveinyourheart-srl-user-User) |  |  |
+
+
+
+
+
+
+<a name="com-sweetloveinyourheart-srl-user-GetChannelByUserRequest"></a>
+
+### GetChannelByUserRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| user_id | [string](#string) |  |  |
+
+
+
+
+
+
+<a name="com-sweetloveinyourheart-srl-user-GetChannelByUserResponse"></a>
+
+### GetChannelByUserResponse
 
 
 
@@ -182,6 +215,7 @@ The UserService manages user profiles and linked OAuth identities.
 | ----------- | ------------ | ------------- | ------------|
 | UpsertOAuthUser | [UpsertOAuthUserRequest](#com-sweetloveinyourheart-srl-user-UpsertOAuthUserRequest) | [UpsertOAuthUserResponse](#com-sweetloveinyourheart-srl-user-UpsertOAuthUserResponse) | Called by AuthService after verifying an OAuth provider token. |
 | GetUserByID | [GetUserByIDRequest](#com-sweetloveinyourheart-srl-user-GetUserByIDRequest) | [GetUserByIDResponse](#com-sweetloveinyourheart-srl-user-GetUserByIDResponse) | Fetch user info by ID (used internally by other services). |
+| GetChannelByUser | [GetChannelByUserRequest](#com-sweetloveinyourheart-srl-user-GetChannelByUserRequest) | [GetChannelByUserResponse](#com-sweetloveinyourheart-srl-user-GetChannelByUserResponse) | Fetch channel info by user. |
 | GetChannelByHandle | [GetChannelByHandleRequest](#com-sweetloveinyourheart-srl-user-GetChannelByHandleRequest) | [GetChannelByHandleResponse](#com-sweetloveinyourheart-srl-user-GetChannelByHandleResponse) | Fetch channel info by handle (e.g., @username). |
 
  

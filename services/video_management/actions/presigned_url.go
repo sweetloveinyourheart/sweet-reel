@@ -26,6 +26,11 @@ func (a *actions) PresignedUrl(ctx context.Context, request *connect.Request[pro
 		return nil, grpc.InvalidArgumentError(errors.Errorf("uploader id is not recognized, id: ", request.Msg.GetUploaderId()))
 	}
 
+	channelID := uuid.FromStringOrNil(request.Msg.GetChannelId())
+	if channelID == uuid.Nil {
+		return nil, grpc.InvalidArgumentError(errors.Errorf("channel id is not recognized, id: ", request.Msg.GetChannelId()))
+	}
+
 	filename, ext := s3.ExtractFilenameAndExt(request.Msg.GetFileName())
 	if stringsutil.IsBlank(ext) || stringsutil.IsBlank(filename) {
 		return nil, grpc.InvalidArgumentError(errors.New("cannot extract the filename or extension"))
@@ -41,6 +46,7 @@ func (a *actions) PresignedUrl(ctx context.Context, request *connect.Request[pro
 		Title:       request.Msg.GetTitle(),
 		Description: description,
 		UploaderID:  uploaderID,
+		ChannelID:   channelID,
 		Status:      models.VideoStatusProcessing,
 	}
 

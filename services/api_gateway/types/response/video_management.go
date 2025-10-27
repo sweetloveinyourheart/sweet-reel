@@ -14,6 +14,6 @@ type UserVideoResponse struct {
 	ProcessedAt   int64  `json:"processed_at"`
 }
 
-type GetUserVideosResponse struct {
+type GetChannelVideosResponse struct {
 	Videos []UserVideoResponse `json:"videos"`
 }

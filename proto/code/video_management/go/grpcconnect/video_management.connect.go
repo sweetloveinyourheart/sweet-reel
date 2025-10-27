@@ -36,16 +36,16 @@ const (
 	// VideoManagementPresignedUrlProcedure is the fully-qualified name of the VideoManagement's
 	// PresignedUrl RPC.
 	VideoManagementPresignedUrlProcedure = "/com.sweetloveinyourheart.srl.videomanagement.dataproviders.VideoManagement/PresignedUrl"
-	// VideoManagementGetUserVideosProcedure is the fully-qualified name of the VideoManagement's
-	// GetUserVideos RPC.
-	VideoManagementGetUserVideosProcedure = "/com.sweetloveinyourheart.srl.videomanagement.dataproviders.VideoManagement/GetUserVideos"
+	// VideoManagementGetChannelVideosProcedure is the fully-qualified name of the VideoManagement's
+	// GetChannelVideos RPC.
+	VideoManagementGetChannelVideosProcedure = "/com.sweetloveinyourheart.srl.videomanagement.dataproviders.VideoManagement/GetChannelVideos"
 )
 
 // VideoManagementClient is a client for the
 // com.sweetloveinyourheart.srl.videomanagement.dataproviders.VideoManagement service.
 type VideoManagementClient interface {
 	PresignedUrl(context.Context, *connect.Request[_go.PresignedUrlRequest]) (*connect.Response[_go.PresignedUrlResponse], error)
-	GetUserVideos(context.Context, *connect.Request[_go.GetUserVideosRequest]) (*connect.Response[_go.GetUserVideosResponse], error)
+	GetChannelVideos(context.Context, *connect.Request[_go.GetChannelVideosRequest]) (*connect.Response[_go.GetChannelVideosResponse], error)
 }
 
 // NewVideoManagementClient constructs a client for the
@@ -66,10 +66,10 @@ func NewVideoManagementClient(httpClient connect.HTTPClient, baseURL string, opt
 			connect.WithSchema(videoManagementMethods.ByName("PresignedUrl")),
 			connect.WithClientOptions(opts...),
 		),
-		getUserVideos: connect.NewClient[_go.GetUserVideosRequest, _go.GetUserVideosResponse](
+		getChannelVideos: connect.NewClient[_go.GetChannelVideosRequest, _go.GetChannelVideosResponse](
 			httpClient,
-			baseURL+VideoManagementGetUserVideosProcedure,
-			connect.WithSchema(videoManagementMethods.ByName("GetUserVideos")),
+			baseURL+VideoManagementGetChannelVideosProcedure,
+			connect.WithSchema(videoManagementMethods.ByName("GetChannelVideos")),
 			connect.WithClientOptions(opts...),
 		),
 	}
@@ -77,8 +77,8 @@ func NewVideoManagementClient(httpClient connect.HTTPClient, baseURL string, opt
 
 // videoManagementClient implements VideoManagementClient.
 type videoManagementClient struct {
-	presignedUrl  *connect.Client[_go.PresignedUrlRequest, _go.PresignedUrlResponse]
-	getUserVideos *connect.Client[_go.GetUserVideosRequest, _go.GetUserVideosResponse]
+	presignedUrl     *connect.Client[_go.PresignedUrlRequest, _go.PresignedUrlResponse]
+	getChannelVideos *connect.Client[_go.GetChannelVideosRequest, _go.GetChannelVideosResponse]
 }
 
 // PresignedUrl calls
@@ -87,17 +87,17 @@ func (c *videoManagementClient) PresignedUrl(ctx context.Context, req *connect.R
 	return c.presignedUrl.CallUnary(ctx, req)
 }
 
-// GetUserVideos calls
-// com.sweetloveinyourheart.srl.videomanagement.dataproviders.VideoManagement.GetUserVideos.
-func (c *videoManagementClient) GetUserVideos(ctx context.Context, req *connect.Request[_go.GetUserVideosRequest]) (*connect.Response[_go.GetUserVideosResponse], error) {
-	return c.getUserVideos.CallUnary(ctx, req)
+// GetChannelVideos calls
+// com.sweetloveinyourheart.srl.videomanagement.dataproviders.VideoManagement.GetChannelVideos.
+func (c *videoManagementClient) GetChannelVideos(ctx context.Context, req *connect.Request[_go.GetChannelVideosRequest]) (*connect.Response[_go.GetChannelVideosResponse], error) {
+	return c.getChannelVideos.CallUnary(ctx, req)
 }
 
 // VideoManagementHandler is an implementation of the
 // com.sweetloveinyourheart.srl.videomanagement.dataproviders.VideoManagement service.
 type VideoManagementHandler interface {
 	PresignedUrl(context.Context, *connect.Request[_go.PresignedUrlRequest]) (*connect.Response[_go.PresignedUrlResponse], error)
-	GetUserVideos(context.Context, *connect.Request[_go.GetUserVideosRequest]) (*connect.Response[_go.GetUserVideosResponse], error)
+	GetChannelVideos(context.Context, *connect.Request[_go.GetChannelVideosRequest]) (*connect.Response[_go.GetChannelVideosResponse], error)
 }
 
 // NewVideoManagementHandler builds an HTTP handler from the service implementation. It returns the
@@ -113,18 +113,18 @@ func NewVideoManagementHandler(svc VideoManagementHandler, opts ...connect.Handl
 		connect.WithSchema(videoManagementMethods.ByName("PresignedUrl")),
 		connect.WithHandlerOptions(opts...),
 	)
-	videoManagementGetUserVideosHandler := connect.NewUnaryHandler(
-		VideoManagementGetUserVideosProcedure,
-		svc.GetUserVideos,
-		connect.WithSchema(videoManagementMethods.ByName("GetUserVideos")),
+	videoManagementGetChannelVideosHandler := connect.NewUnaryHandler(
+		VideoManagementGetChannelVideosProcedure,
+		svc.GetChannelVideos,
+		connect.WithSchema(videoManagementMethods.ByName("GetChannelVideos")),
 		connect.WithHandlerOptions(opts...),
 	)
 	return "/com.sweetloveinyourheart.srl.videomanagement.dataproviders.VideoManagement/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case VideoManagementPresignedUrlProcedure:
 			videoManagementPresignedUrlHandler.ServeHTTP(w, r)
-		case VideoManagementGetUserVideosProcedure:
-			videoManagementGetUserVideosHandler.ServeHTTP(w, r)
+		case VideoManagementGetChannelVideosProcedure:
+			videoManagementGetChannelVideosHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -138,6 +138,6 @@ func (UnimplementedVideoManagementHandler) PresignedUrl(context.Context, *connec
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("com.sweetloveinyourheart.srl.videomanagement.dataproviders.VideoManagement.PresignedUrl is not implemented"))
 }
 
-func (UnimplementedVideoManagementHandler) GetUserVideos(context.Context, *connect.Request[_go.GetUserVideosRequest]) (*connect.Response[_go.GetUserVideosResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("com.sweetloveinyourheart.srl.videomanagement.dataproviders.VideoManagement.GetUserVideos is not implemented"))
+func (UnimplementedVideoManagementHandler) GetChannelVideos(context.Context, *connect.Request[_go.GetChannelVideosRequest]) (*connect.Response[_go.GetChannelVideosResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("com.sweetloveinyourheart.srl.videomanagement.dataproviders.VideoManagement.GetChannelVideos is not implemented"))
 }
