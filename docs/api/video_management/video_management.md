@@ -7,8 +7,13 @@
     - [ChannelVideo](#com-sweetloveinyourheart-srl-videomanagement-dataproviders-ChannelVideo)
     - [GetChannelVideosRequest](#com-sweetloveinyourheart-srl-videomanagement-dataproviders-GetChannelVideosRequest)
     - [GetChannelVideosResponse](#com-sweetloveinyourheart-srl-videomanagement-dataproviders-GetChannelVideosResponse)
+    - [GetVideoMetadataByIdRequest](#com-sweetloveinyourheart-srl-videomanagement-dataproviders-GetVideoMetadataByIdRequest)
+    - [GetVideoMetadataByIdResponse](#com-sweetloveinyourheart-srl-videomanagement-dataproviders-GetVideoMetadataByIdResponse)
     - [PresignedUrlRequest](#com-sweetloveinyourheart-srl-videomanagement-dataproviders-PresignedUrlRequest)
     - [PresignedUrlResponse](#com-sweetloveinyourheart-srl-videomanagement-dataproviders-PresignedUrlResponse)
+    - [ServePlaylistRequest](#com-sweetloveinyourheart-srl-videomanagement-dataproviders-ServePlaylistRequest)
+    - [ServePlaylistResponse](#com-sweetloveinyourheart-srl-videomanagement-dataproviders-ServePlaylistResponse)
+    - [ServePlaylistVariant](#com-sweetloveinyourheart-srl-videomanagement-dataproviders-ServePlaylistVariant)
   
     - [VideoManagement](#com-sweetloveinyourheart-srl-videomanagement-dataproviders-VideoManagement)
   
@@ -75,6 +80,42 @@
 
 
 
+<a name="com-sweetloveinyourheart-srl-videomanagement-dataproviders-GetVideoMetadataByIdRequest"></a>
+
+### GetVideoMetadataByIdRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| video_id | [string](#string) |  |  |
+
+
+
+
+
+
+<a name="com-sweetloveinyourheart-srl-videomanagement-dataproviders-GetVideoMetadataByIdResponse"></a>
+
+### GetVideoMetadataByIdResponse
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| video_id | [string](#string) |  |  |
+| channel_id | [string](#string) |  |  |
+| video_title | [string](#string) |  |  |
+| video_description | [string](#string) |  |  |
+| total_view | [int64](#int64) |  |  |
+| available_qualities | [string](#string) | repeated |  |
+| processed_at | [int64](#int64) |  |  |
+
+
+
+
+
+
 <a name="com-sweetloveinyourheart-srl-videomanagement-dataproviders-PresignedUrlRequest"></a>
 
 ### PresignedUrlRequest
@@ -110,6 +151,54 @@
 
 
 
+
+<a name="com-sweetloveinyourheart-srl-videomanagement-dataproviders-ServePlaylistRequest"></a>
+
+### ServePlaylistRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| video_id | [string](#string) |  |  |
+
+
+
+
+
+
+<a name="com-sweetloveinyourheart-srl-videomanagement-dataproviders-ServePlaylistResponse"></a>
+
+### ServePlaylistResponse
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| playlist_url | [string](#string) |  |  |
+| variants | [ServePlaylistVariant](#com-sweetloveinyourheart-srl-videomanagement-dataproviders-ServePlaylistVariant) | repeated |  |
+
+
+
+
+
+
+<a name="com-sweetloveinyourheart-srl-videomanagement-dataproviders-ServePlaylistVariant"></a>
+
+### ServePlaylistVariant
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| quality | [string](#string) |  |  |
+| playlist_url | [string](#string) |  |  |
+| segment_urls | [string](#string) | repeated |  |
+
+
+
+
+
  
 
  
@@ -126,6 +215,8 @@
 | ----------- | ------------ | ------------- | ------------|
 | PresignedUrl | [PresignedUrlRequest](#com-sweetloveinyourheart-srl-videomanagement-dataproviders-PresignedUrlRequest) | [PresignedUrlResponse](#com-sweetloveinyourheart-srl-videomanagement-dataproviders-PresignedUrlResponse) |  |
 | GetChannelVideos | [GetChannelVideosRequest](#com-sweetloveinyourheart-srl-videomanagement-dataproviders-GetChannelVideosRequest) | [GetChannelVideosResponse](#com-sweetloveinyourheart-srl-videomanagement-dataproviders-GetChannelVideosResponse) |  |
+| GetVideoMetadataById | [GetVideoMetadataByIdRequest](#com-sweetloveinyourheart-srl-videomanagement-dataproviders-GetVideoMetadataByIdRequest) | [GetVideoMetadataByIdResponse](#com-sweetloveinyourheart-srl-videomanagement-dataproviders-GetVideoMetadataByIdResponse) |  |
+| ServePlaylist | [ServePlaylistRequest](#com-sweetloveinyourheart-srl-videomanagement-dataproviders-ServePlaylistRequest) | [ServePlaylistResponse](#com-sweetloveinyourheart-srl-videomanagement-dataproviders-ServePlaylistResponse) |  |
 
  
 

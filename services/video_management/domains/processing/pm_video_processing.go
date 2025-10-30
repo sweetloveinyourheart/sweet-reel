@@ -170,6 +170,7 @@ func (vsp *VideoProcessManager) HandleVideoProcessedMessage(ctx context.Context,
 			ID:        uuid.Must(uuid.NewV7()),
 			VideoID:   msg.VideoID,
 			ObjectKey: msg.ObjectKey,
+			Quality:   data.Quality,
 			SizeBytes: &data.SizeBytes,
 		}
 		err = vsp.videoAggregateRepo.CreateVideoManifest(ctx, newVideoManifest)

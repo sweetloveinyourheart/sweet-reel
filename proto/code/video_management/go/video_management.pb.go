@@ -345,6 +345,298 @@ func (x *GetChannelVideosResponse) GetVideos() []*ChannelVideo {
 	return nil
 }
 
+type GetVideoMetadataByIdRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	VideoId       string                 `protobuf:"bytes,1,opt,name=video_id,json=videoId,proto3" json:"video_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetVideoMetadataByIdRequest) Reset() {
+	*x = GetVideoMetadataByIdRequest{}
+	mi := &file_video_management_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetVideoMetadataByIdRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetVideoMetadataByIdRequest) ProtoMessage() {}
+
+func (x *GetVideoMetadataByIdRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_video_management_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetVideoMetadataByIdRequest.ProtoReflect.Descriptor instead.
+func (*GetVideoMetadataByIdRequest) Descriptor() ([]byte, []int) {
+	return file_video_management_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *GetVideoMetadataByIdRequest) GetVideoId() string {
+	if x != nil {
+		return x.VideoId
+	}
+	return ""
+}
+
+type GetVideoMetadataByIdResponse struct {
+	state              protoimpl.MessageState `protogen:"open.v1"`
+	VideoId            string                 `protobuf:"bytes,1,opt,name=video_id,json=videoId,proto3" json:"video_id,omitempty"`
+	ChannelId          string                 `protobuf:"bytes,2,opt,name=channel_id,json=channelId,proto3" json:"channel_id,omitempty"`
+	VideoTitle         string                 `protobuf:"bytes,3,opt,name=video_title,json=videoTitle,proto3" json:"video_title,omitempty"`
+	VideoDescription   string                 `protobuf:"bytes,4,opt,name=video_description,json=videoDescription,proto3" json:"video_description,omitempty"`
+	TotalView          int64                  `protobuf:"varint,5,opt,name=total_view,json=totalView,proto3" json:"total_view,omitempty"`
+	AvailableQualities []string               `protobuf:"bytes,6,rep,name=available_qualities,json=availableQualities,proto3" json:"available_qualities,omitempty"`
+	ProcessedAt        int64                  `protobuf:"varint,7,opt,name=processed_at,json=processedAt,proto3" json:"processed_at,omitempty"`
+	unknownFields      protoimpl.UnknownFields
+	sizeCache          protoimpl.SizeCache
+}
+
+func (x *GetVideoMetadataByIdResponse) Reset() {
+	*x = GetVideoMetadataByIdResponse{}
+	mi := &file_video_management_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetVideoMetadataByIdResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetVideoMetadataByIdResponse) ProtoMessage() {}
+
+func (x *GetVideoMetadataByIdResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_video_management_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetVideoMetadataByIdResponse.ProtoReflect.Descriptor instead.
+func (*GetVideoMetadataByIdResponse) Descriptor() ([]byte, []int) {
+	return file_video_management_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *GetVideoMetadataByIdResponse) GetVideoId() string {
+	if x != nil {
+		return x.VideoId
+	}
+	return ""
+}
+
+func (x *GetVideoMetadataByIdResponse) GetChannelId() string {
+	if x != nil {
+		return x.ChannelId
+	}
+	return ""
+}
+
+func (x *GetVideoMetadataByIdResponse) GetVideoTitle() string {
+	if x != nil {
+		return x.VideoTitle
+	}
+	return ""
+}
+
+func (x *GetVideoMetadataByIdResponse) GetVideoDescription() string {
+	if x != nil {
+		return x.VideoDescription
+	}
+	return ""
+}
+
+func (x *GetVideoMetadataByIdResponse) GetTotalView() int64 {
+	if x != nil {
+		return x.TotalView
+	}
+	return 0
+}
+
+func (x *GetVideoMetadataByIdResponse) GetAvailableQualities() []string {
+	if x != nil {
+		return x.AvailableQualities
+	}
+	return nil
+}
+
+func (x *GetVideoMetadataByIdResponse) GetProcessedAt() int64 {
+	if x != nil {
+		return x.ProcessedAt
+	}
+	return 0
+}
+
+type ServePlaylistRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	VideoId       string                 `protobuf:"bytes,1,opt,name=video_id,json=videoId,proto3" json:"video_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ServePlaylistRequest) Reset() {
+	*x = ServePlaylistRequest{}
+	mi := &file_video_management_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ServePlaylistRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ServePlaylistRequest) ProtoMessage() {}
+
+func (x *ServePlaylistRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_video_management_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ServePlaylistRequest.ProtoReflect.Descriptor instead.
+func (*ServePlaylistRequest) Descriptor() ([]byte, []int) {
+	return file_video_management_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *ServePlaylistRequest) GetVideoId() string {
+	if x != nil {
+		return x.VideoId
+	}
+	return ""
+}
+
+type ServePlaylistVariant struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Quality       string                 `protobuf:"bytes,1,opt,name=quality,proto3" json:"quality,omitempty"`
+	PlaylistUrl   string                 `protobuf:"bytes,2,opt,name=playlist_url,json=playlistUrl,proto3" json:"playlist_url,omitempty"`
+	SegmentUrls   []string               `protobuf:"bytes,3,rep,name=segment_urls,json=segmentUrls,proto3" json:"segment_urls,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ServePlaylistVariant) Reset() {
+	*x = ServePlaylistVariant{}
+	mi := &file_video_management_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ServePlaylistVariant) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ServePlaylistVariant) ProtoMessage() {}
+
+func (x *ServePlaylistVariant) ProtoReflect() protoreflect.Message {
+	mi := &file_video_management_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ServePlaylistVariant.ProtoReflect.Descriptor instead.
+func (*ServePlaylistVariant) Descriptor() ([]byte, []int) {
+	return file_video_management_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *ServePlaylistVariant) GetQuality() string {
+	if x != nil {
+		return x.Quality
+	}
+	return ""
+}
+
+func (x *ServePlaylistVariant) GetPlaylistUrl() string {
+	if x != nil {
+		return x.PlaylistUrl
+	}
+	return ""
+}
+
+func (x *ServePlaylistVariant) GetSegmentUrls() []string {
+	if x != nil {
+		return x.SegmentUrls
+	}
+	return nil
+}
+
+type ServePlaylistResponse struct {
+	state         protoimpl.MessageState  `protogen:"open.v1"`
+	PlaylistUrl   string                  `protobuf:"bytes,1,opt,name=playlist_url,json=playlistUrl,proto3" json:"playlist_url,omitempty"`
+	Variants      []*ServePlaylistVariant `protobuf:"bytes,2,rep,name=variants,proto3" json:"variants,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ServePlaylistResponse) Reset() {
+	*x = ServePlaylistResponse{}
+	mi := &file_video_management_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ServePlaylistResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ServePlaylistResponse) ProtoMessage() {}
+
+func (x *ServePlaylistResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_video_management_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ServePlaylistResponse.ProtoReflect.Descriptor instead.
+func (*ServePlaylistResponse) Descriptor() ([]byte, []int) {
+	return file_video_management_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *ServePlaylistResponse) GetPlaylistUrl() string {
+	if x != nil {
+		return x.PlaylistUrl
+	}
+	return ""
+}
+
+func (x *ServePlaylistResponse) GetVariants() []*ServePlaylistVariant {
+	if x != nil {
+		return x.Variants
+	}
+	return nil
+}
+
 var File_video_management_proto protoreflect.FileDescriptor
 
 const file_video_management_proto_rawDesc = "" +
@@ -378,10 +670,34 @@ const file_video_management_proto_rawDesc = "" +
 	"total_view\x18\x05 \x01(\x03R\ttotalView\x12!\n" +
 	"\fprocessed_at\x18\x06 \x01(\x03R\vprocessedAt\"|\n" +
 	"\x18GetChannelVideosResponse\x12`\n" +
-	"\x06videos\x18\x01 \x03(\v2H.com.sweetloveinyourheart.srl.videomanagement.dataproviders.ChannelVideoR\x06videos2\x85\x03\n" +
+	"\x06videos\x18\x01 \x03(\v2H.com.sweetloveinyourheart.srl.videomanagement.dataproviders.ChannelVideoR\x06videos\"8\n" +
+	"\x1bGetVideoMetadataByIdRequest\x12\x19\n" +
+	"\bvideo_id\x18\x01 \x01(\tR\avideoId\"\x99\x02\n" +
+	"\x1cGetVideoMetadataByIdResponse\x12\x19\n" +
+	"\bvideo_id\x18\x01 \x01(\tR\avideoId\x12\x1d\n" +
+	"\n" +
+	"channel_id\x18\x02 \x01(\tR\tchannelId\x12\x1f\n" +
+	"\vvideo_title\x18\x03 \x01(\tR\n" +
+	"videoTitle\x12+\n" +
+	"\x11video_description\x18\x04 \x01(\tR\x10videoDescription\x12\x1d\n" +
+	"\n" +
+	"total_view\x18\x05 \x01(\x03R\ttotalView\x12/\n" +
+	"\x13available_qualities\x18\x06 \x03(\tR\x12availableQualities\x12!\n" +
+	"\fprocessed_at\x18\a \x01(\x03R\vprocessedAt\"1\n" +
+	"\x14ServePlaylistRequest\x12\x19\n" +
+	"\bvideo_id\x18\x01 \x01(\tR\avideoId\"v\n" +
+	"\x14ServePlaylistVariant\x12\x18\n" +
+	"\aquality\x18\x01 \x01(\tR\aquality\x12!\n" +
+	"\fplaylist_url\x18\x02 \x01(\tR\vplaylistUrl\x12!\n" +
+	"\fsegment_urls\x18\x03 \x03(\tR\vsegmentUrls\"\xa8\x01\n" +
+	"\x15ServePlaylistResponse\x12!\n" +
+	"\fplaylist_url\x18\x01 \x01(\tR\vplaylistUrl\x12l\n" +
+	"\bvariants\x18\x02 \x03(\v2P.com.sweetloveinyourheart.srl.videomanagement.dataproviders.ServePlaylistVariantR\bvariants2\x88\x06\n" +
 	"\x0fVideoManagement\x12\xb1\x01\n" +
 	"\fPresignedUrl\x12O.com.sweetloveinyourheart.srl.videomanagement.dataproviders.PresignedUrlRequest\x1aP.com.sweetloveinyourheart.srl.videomanagement.dataproviders.PresignedUrlResponse\x12\xbd\x01\n" +
-	"\x10GetChannelVideos\x12S.com.sweetloveinyourheart.srl.videomanagement.dataproviders.GetChannelVideosRequest\x1aT.com.sweetloveinyourheart.srl.videomanagement.dataproviders.GetChannelVideosResponseBPZNgithub.com/sweetloveinyourheart/sweet-reel/proto/code/video_management/go;grpcb\x06proto3"
+	"\x10GetChannelVideos\x12S.com.sweetloveinyourheart.srl.videomanagement.dataproviders.GetChannelVideosRequest\x1aT.com.sweetloveinyourheart.srl.videomanagement.dataproviders.GetChannelVideosResponse\x12\xc9\x01\n" +
+	"\x14GetVideoMetadataById\x12W.com.sweetloveinyourheart.srl.videomanagement.dataproviders.GetVideoMetadataByIdRequest\x1aX.com.sweetloveinyourheart.srl.videomanagement.dataproviders.GetVideoMetadataByIdResponse\x12\xb4\x01\n" +
+	"\rServePlaylist\x12P.com.sweetloveinyourheart.srl.videomanagement.dataproviders.ServePlaylistRequest\x1aQ.com.sweetloveinyourheart.srl.videomanagement.dataproviders.ServePlaylistResponseBPZNgithub.com/sweetloveinyourheart/sweet-reel/proto/code/video_management/go;grpcb\x06proto3"
 
 var (
 	file_video_management_proto_rawDescOnce sync.Once
@@ -395,25 +711,35 @@ func file_video_management_proto_rawDescGZIP() []byte {
 	return file_video_management_proto_rawDescData
 }
 
-var file_video_management_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
+var file_video_management_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
 var file_video_management_proto_goTypes = []any{
-	(*PresignedUrlRequest)(nil),      // 0: com.sweetloveinyourheart.srl.videomanagement.dataproviders.PresignedUrlRequest
-	(*PresignedUrlResponse)(nil),     // 1: com.sweetloveinyourheart.srl.videomanagement.dataproviders.PresignedUrlResponse
-	(*GetChannelVideosRequest)(nil),  // 2: com.sweetloveinyourheart.srl.videomanagement.dataproviders.GetChannelVideosRequest
-	(*ChannelVideo)(nil),             // 3: com.sweetloveinyourheart.srl.videomanagement.dataproviders.ChannelVideo
-	(*GetChannelVideosResponse)(nil), // 4: com.sweetloveinyourheart.srl.videomanagement.dataproviders.GetChannelVideosResponse
+	(*PresignedUrlRequest)(nil),          // 0: com.sweetloveinyourheart.srl.videomanagement.dataproviders.PresignedUrlRequest
+	(*PresignedUrlResponse)(nil),         // 1: com.sweetloveinyourheart.srl.videomanagement.dataproviders.PresignedUrlResponse
+	(*GetChannelVideosRequest)(nil),      // 2: com.sweetloveinyourheart.srl.videomanagement.dataproviders.GetChannelVideosRequest
+	(*ChannelVideo)(nil),                 // 3: com.sweetloveinyourheart.srl.videomanagement.dataproviders.ChannelVideo
+	(*GetChannelVideosResponse)(nil),     // 4: com.sweetloveinyourheart.srl.videomanagement.dataproviders.GetChannelVideosResponse
+	(*GetVideoMetadataByIdRequest)(nil),  // 5: com.sweetloveinyourheart.srl.videomanagement.dataproviders.GetVideoMetadataByIdRequest
+	(*GetVideoMetadataByIdResponse)(nil), // 6: com.sweetloveinyourheart.srl.videomanagement.dataproviders.GetVideoMetadataByIdResponse
+	(*ServePlaylistRequest)(nil),         // 7: com.sweetloveinyourheart.srl.videomanagement.dataproviders.ServePlaylistRequest
+	(*ServePlaylistVariant)(nil),         // 8: com.sweetloveinyourheart.srl.videomanagement.dataproviders.ServePlaylistVariant
+	(*ServePlaylistResponse)(nil),        // 9: com.sweetloveinyourheart.srl.videomanagement.dataproviders.ServePlaylistResponse
 }
 var file_video_management_proto_depIdxs = []int32{
 	3, // 0: com.sweetloveinyourheart.srl.videomanagement.dataproviders.GetChannelVideosResponse.videos:type_name -> com.sweetloveinyourheart.srl.videomanagement.dataproviders.ChannelVideo
-	0, // 1: com.sweetloveinyourheart.srl.videomanagement.dataproviders.VideoManagement.PresignedUrl:input_type -> com.sweetloveinyourheart.srl.videomanagement.dataproviders.PresignedUrlRequest
-	2, // 2: com.sweetloveinyourheart.srl.videomanagement.dataproviders.VideoManagement.GetChannelVideos:input_type -> com.sweetloveinyourheart.srl.videomanagement.dataproviders.GetChannelVideosRequest
-	1, // 3: com.sweetloveinyourheart.srl.videomanagement.dataproviders.VideoManagement.PresignedUrl:output_type -> com.sweetloveinyourheart.srl.videomanagement.dataproviders.PresignedUrlResponse
-	4, // 4: com.sweetloveinyourheart.srl.videomanagement.dataproviders.VideoManagement.GetChannelVideos:output_type -> com.sweetloveinyourheart.srl.videomanagement.dataproviders.GetChannelVideosResponse
-	3, // [3:5] is the sub-list for method output_type
-	1, // [1:3] is the sub-list for method input_type
-	1, // [1:1] is the sub-list for extension type_name
-	1, // [1:1] is the sub-list for extension extendee
-	0, // [0:1] is the sub-list for field type_name
+	8, // 1: com.sweetloveinyourheart.srl.videomanagement.dataproviders.ServePlaylistResponse.variants:type_name -> com.sweetloveinyourheart.srl.videomanagement.dataproviders.ServePlaylistVariant
+	0, // 2: com.sweetloveinyourheart.srl.videomanagement.dataproviders.VideoManagement.PresignedUrl:input_type -> com.sweetloveinyourheart.srl.videomanagement.dataproviders.PresignedUrlRequest
+	2, // 3: com.sweetloveinyourheart.srl.videomanagement.dataproviders.VideoManagement.GetChannelVideos:input_type -> com.sweetloveinyourheart.srl.videomanagement.dataproviders.GetChannelVideosRequest
+	5, // 4: com.sweetloveinyourheart.srl.videomanagement.dataproviders.VideoManagement.GetVideoMetadataById:input_type -> com.sweetloveinyourheart.srl.videomanagement.dataproviders.GetVideoMetadataByIdRequest
+	7, // 5: com.sweetloveinyourheart.srl.videomanagement.dataproviders.VideoManagement.ServePlaylist:input_type -> com.sweetloveinyourheart.srl.videomanagement.dataproviders.ServePlaylistRequest
+	1, // 6: com.sweetloveinyourheart.srl.videomanagement.dataproviders.VideoManagement.PresignedUrl:output_type -> com.sweetloveinyourheart.srl.videomanagement.dataproviders.PresignedUrlResponse
+	4, // 7: com.sweetloveinyourheart.srl.videomanagement.dataproviders.VideoManagement.GetChannelVideos:output_type -> com.sweetloveinyourheart.srl.videomanagement.dataproviders.GetChannelVideosResponse
+	6, // 8: com.sweetloveinyourheart.srl.videomanagement.dataproviders.VideoManagement.GetVideoMetadataById:output_type -> com.sweetloveinyourheart.srl.videomanagement.dataproviders.GetVideoMetadataByIdResponse
+	9, // 9: com.sweetloveinyourheart.srl.videomanagement.dataproviders.VideoManagement.ServePlaylist:output_type -> com.sweetloveinyourheart.srl.videomanagement.dataproviders.ServePlaylistResponse
+	6, // [6:10] is the sub-list for method output_type
+	2, // [2:6] is the sub-list for method input_type
+	2, // [2:2] is the sub-list for extension type_name
+	2, // [2:2] is the sub-list for extension extendee
+	0, // [0:2] is the sub-list for field type_name
 }
 
 func init() { file_video_management_proto_init() }
@@ -427,7 +753,7 @@ func file_video_management_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_video_management_proto_rawDesc), len(file_video_management_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   5,
+			NumMessages:   10,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

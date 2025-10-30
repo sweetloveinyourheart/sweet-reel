@@ -39,6 +39,12 @@ const (
 	// VideoManagementGetChannelVideosProcedure is the fully-qualified name of the VideoManagement's
 	// GetChannelVideos RPC.
 	VideoManagementGetChannelVideosProcedure = "/com.sweetloveinyourheart.srl.videomanagement.dataproviders.VideoManagement/GetChannelVideos"
+	// VideoManagementGetVideoMetadataByIdProcedure is the fully-qualified name of the VideoManagement's
+	// GetVideoMetadataById RPC.
+	VideoManagementGetVideoMetadataByIdProcedure = "/com.sweetloveinyourheart.srl.videomanagement.dataproviders.VideoManagement/GetVideoMetadataById"
+	// VideoManagementServePlaylistProcedure is the fully-qualified name of the VideoManagement's
+	// ServePlaylist RPC.
+	VideoManagementServePlaylistProcedure = "/com.sweetloveinyourheart.srl.videomanagement.dataproviders.VideoManagement/ServePlaylist"
 )
 
 // VideoManagementClient is a client for the
@@ -46,6 +52,8 @@ const (
 type VideoManagementClient interface {
 	PresignedUrl(context.Context, *connect.Request[_go.PresignedUrlRequest]) (*connect.Response[_go.PresignedUrlResponse], error)
 	GetChannelVideos(context.Context, *connect.Request[_go.GetChannelVideosRequest]) (*connect.Response[_go.GetChannelVideosResponse], error)
+	GetVideoMetadataById(context.Context, *connect.Request[_go.GetVideoMetadataByIdRequest]) (*connect.Response[_go.GetVideoMetadataByIdResponse], error)
+	ServePlaylist(context.Context, *connect.Request[_go.ServePlaylistRequest]) (*connect.Response[_go.ServePlaylistResponse], error)
 }
 
 // NewVideoManagementClient constructs a client for the
@@ -72,13 +80,27 @@ func NewVideoManagementClient(httpClient connect.HTTPClient, baseURL string, opt
 			connect.WithSchema(videoManagementMethods.ByName("GetChannelVideos")),
 			connect.WithClientOptions(opts...),
 		),
+		getVideoMetadataById: connect.NewClient[_go.GetVideoMetadataByIdRequest, _go.GetVideoMetadataByIdResponse](
+			httpClient,
+			baseURL+VideoManagementGetVideoMetadataByIdProcedure,
+			connect.WithSchema(videoManagementMethods.ByName("GetVideoMetadataById")),
+			connect.WithClientOptions(opts...),
+		),
+		servePlaylist: connect.NewClient[_go.ServePlaylistRequest, _go.ServePlaylistResponse](
+			httpClient,
+			baseURL+VideoManagementServePlaylistProcedure,
+			connect.WithSchema(videoManagementMethods.ByName("ServePlaylist")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
 // videoManagementClient implements VideoManagementClient.
 type videoManagementClient struct {
-	presignedUrl     *connect.Client[_go.PresignedUrlRequest, _go.PresignedUrlResponse]
-	getChannelVideos *connect.Client[_go.GetChannelVideosRequest, _go.GetChannelVideosResponse]
+	presignedUrl         *connect.Client[_go.PresignedUrlRequest, _go.PresignedUrlResponse]
+	getChannelVideos     *connect.Client[_go.GetChannelVideosRequest, _go.GetChannelVideosResponse]
+	getVideoMetadataById *connect.Client[_go.GetVideoMetadataByIdRequest, _go.GetVideoMetadataByIdResponse]
+	servePlaylist        *connect.Client[_go.ServePlaylistRequest, _go.ServePlaylistResponse]
 }
 
 // PresignedUrl calls
@@ -93,11 +115,25 @@ func (c *videoManagementClient) GetChannelVideos(ctx context.Context, req *conne
 	return c.getChannelVideos.CallUnary(ctx, req)
 }
 
+// GetVideoMetadataById calls
+// com.sweetloveinyourheart.srl.videomanagement.dataproviders.VideoManagement.GetVideoMetadataById.
+func (c *videoManagementClient) GetVideoMetadataById(ctx context.Context, req *connect.Request[_go.GetVideoMetadataByIdRequest]) (*connect.Response[_go.GetVideoMetadataByIdResponse], error) {
+	return c.getVideoMetadataById.CallUnary(ctx, req)
+}
+
+// ServePlaylist calls
+// com.sweetloveinyourheart.srl.videomanagement.dataproviders.VideoManagement.ServePlaylist.
+func (c *videoManagementClient) ServePlaylist(ctx context.Context, req *connect.Request[_go.ServePlaylistRequest]) (*connect.Response[_go.ServePlaylistResponse], error) {
+	return c.servePlaylist.CallUnary(ctx, req)
+}
+
 // VideoManagementHandler is an implementation of the
 // com.sweetloveinyourheart.srl.videomanagement.dataproviders.VideoManagement service.
 type VideoManagementHandler interface {
 	PresignedUrl(context.Context, *connect.Request[_go.PresignedUrlRequest]) (*connect.Response[_go.PresignedUrlResponse], error)
 	GetChannelVideos(context.Context, *connect.Request[_go.GetChannelVideosRequest]) (*connect.Response[_go.GetChannelVideosResponse], error)
+	GetVideoMetadataById(context.Context, *connect.Request[_go.GetVideoMetadataByIdRequest]) (*connect.Response[_go.GetVideoMetadataByIdResponse], error)
+	ServePlaylist(context.Context, *connect.Request[_go.ServePlaylistRequest]) (*connect.Response[_go.ServePlaylistResponse], error)
 }
 
 // NewVideoManagementHandler builds an HTTP handler from the service implementation. It returns the
@@ -119,12 +155,28 @@ func NewVideoManagementHandler(svc VideoManagementHandler, opts ...connect.Handl
 		connect.WithSchema(videoManagementMethods.ByName("GetChannelVideos")),
 		connect.WithHandlerOptions(opts...),
 	)
+	videoManagementGetVideoMetadataByIdHandler := connect.NewUnaryHandler(
+		VideoManagementGetVideoMetadataByIdProcedure,
+		svc.GetVideoMetadataById,
+		connect.WithSchema(videoManagementMethods.ByName("GetVideoMetadataById")),
+		connect.WithHandlerOptions(opts...),
+	)
+	videoManagementServePlaylistHandler := connect.NewUnaryHandler(
+		VideoManagementServePlaylistProcedure,
+		svc.ServePlaylist,
+		connect.WithSchema(videoManagementMethods.ByName("ServePlaylist")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/com.sweetloveinyourheart.srl.videomanagement.dataproviders.VideoManagement/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case VideoManagementPresignedUrlProcedure:
 			videoManagementPresignedUrlHandler.ServeHTTP(w, r)
 		case VideoManagementGetChannelVideosProcedure:
 			videoManagementGetChannelVideosHandler.ServeHTTP(w, r)
+		case VideoManagementGetVideoMetadataByIdProcedure:
+			videoManagementGetVideoMetadataByIdHandler.ServeHTTP(w, r)
+		case VideoManagementServePlaylistProcedure:
+			videoManagementServePlaylistHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -140,4 +192,12 @@ func (UnimplementedVideoManagementHandler) PresignedUrl(context.Context, *connec
 
 func (UnimplementedVideoManagementHandler) GetChannelVideos(context.Context, *connect.Request[_go.GetChannelVideosRequest]) (*connect.Response[_go.GetChannelVideosResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("com.sweetloveinyourheart.srl.videomanagement.dataproviders.VideoManagement.GetChannelVideos is not implemented"))
+}
+
+func (UnimplementedVideoManagementHandler) GetVideoMetadataById(context.Context, *connect.Request[_go.GetVideoMetadataByIdRequest]) (*connect.Response[_go.GetVideoMetadataByIdResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("com.sweetloveinyourheart.srl.videomanagement.dataproviders.VideoManagement.GetVideoMetadataById is not implemented"))
+}
+
+func (UnimplementedVideoManagementHandler) ServePlaylist(context.Context, *connect.Request[_go.ServePlaylistRequest]) (*connect.Response[_go.ServePlaylistResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("com.sweetloveinyourheart.srl.videomanagement.dataproviders.VideoManagement.ServePlaylist is not implemented"))
 }

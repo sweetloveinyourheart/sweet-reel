@@ -1,5 +1,6 @@
-import { auth, RefreshTokenError } from "auth"
-import { SessionProvider, signOut } from "next-auth/react"
+import { auth } from "auth"
+import { SessionProvider } from "next-auth/react"
+import SessionErrorHandler from "@/components/session-error-handler"
 
 export default async function SessionProviderWrapper({ children }: { children: React.ReactNode }) {
   const session = await auth()
@@ -11,13 +12,11 @@ export default async function SessionProviderWrapper({ children }: { children: R
     }
   }
 
-  if (session?.error == RefreshTokenError) {
-    signOut()
-  }
-
   return (
     <SessionProvider basePath={"/auth"} session={session}>
-      {children}
+      <SessionErrorHandler error={session?.error}>
+        {children}
+      </SessionErrorHandler>
     </SessionProvider>
   )
 }

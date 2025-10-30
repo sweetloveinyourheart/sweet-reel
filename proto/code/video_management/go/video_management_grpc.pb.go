@@ -19,8 +19,10 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	VideoManagement_PresignedUrl_FullMethodName     = "/com.sweetloveinyourheart.srl.videomanagement.dataproviders.VideoManagement/PresignedUrl"
-	VideoManagement_GetChannelVideos_FullMethodName = "/com.sweetloveinyourheart.srl.videomanagement.dataproviders.VideoManagement/GetChannelVideos"
+	VideoManagement_PresignedUrl_FullMethodName         = "/com.sweetloveinyourheart.srl.videomanagement.dataproviders.VideoManagement/PresignedUrl"
+	VideoManagement_GetChannelVideos_FullMethodName     = "/com.sweetloveinyourheart.srl.videomanagement.dataproviders.VideoManagement/GetChannelVideos"
+	VideoManagement_GetVideoMetadataById_FullMethodName = "/com.sweetloveinyourheart.srl.videomanagement.dataproviders.VideoManagement/GetVideoMetadataById"
+	VideoManagement_ServePlaylist_FullMethodName        = "/com.sweetloveinyourheart.srl.videomanagement.dataproviders.VideoManagement/ServePlaylist"
 )
 
 // VideoManagementClient is the client API for VideoManagement service.
@@ -29,6 +31,8 @@ const (
 type VideoManagementClient interface {
 	PresignedUrl(ctx context.Context, in *PresignedUrlRequest, opts ...grpc.CallOption) (*PresignedUrlResponse, error)
 	GetChannelVideos(ctx context.Context, in *GetChannelVideosRequest, opts ...grpc.CallOption) (*GetChannelVideosResponse, error)
+	GetVideoMetadataById(ctx context.Context, in *GetVideoMetadataByIdRequest, opts ...grpc.CallOption) (*GetVideoMetadataByIdResponse, error)
+	ServePlaylist(ctx context.Context, in *ServePlaylistRequest, opts ...grpc.CallOption) (*ServePlaylistResponse, error)
 }
 
 type videoManagementClient struct {
@@ -59,12 +63,34 @@ func (c *videoManagementClient) GetChannelVideos(ctx context.Context, in *GetCha
 	return out, nil
 }
 
+func (c *videoManagementClient) GetVideoMetadataById(ctx context.Context, in *GetVideoMetadataByIdRequest, opts ...grpc.CallOption) (*GetVideoMetadataByIdResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetVideoMetadataByIdResponse)
+	err := c.cc.Invoke(ctx, VideoManagement_GetVideoMetadataById_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *videoManagementClient) ServePlaylist(ctx context.Context, in *ServePlaylistRequest, opts ...grpc.CallOption) (*ServePlaylistResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ServePlaylistResponse)
+	err := c.cc.Invoke(ctx, VideoManagement_ServePlaylist_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // VideoManagementServer is the server API for VideoManagement service.
 // All implementations should embed UnimplementedVideoManagementServer
 // for forward compatibility.
 type VideoManagementServer interface {
 	PresignedUrl(context.Context, *PresignedUrlRequest) (*PresignedUrlResponse, error)
 	GetChannelVideos(context.Context, *GetChannelVideosRequest) (*GetChannelVideosResponse, error)
+	GetVideoMetadataById(context.Context, *GetVideoMetadataByIdRequest) (*GetVideoMetadataByIdResponse, error)
+	ServePlaylist(context.Context, *ServePlaylistRequest) (*ServePlaylistResponse, error)
 }
 
 // UnimplementedVideoManagementServer should be embedded to have
@@ -79,6 +105,12 @@ func (UnimplementedVideoManagementServer) PresignedUrl(context.Context, *Presign
 }
 func (UnimplementedVideoManagementServer) GetChannelVideos(context.Context, *GetChannelVideosRequest) (*GetChannelVideosResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetChannelVideos not implemented")
+}
+func (UnimplementedVideoManagementServer) GetVideoMetadataById(context.Context, *GetVideoMetadataByIdRequest) (*GetVideoMetadataByIdResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetVideoMetadataById not implemented")
+}
+func (UnimplementedVideoManagementServer) ServePlaylist(context.Context, *ServePlaylistRequest) (*ServePlaylistResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ServePlaylist not implemented")
 }
 func (UnimplementedVideoManagementServer) testEmbeddedByValue() {}
 
@@ -136,6 +168,42 @@ func _VideoManagement_GetChannelVideos_Handler(srv interface{}, ctx context.Cont
 	return interceptor(ctx, in, info, handler)
 }
 
+func _VideoManagement_GetVideoMetadataById_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetVideoMetadataByIdRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(VideoManagementServer).GetVideoMetadataById(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: VideoManagement_GetVideoMetadataById_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(VideoManagementServer).GetVideoMetadataById(ctx, req.(*GetVideoMetadataByIdRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _VideoManagement_ServePlaylist_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ServePlaylistRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(VideoManagementServer).ServePlaylist(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: VideoManagement_ServePlaylist_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(VideoManagementServer).ServePlaylist(ctx, req.(*ServePlaylistRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // VideoManagement_ServiceDesc is the grpc.ServiceDesc for VideoManagement service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -150,6 +218,14 @@ var VideoManagement_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetChannelVideos",
 			Handler:    _VideoManagement_GetChannelVideos_Handler,
+		},
+		{
+			MethodName: "GetVideoMetadataById",
+			Handler:    _VideoManagement_GetVideoMetadataById_Handler,
+		},
+		{
+			MethodName: "ServePlaylist",
+			Handler:    _VideoManagement_ServePlaylist_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

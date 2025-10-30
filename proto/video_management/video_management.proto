@@ -7,6 +7,8 @@ package com.sweetloveinyourheart.srl.videomanagement.dataproviders;
 service VideoManagement {
     rpc PresignedUrl(PresignedUrlRequest) returns(PresignedUrlResponse);
     rpc GetChannelVideos(GetChannelVideosRequest) returns(GetChannelVideosResponse);
+    rpc GetVideoMetadataById(GetVideoMetadataByIdRequest) returns(GetVideoMetadataByIdResponse);
+    rpc ServePlaylist(ServePlaylistRequest) returns (ServePlaylistResponse);
 }
 
 message PresignedUrlRequest {
@@ -40,4 +42,33 @@ message ChannelVideo {
 
 message GetChannelVideosResponse {
     repeated ChannelVideo videos = 1;
+}
+
+message GetVideoMetadataByIdRequest {
+    string video_id = 1;
+}
+
+message GetVideoMetadataByIdResponse {
+    string video_id = 1;
+    string channel_id = 2;
+    string video_title = 3;
+    string video_description = 4;
+    int64 total_view = 5;
+    repeated string available_qualities = 6;
+    int64 processed_at = 7;
+}
+
+message ServePlaylistRequest {
+    string video_id = 1;
+}
+
+message ServePlaylistVariant {
+    string quality = 1;
+    string playlist_url = 2;
+    repeated string segment_urls = 3;
+}
+
+message ServePlaylistResponse {
+    string playlist_url = 1;
+    repeated ServePlaylistVariant variants = 2;
 }
