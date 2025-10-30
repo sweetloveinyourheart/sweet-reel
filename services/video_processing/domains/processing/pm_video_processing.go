@@ -381,9 +381,6 @@ func (vsp *VideoProcessManager) uploadProcessedSegmentFiles(ctx context.Context,
 		switch ext {
 		case ExtM3U8:
 			quality := vsp.extractQualityFromPath(relPath)
-			if quality == "." {
-				quality = QualityDefault
-			}
 
 			manifestData := messages.VideoProcessedManifestData{
 				Quality:   quality,
@@ -481,7 +478,11 @@ func (vsp *VideoProcessManager) extractQualityFromPath(relPath string) string {
 	// Extract the quality directory from the path
 	parts := filepath.SplitList(relPath)
 	if len(parts) > 0 {
-		return filepath.Dir(relPath)
+		dir := filepath.Dir(relPath)
+		if dir == "." {
+			return QualityDefault
+		}
+		return dir
 	}
 
 	return QualityUnknown
