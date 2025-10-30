@@ -39,6 +39,14 @@ func (m *MockVideoRepository) GetVideosByUploaderID(ctx context.Context, uploade
 	return args.Get(0).([]*models.Video), args.Error(1)
 }
 
+func (m *MockVideoRepository) GetVideosByChannelID(ctx context.Context, channelID uuid.UUID, limit, offset int) ([]*models.Video, error) {
+	args := m.Called(ctx, channelID, limit, offset)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]*models.Video), args.Error(1)
+}
+
 func (m *MockVideoRepository) UpdateVideo(ctx context.Context, video *models.Video) error {
 	args := m.Called(ctx, video)
 	return args.Error(0)
@@ -173,6 +181,43 @@ func (m *MockVideoRepository) GetVideoCount(ctx context.Context) (int64, error) 
 func (m *MockVideoRepository) GetVideoCountByUploaderID(ctx context.Context, uploaderID uuid.UUID) (int64, error) {
 	args := m.Called(ctx, uploaderID)
 	return args.Get(0).(int64), args.Error(1)
+}
+
+func (m *MockVideoRepository) GetVideoCountByChannelID(ctx context.Context, channelID uuid.UUID) (int64, error) {
+	args := m.Called(ctx, channelID)
+	return args.Get(0).(int64), args.Error(1)
+}
+
+// Video view operations
+
+func (m *MockVideoRepository) CreateVideoView(ctx context.Context, view *models.VideoView) error {
+	args := m.Called(ctx, view)
+	return args.Error(0)
+}
+
+func (m *MockVideoRepository) IncrementVideoViewCount(ctx context.Context, videoID uuid.UUID) error {
+	args := m.Called(ctx, videoID)
+	return args.Error(0)
+}
+
+func (m *MockVideoRepository) GetVideoViewCount(ctx context.Context, videoID uuid.UUID) (int64, error) {
+	args := m.Called(ctx, videoID)
+	return args.Get(0).(int64), args.Error(1)
+}
+
+func (m *MockVideoRepository) GetTotalViewsByUploaderID(ctx context.Context, uploaderID uuid.UUID) (int64, error) {
+	args := m.Called(ctx, uploaderID)
+	return args.Get(0).(int64), args.Error(1)
+}
+
+func (m *MockVideoRepository) GetTotalViewsByChannelID(ctx context.Context, channelID uuid.UUID) (int64, error) {
+	args := m.Called(ctx, channelID)
+	return args.Get(0).(int64), args.Error(1)
+}
+
+func (m *MockVideoRepository) HasViewedRecently(ctx context.Context, videoID uuid.UUID, viewerID *uuid.UUID, ipAddress *string, duration time.Duration) (bool, error) {
+	args := m.Called(ctx, videoID, viewerID, ipAddress, duration)
+	return args.Get(0).(bool), args.Error(1)
 }
 
 // Ensure MockVideoRepository implements IVideoRepository

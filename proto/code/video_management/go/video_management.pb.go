@@ -27,6 +27,7 @@ type PresignedUrlRequest struct {
 	Description   string                 `protobuf:"bytes,2,opt,name=description,proto3" json:"description,omitempty"`
 	FileName      string                 `protobuf:"bytes,3,opt,name=file_name,json=fileName,proto3" json:"file_name,omitempty"`
 	UploaderId    string                 `protobuf:"bytes,4,opt,name=uploader_id,json=uploaderId,proto3" json:"uploader_id,omitempty"`
+	ChannelId     string                 `protobuf:"bytes,5,opt,name=channel_id,json=channelId,proto3" json:"channel_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -85,6 +86,13 @@ func (x *PresignedUrlRequest) GetFileName() string {
 func (x *PresignedUrlRequest) GetUploaderId() string {
 	if x != nil {
 		return x.UploaderId
+	}
+	return ""
+}
+
+func (x *PresignedUrlRequest) GetChannelId() string {
+	if x != nil {
+		return x.ChannelId
 	}
 	return ""
 }
@@ -149,29 +157,29 @@ func (x *PresignedUrlResponse) GetExpiresIn() int32 {
 	return 0
 }
 
-type GetUserVideosRequest struct {
+type GetChannelVideosRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	ChannelId     string                 `protobuf:"bytes,1,opt,name=channel_id,json=channelId,proto3" json:"channel_id,omitempty"`
 	Limit         int32                  `protobuf:"varint,2,opt,name=limit,proto3" json:"limit,omitempty"`
 	Offset        int32                  `protobuf:"varint,3,opt,name=offset,proto3" json:"offset,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *GetUserVideosRequest) Reset() {
-	*x = GetUserVideosRequest{}
+func (x *GetChannelVideosRequest) Reset() {
+	*x = GetChannelVideosRequest{}
 	mi := &file_video_management_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *GetUserVideosRequest) String() string {
+func (x *GetChannelVideosRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*GetUserVideosRequest) ProtoMessage() {}
+func (*GetChannelVideosRequest) ProtoMessage() {}
 
-func (x *GetUserVideosRequest) ProtoReflect() protoreflect.Message {
+func (x *GetChannelVideosRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_video_management_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -183,57 +191,58 @@ func (x *GetUserVideosRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use GetUserVideosRequest.ProtoReflect.Descriptor instead.
-func (*GetUserVideosRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use GetChannelVideosRequest.ProtoReflect.Descriptor instead.
+func (*GetChannelVideosRequest) Descriptor() ([]byte, []int) {
 	return file_video_management_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *GetUserVideosRequest) GetUserId() string {
+func (x *GetChannelVideosRequest) GetChannelId() string {
 	if x != nil {
-		return x.UserId
+		return x.ChannelId
 	}
 	return ""
 }
 
-func (x *GetUserVideosRequest) GetLimit() int32 {
+func (x *GetChannelVideosRequest) GetLimit() int32 {
 	if x != nil {
 		return x.Limit
 	}
 	return 0
 }
 
-func (x *GetUserVideosRequest) GetOffset() int32 {
+func (x *GetChannelVideosRequest) GetOffset() int32 {
 	if x != nil {
 		return x.Offset
 	}
 	return 0
 }
 
-type UserVideo struct {
+type ChannelVideo struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	VideoId       string                 `protobuf:"bytes,1,opt,name=video_id,json=videoId,proto3" json:"video_id,omitempty"`
 	VideoTitle    string                 `protobuf:"bytes,2,opt,name=video_title,json=videoTitle,proto3" json:"video_title,omitempty"`
 	ThumbnailUrl  string                 `protobuf:"bytes,3,opt,name=thumbnail_url,json=thumbnailUrl,proto3" json:"thumbnail_url,omitempty"`
 	TotalDuration int32                  `protobuf:"varint,4,opt,name=total_duration,json=totalDuration,proto3" json:"total_duration,omitempty"`
-	ProcessedAt   int64                  `protobuf:"varint,5,opt,name=processed_at,json=processedAt,proto3" json:"processed_at,omitempty"`
+	TotalView     int64                  `protobuf:"varint,5,opt,name=total_view,json=totalView,proto3" json:"total_view,omitempty"`
+	ProcessedAt   int64                  `protobuf:"varint,6,opt,name=processed_at,json=processedAt,proto3" json:"processed_at,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *UserVideo) Reset() {
-	*x = UserVideo{}
+func (x *ChannelVideo) Reset() {
+	*x = ChannelVideo{}
 	mi := &file_video_management_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *UserVideo) String() string {
+func (x *ChannelVideo) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*UserVideo) ProtoMessage() {}
+func (*ChannelVideo) ProtoMessage() {}
 
-func (x *UserVideo) ProtoReflect() protoreflect.Message {
+func (x *ChannelVideo) ProtoReflect() protoreflect.Message {
 	mi := &file_video_management_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -245,67 +254,74 @@ func (x *UserVideo) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use UserVideo.ProtoReflect.Descriptor instead.
-func (*UserVideo) Descriptor() ([]byte, []int) {
+// Deprecated: Use ChannelVideo.ProtoReflect.Descriptor instead.
+func (*ChannelVideo) Descriptor() ([]byte, []int) {
 	return file_video_management_proto_rawDescGZIP(), []int{3}
 }
 
-func (x *UserVideo) GetVideoId() string {
+func (x *ChannelVideo) GetVideoId() string {
 	if x != nil {
 		return x.VideoId
 	}
 	return ""
 }
 
-func (x *UserVideo) GetVideoTitle() string {
+func (x *ChannelVideo) GetVideoTitle() string {
 	if x != nil {
 		return x.VideoTitle
 	}
 	return ""
 }
 
-func (x *UserVideo) GetThumbnailUrl() string {
+func (x *ChannelVideo) GetThumbnailUrl() string {
 	if x != nil {
 		return x.ThumbnailUrl
 	}
 	return ""
 }
 
-func (x *UserVideo) GetTotalDuration() int32 {
+func (x *ChannelVideo) GetTotalDuration() int32 {
 	if x != nil {
 		return x.TotalDuration
 	}
 	return 0
 }
 
-func (x *UserVideo) GetProcessedAt() int64 {
+func (x *ChannelVideo) GetTotalView() int64 {
+	if x != nil {
+		return x.TotalView
+	}
+	return 0
+}
+
+func (x *ChannelVideo) GetProcessedAt() int64 {
 	if x != nil {
 		return x.ProcessedAt
 	}
 	return 0
 }
 
-type GetUserVideosResponse struct {
+type GetChannelVideosResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Videos        []*UserVideo           `protobuf:"bytes,1,rep,name=videos,proto3" json:"videos,omitempty"`
+	Videos        []*ChannelVideo        `protobuf:"bytes,1,rep,name=videos,proto3" json:"videos,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *GetUserVideosResponse) Reset() {
-	*x = GetUserVideosResponse{}
+func (x *GetChannelVideosResponse) Reset() {
+	*x = GetChannelVideosResponse{}
 	mi := &file_video_management_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *GetUserVideosResponse) String() string {
+func (x *GetChannelVideosResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*GetUserVideosResponse) ProtoMessage() {}
+func (*GetChannelVideosResponse) ProtoMessage() {}
 
-func (x *GetUserVideosResponse) ProtoReflect() protoreflect.Message {
+func (x *GetChannelVideosResponse) ProtoReflect() protoreflect.Message {
 	mi := &file_video_management_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -317,12 +333,12 @@ func (x *GetUserVideosResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use GetUserVideosResponse.ProtoReflect.Descriptor instead.
-func (*GetUserVideosResponse) Descriptor() ([]byte, []int) {
+// Deprecated: Use GetChannelVideosResponse.ProtoReflect.Descriptor instead.
+func (*GetChannelVideosResponse) Descriptor() ([]byte, []int) {
 	return file_video_management_proto_rawDescGZIP(), []int{4}
 }
 
-func (x *GetUserVideosResponse) GetVideos() []*UserVideo {
+func (x *GetChannelVideosResponse) GetVideos() []*ChannelVideo {
 	if x != nil {
 		return x.Videos
 	}
@@ -333,34 +349,39 @@ var File_video_management_proto protoreflect.FileDescriptor
 
 const file_video_management_proto_rawDesc = "" +
 	"\n" +
-	"\x16video_management.proto\x12:com.sweetloveinyourheart.srl.videomanagement.dataproviders\"\x8b\x01\n" +
+	"\x16video_management.proto\x12:com.sweetloveinyourheart.srl.videomanagement.dataproviders\"\xaa\x01\n" +
 	"\x13PresignedUrlRequest\x12\x14\n" +
 	"\x05title\x18\x01 \x01(\tR\x05title\x12 \n" +
 	"\vdescription\x18\x02 \x01(\tR\vdescription\x12\x1b\n" +
 	"\tfile_name\x18\x03 \x01(\tR\bfileName\x12\x1f\n" +
 	"\vuploader_id\x18\x04 \x01(\tR\n" +
-	"uploaderId\"u\n" +
+	"uploaderId\x12\x1d\n" +
+	"\n" +
+	"channel_id\x18\x05 \x01(\tR\tchannelId\"u\n" +
 	"\x14PresignedUrlResponse\x12\x19\n" +
 	"\bvideo_id\x18\x01 \x01(\tR\avideoId\x12#\n" +
 	"\rpresigned_url\x18\x02 \x01(\tR\fpresignedUrl\x12\x1d\n" +
 	"\n" +
-	"expires_in\x18\x03 \x01(\x05R\texpiresIn\"]\n" +
-	"\x14GetUserVideosRequest\x12\x17\n" +
-	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x14\n" +
+	"expires_in\x18\x03 \x01(\x05R\texpiresIn\"f\n" +
+	"\x17GetChannelVideosRequest\x12\x1d\n" +
+	"\n" +
+	"channel_id\x18\x01 \x01(\tR\tchannelId\x12\x14\n" +
 	"\x05limit\x18\x02 \x01(\x05R\x05limit\x12\x16\n" +
-	"\x06offset\x18\x03 \x01(\x05R\x06offset\"\xb6\x01\n" +
-	"\tUserVideo\x12\x19\n" +
+	"\x06offset\x18\x03 \x01(\x05R\x06offset\"\xd8\x01\n" +
+	"\fChannelVideo\x12\x19\n" +
 	"\bvideo_id\x18\x01 \x01(\tR\avideoId\x12\x1f\n" +
 	"\vvideo_title\x18\x02 \x01(\tR\n" +
 	"videoTitle\x12#\n" +
 	"\rthumbnail_url\x18\x03 \x01(\tR\fthumbnailUrl\x12%\n" +
-	"\x0etotal_duration\x18\x04 \x01(\x05R\rtotalDuration\x12!\n" +
-	"\fprocessed_at\x18\x05 \x01(\x03R\vprocessedAt\"v\n" +
-	"\x15GetUserVideosResponse\x12]\n" +
-	"\x06videos\x18\x01 \x03(\v2E.com.sweetloveinyourheart.srl.videomanagement.dataproviders.UserVideoR\x06videos2\xfc\x02\n" +
+	"\x0etotal_duration\x18\x04 \x01(\x05R\rtotalDuration\x12\x1d\n" +
+	"\n" +
+	"total_view\x18\x05 \x01(\x03R\ttotalView\x12!\n" +
+	"\fprocessed_at\x18\x06 \x01(\x03R\vprocessedAt\"|\n" +
+	"\x18GetChannelVideosResponse\x12`\n" +
+	"\x06videos\x18\x01 \x03(\v2H.com.sweetloveinyourheart.srl.videomanagement.dataproviders.ChannelVideoR\x06videos2\x85\x03\n" +
 	"\x0fVideoManagement\x12\xb1\x01\n" +
-	"\fPresignedUrl\x12O.com.sweetloveinyourheart.srl.videomanagement.dataproviders.PresignedUrlRequest\x1aP.com.sweetloveinyourheart.srl.videomanagement.dataproviders.PresignedUrlResponse\x12\xb4\x01\n" +
-	"\rGetUserVideos\x12P.com.sweetloveinyourheart.srl.videomanagement.dataproviders.GetUserVideosRequest\x1aQ.com.sweetloveinyourheart.srl.videomanagement.dataproviders.GetUserVideosResponseBPZNgithub.com/sweetloveinyourheart/sweet-reel/proto/code/video_management/go;grpcb\x06proto3"
+	"\fPresignedUrl\x12O.com.sweetloveinyourheart.srl.videomanagement.dataproviders.PresignedUrlRequest\x1aP.com.sweetloveinyourheart.srl.videomanagement.dataproviders.PresignedUrlResponse\x12\xbd\x01\n" +
+	"\x10GetChannelVideos\x12S.com.sweetloveinyourheart.srl.videomanagement.dataproviders.GetChannelVideosRequest\x1aT.com.sweetloveinyourheart.srl.videomanagement.dataproviders.GetChannelVideosResponseBPZNgithub.com/sweetloveinyourheart/sweet-reel/proto/code/video_management/go;grpcb\x06proto3"
 
 var (
 	file_video_management_proto_rawDescOnce sync.Once
@@ -376,18 +397,18 @@ func file_video_management_proto_rawDescGZIP() []byte {
 
 var file_video_management_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
 var file_video_management_proto_goTypes = []any{
-	(*PresignedUrlRequest)(nil),   // 0: com.sweetloveinyourheart.srl.videomanagement.dataproviders.PresignedUrlRequest
-	(*PresignedUrlResponse)(nil),  // 1: com.sweetloveinyourheart.srl.videomanagement.dataproviders.PresignedUrlResponse
-	(*GetUserVideosRequest)(nil),  // 2: com.sweetloveinyourheart.srl.videomanagement.dataproviders.GetUserVideosRequest
-	(*UserVideo)(nil),             // 3: com.sweetloveinyourheart.srl.videomanagement.dataproviders.UserVideo
-	(*GetUserVideosResponse)(nil), // 4: com.sweetloveinyourheart.srl.videomanagement.dataproviders.GetUserVideosResponse
+	(*PresignedUrlRequest)(nil),      // 0: com.sweetloveinyourheart.srl.videomanagement.dataproviders.PresignedUrlRequest
+	(*PresignedUrlResponse)(nil),     // 1: com.sweetloveinyourheart.srl.videomanagement.dataproviders.PresignedUrlResponse
+	(*GetChannelVideosRequest)(nil),  // 2: com.sweetloveinyourheart.srl.videomanagement.dataproviders.GetChannelVideosRequest
+	(*ChannelVideo)(nil),             // 3: com.sweetloveinyourheart.srl.videomanagement.dataproviders.ChannelVideo
+	(*GetChannelVideosResponse)(nil), // 4: com.sweetloveinyourheart.srl.videomanagement.dataproviders.GetChannelVideosResponse
 }
 var file_video_management_proto_depIdxs = []int32{
-	3, // 0: com.sweetloveinyourheart.srl.videomanagement.dataproviders.GetUserVideosResponse.videos:type_name -> com.sweetloveinyourheart.srl.videomanagement.dataproviders.UserVideo
+	3, // 0: com.sweetloveinyourheart.srl.videomanagement.dataproviders.GetChannelVideosResponse.videos:type_name -> com.sweetloveinyourheart.srl.videomanagement.dataproviders.ChannelVideo
 	0, // 1: com.sweetloveinyourheart.srl.videomanagement.dataproviders.VideoManagement.PresignedUrl:input_type -> com.sweetloveinyourheart.srl.videomanagement.dataproviders.PresignedUrlRequest
-	2, // 2: com.sweetloveinyourheart.srl.videomanagement.dataproviders.VideoManagement.GetUserVideos:input_type -> com.sweetloveinyourheart.srl.videomanagement.dataproviders.GetUserVideosRequest
+	2, // 2: com.sweetloveinyourheart.srl.videomanagement.dataproviders.VideoManagement.GetChannelVideos:input_type -> com.sweetloveinyourheart.srl.videomanagement.dataproviders.GetChannelVideosRequest
 	1, // 3: com.sweetloveinyourheart.srl.videomanagement.dataproviders.VideoManagement.PresignedUrl:output_type -> com.sweetloveinyourheart.srl.videomanagement.dataproviders.PresignedUrlResponse
-	4, // 4: com.sweetloveinyourheart.srl.videomanagement.dataproviders.VideoManagement.GetUserVideos:output_type -> com.sweetloveinyourheart.srl.videomanagement.dataproviders.GetUserVideosResponse
+	4, // 4: com.sweetloveinyourheart.srl.videomanagement.dataproviders.VideoManagement.GetChannelVideos:output_type -> com.sweetloveinyourheart.srl.videomanagement.dataproviders.GetChannelVideosResponse
 	3, // [3:5] is the sub-list for method output_type
 	1, // [1:3] is the sub-list for method input_type
 	1, // [1:1] is the sub-list for extension type_name

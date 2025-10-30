@@ -15,6 +15,7 @@ type IVideoRepository interface {
 	CreateVideo(ctx context.Context, video *models.Video) error
 	GetVideoByID(ctx context.Context, id uuid.UUID) (*models.Video, error)
 	GetVideosByUploaderID(ctx context.Context, uploaderID uuid.UUID, limit, offset int) ([]*models.Video, error)
+	GetVideosByChannelID(ctx context.Context, channelID uuid.UUID, limit, offset int) ([]*models.Video, error)
 	UpdateVideo(ctx context.Context, video *models.Video) error
 	UpdateVideoProgress(ctx context.Context, id uuid.UUID, objectKey string, status models.VideoStatus, processedAt time.Time) error
 	DeleteVideo(ctx context.Context, id uuid.UUID) error
@@ -45,6 +46,15 @@ type IVideoRepository interface {
 	// Aggregate operations
 	GetVideoCount(ctx context.Context) (int64, error)
 	GetVideoCountByUploaderID(ctx context.Context, uploaderID uuid.UUID) (int64, error)
+	GetVideoCountByChannelID(ctx context.Context, channelID uuid.UUID) (int64, error)
+
+	// Video view operations
+	CreateVideoView(ctx context.Context, view *models.VideoView) error
+	IncrementVideoViewCount(ctx context.Context, videoID uuid.UUID) error
+	GetVideoViewCount(ctx context.Context, videoID uuid.UUID) (int64, error)
+	GetTotalViewsByUploaderID(ctx context.Context, uploaderID uuid.UUID) (int64, error)
+	GetTotalViewsByChannelID(ctx context.Context, channelID uuid.UUID) (int64, error)
+	HasViewedRecently(ctx context.Context, videoID uuid.UUID, viewerID *uuid.UUID, ipAddress *string, duration time.Duration) (bool, error)
 }
 
 type VideoRepository struct {
@@ -61,23 +71,23 @@ func NewVideoRepository(tx db.DbOrTx) IVideoRepository {
 
 func (r *VideoRepository) CreateVideo(ctx context.Context, video *models.Video) error {
 	query := `
-		INSERT INTO videos (id, uploader_id, title, description, status, object_key, processed_at)
-		VALUES ($1, $2, $3, $4, $5, $6, $7)`
+		INSERT INTO videos (id, uploader_id, channel_id, title, description, status, object_key, processed_at)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`
 
 	_, err := r.Tx.Exec(ctx, query,
-		video.ID, video.UploaderID, video.Title, video.Description, video.Status,
+		video.ID, video.UploaderID, video.ChannelID, video.Title, video.Description, video.Status,
 		video.ObjectKey, video.ProcessedAt)
 	return err
 }
 
 func (r *VideoRepository) GetVideoByID(ctx context.Context, id uuid.UUID) (*models.Video, error) {
 	query := `
-		SELECT id, uploader_id, title, description, status, object_key, processed_at, created_at, updated_at
+		SELECT id, uploader_id, channel_id, title, description, status, object_key, processed_at, created_at, updated_at
 		FROM videos WHERE id = $1`
 
 	video := &models.Video{}
 	err := r.Tx.QueryRow(ctx, query, id).Scan(
-		&video.ID, &video.UploaderID, &video.Title, &video.Description,
+		&video.ID, &video.UploaderID, &video.ChannelID, &video.Title, &video.Description,
 		&video.Status, &video.ObjectKey, &video.ProcessedAt,
 		&video.CreatedAt, &video.UpdatedAt)
 
@@ -89,7 +99,7 @@ func (r *VideoRepository) GetVideoByID(ctx context.Context, id uuid.UUID) (*mode
 
 func (r *VideoRepository) GetVideosByUploaderID(ctx context.Context, uploaderID uuid.UUID, limit, offset int) ([]*models.Video, error) {
 	query := `
-		SELECT id, uploader_id, title, description, status, object_key, processed_at, created_at, updated_at
+		SELECT id, uploader_id, channel_id, title, description, status, object_key, processed_at, created_at, updated_at
 		FROM videos WHERE uploader_id = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3`
 
 	rows, err := r.Tx.Query(ctx, query, uploaderID, limit, offset)
@@ -102,7 +112,33 @@ func (r *VideoRepository) GetVideosByUploaderID(ctx context.Context, uploaderID 
 	for rows.Next() {
 		video := &models.Video{}
 		err := rows.Scan(
-			&video.ID, &video.UploaderID, &video.Title, &video.Description,
+			&video.ID, &video.UploaderID, &video.ChannelID, &video.Title, &video.Description,
+			&video.Status, &video.ObjectKey, &video.ProcessedAt,
+			&video.CreatedAt, &video.UpdatedAt)
+		if err != nil {
+			return nil, err
+		}
+		videos = append(videos, video)
+	}
+	return videos, rows.Err()
+}
+
+func (r *VideoRepository) GetVideosByChannelID(ctx context.Context, channelID uuid.UUID, limit, offset int) ([]*models.Video, error) {
+	query := `
+		SELECT id, uploader_id, channel_id, title, description, status, object_key, processed_at, created_at, updated_at
+		FROM videos WHERE channel_id = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3`
+
+	rows, err := r.Tx.Query(ctx, query, channelID, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var videos []*models.Video
+	for rows.Next() {
+		video := &models.Video{}
+		err := rows.Scan(
+			&video.ID, &video.UploaderID, &video.ChannelID, &video.Title, &video.Description,
 			&video.Status, &video.ObjectKey, &video.ProcessedAt,
 			&video.CreatedAt, &video.UpdatedAt)
 		if err != nil {
@@ -115,12 +151,12 @@ func (r *VideoRepository) GetVideosByUploaderID(ctx context.Context, uploaderID 
 
 func (r *VideoRepository) UpdateVideo(ctx context.Context, video *models.Video) error {
 	query := `
-		UPDATE videos SET uploader_id = $2, title = $3, description = $4, status = $5, 
-		object_key = $6, processed_at = $7
+		UPDATE videos SET uploader_id = $2, channel_id = $3, title = $4, description = $5, status = $6, 
+		object_key = $7, processed_at = $8
 		WHERE id = $1`
 
 	_, err := r.Tx.Exec(ctx, query,
-		video.ID, video.UploaderID, video.Title, video.Description,
+		video.ID, video.UploaderID, video.ChannelID, video.Title, video.Description,
 		video.Status, video.ObjectKey, video.ProcessedAt)
 	return err
 }
@@ -139,7 +175,7 @@ func (r *VideoRepository) DeleteVideo(ctx context.Context, id uuid.UUID) error {
 
 func (r *VideoRepository) ListVideos(ctx context.Context, limit, offset int) ([]*models.Video, error) {
 	query := `
-		SELECT id, uploader_id, title, description, status, object_key, processed_at, created_at, updated_at
+		SELECT id, uploader_id, channel_id, title, description, status, object_key, processed_at, created_at, updated_at
 		FROM videos ORDER BY created_at DESC LIMIT $1 OFFSET $2`
 
 	rows, err := r.Tx.Query(ctx, query, limit, offset)
@@ -152,7 +188,7 @@ func (r *VideoRepository) ListVideos(ctx context.Context, limit, offset int) ([]
 	for rows.Next() {
 		video := &models.Video{}
 		err := rows.Scan(
-			&video.ID, &video.UploaderID, &video.Title, &video.Description,
+			&video.ID, &video.UploaderID, &video.ChannelID, &video.Title, &video.Description,
 			&video.Status, &video.ObjectKey, &video.ProcessedAt,
 			&video.CreatedAt, &video.UpdatedAt)
 		if err != nil {
@@ -376,4 +412,93 @@ func (r *VideoRepository) GetVideoCountByUploaderID(ctx context.Context, uploade
 	var count int64
 	err := r.Tx.QueryRow(ctx, query, uploaderID).Scan(&count)
 	return count, err
+}
+
+func (r *VideoRepository) GetVideoCountByChannelID(ctx context.Context, channelID uuid.UUID) (int64, error) {
+	query := `SELECT COUNT(*) FROM videos WHERE channel_id = $1`
+	var count int64
+	err := r.Tx.QueryRow(ctx, query, channelID).Scan(&count)
+	return count, err
+}
+
+// Video view operations
+
+func (r *VideoRepository) CreateVideoView(ctx context.Context, view *models.VideoView) error {
+	query := `
+		INSERT INTO video_views (id, video_id, viewer_id, viewed_at, watch_duration, ip_address, user_agent)
+		VALUES ($1, $2, $3, $4, $5, $6, $7)`
+
+	_, err := r.Tx.Exec(ctx, query,
+		view.ID, view.VideoID, view.ViewerID, view.ViewedAt,
+		view.WatchDuration, view.IPAddress, view.UserAgent)
+	return err
+}
+
+func (r *VideoRepository) IncrementVideoViewCount(ctx context.Context, videoID uuid.UUID) error {
+	query := `UPDATE videos SET view_count = view_count + 1, updated_at = NOW() WHERE id = $1`
+	_, err := r.Tx.Exec(ctx, query, videoID)
+	return err
+}
+
+func (r *VideoRepository) GetVideoViewCount(ctx context.Context, videoID uuid.UUID) (int64, error) {
+	query := `SELECT view_count FROM videos WHERE id = $1`
+
+	var count int64
+	err := r.Tx.QueryRow(ctx, query, videoID).Scan(&count)
+	if err != nil {
+		return 0, err
+	}
+	return count, nil
+}
+
+func (r *VideoRepository) GetTotalViewsByUploaderID(ctx context.Context, uploaderID uuid.UUID) (int64, error) {
+	query := `
+		SELECT COALESCE(SUM(view_count), 0)
+		FROM videos
+		WHERE uploader_id = $1`
+
+	var count int64
+	err := r.Tx.QueryRow(ctx, query, uploaderID).Scan(&count)
+	if err != nil {
+		return 0, err
+	}
+	return count, nil
+}
+
+func (r *VideoRepository) GetTotalViewsByChannelID(ctx context.Context, channelID uuid.UUID) (int64, error) {
+	query := `
+		SELECT COALESCE(SUM(view_count), 0)
+		FROM videos
+		WHERE channel_id = $1`
+
+	var count int64
+	err := r.Tx.QueryRow(ctx, query, channelID).Scan(&count)
+	if err != nil {
+		return 0, err
+	}
+	return count, nil
+}
+
+func (r *VideoRepository) HasViewedRecently(ctx context.Context, videoID uuid.UUID, viewerID *uuid.UUID, ipAddress *string, duration time.Duration) (bool, error) {
+	since := time.Now().Add(-duration)
+
+	var query string
+	var args []interface{}
+
+	if viewerID != nil {
+		query = `SELECT EXISTS(SELECT 1 FROM video_views WHERE video_id = $1 AND viewer_id = $2 AND viewed_at >= $3)`
+		args = []interface{}{videoID, viewerID, since}
+	} else if ipAddress != nil {
+		query = `SELECT EXISTS(SELECT 1 FROM video_views WHERE video_id = $1 AND ip_address = $2 AND viewed_at >= $3)`
+		args = []interface{}{videoID, ipAddress, since}
+	} else {
+		return false, nil
+	}
+
+	var exists bool
+	err := r.Tx.QueryRow(ctx, query, args...).Scan(&exists)
+	if err != nil {
+		return false, err
+	}
+	return exists, nil
 }

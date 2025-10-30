@@ -17,6 +17,7 @@ type actions struct {
 	defaultAuth func(context.Context, string) (context.Context, error)
 	dbConn      db.ConnPool
 	userRepo    repos.IUserRepository
+	channelRepo repos.IChannelRepository
 }
 
 // AuthFuncOverride is a callback function that overrides the default authorization middleware in the GRPC layer. This is
@@ -34,6 +35,11 @@ func NewActions(ctx context.Context, signingToken string) *actions {
 		logger.Global().Fatal("unable to get user repo")
 	}
 
+	channelRepo, err := do.Invoke[repos.IChannelRepository](nil)
+	if err != nil {
+		logger.Global().Fatal("unable to get channel repo")
+	}
+
 	dbConn, err := do.Invoke[db.ConnPool](nil)
 	if err != nil {
 		logger.Global().Fatal("unable to get db conn")
@@ -44,5 +50,6 @@ func NewActions(ctx context.Context, signingToken string) *actions {
 		defaultAuth: interceptors.ConnectServerAuthHandler(signingToken),
 		dbConn:      dbConn,
 		userRepo:    userRepo,
+		channelRepo: channelRepo,
 	}
 }

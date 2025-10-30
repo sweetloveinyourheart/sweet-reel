@@ -38,6 +38,12 @@ const (
 	UserServiceUpsertOAuthUserProcedure = "/com.sweetloveinyourheart.srl.user.UserService/UpsertOAuthUser"
 	// UserServiceGetUserByIDProcedure is the fully-qualified name of the UserService's GetUserByID RPC.
 	UserServiceGetUserByIDProcedure = "/com.sweetloveinyourheart.srl.user.UserService/GetUserByID"
+	// UserServiceGetChannelByUserProcedure is the fully-qualified name of the UserService's
+	// GetChannelByUser RPC.
+	UserServiceGetChannelByUserProcedure = "/com.sweetloveinyourheart.srl.user.UserService/GetChannelByUser"
+	// UserServiceGetChannelByHandleProcedure is the fully-qualified name of the UserService's
+	// GetChannelByHandle RPC.
+	UserServiceGetChannelByHandleProcedure = "/com.sweetloveinyourheart.srl.user.UserService/GetChannelByHandle"
 )
 
 // UserServiceClient is a client for the com.sweetloveinyourheart.srl.user.UserService service.
@@ -46,6 +52,10 @@ type UserServiceClient interface {
 	UpsertOAuthUser(context.Context, *connect.Request[_go.UpsertOAuthUserRequest]) (*connect.Response[_go.UpsertOAuthUserResponse], error)
 	// Fetch user info by ID (used internally by other services).
 	GetUserByID(context.Context, *connect.Request[_go.GetUserByIDRequest]) (*connect.Response[_go.GetUserByIDResponse], error)
+	// Fetch channel info by user.
+	GetChannelByUser(context.Context, *connect.Request[_go.GetChannelByUserRequest]) (*connect.Response[_go.GetChannelByUserResponse], error)
+	// Fetch channel info by handle (e.g., @username).
+	GetChannelByHandle(context.Context, *connect.Request[_go.GetChannelByHandleRequest]) (*connect.Response[_go.GetChannelByHandleResponse], error)
 }
 
 // NewUserServiceClient constructs a client for the com.sweetloveinyourheart.srl.user.UserService
@@ -71,13 +81,27 @@ func NewUserServiceClient(httpClient connect.HTTPClient, baseURL string, opts ..
 			connect.WithSchema(userServiceMethods.ByName("GetUserByID")),
 			connect.WithClientOptions(opts...),
 		),
+		getChannelByUser: connect.NewClient[_go.GetChannelByUserRequest, _go.GetChannelByUserResponse](
+			httpClient,
+			baseURL+UserServiceGetChannelByUserProcedure,
+			connect.WithSchema(userServiceMethods.ByName("GetChannelByUser")),
+			connect.WithClientOptions(opts...),
+		),
+		getChannelByHandle: connect.NewClient[_go.GetChannelByHandleRequest, _go.GetChannelByHandleResponse](
+			httpClient,
+			baseURL+UserServiceGetChannelByHandleProcedure,
+			connect.WithSchema(userServiceMethods.ByName("GetChannelByHandle")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
 // userServiceClient implements UserServiceClient.
 type userServiceClient struct {
-	upsertOAuthUser *connect.Client[_go.UpsertOAuthUserRequest, _go.UpsertOAuthUserResponse]
-	getUserByID     *connect.Client[_go.GetUserByIDRequest, _go.GetUserByIDResponse]
+	upsertOAuthUser    *connect.Client[_go.UpsertOAuthUserRequest, _go.UpsertOAuthUserResponse]
+	getUserByID        *connect.Client[_go.GetUserByIDRequest, _go.GetUserByIDResponse]
+	getChannelByUser   *connect.Client[_go.GetChannelByUserRequest, _go.GetChannelByUserResponse]
+	getChannelByHandle *connect.Client[_go.GetChannelByHandleRequest, _go.GetChannelByHandleResponse]
 }
 
 // UpsertOAuthUser calls com.sweetloveinyourheart.srl.user.UserService.UpsertOAuthUser.
@@ -90,6 +114,16 @@ func (c *userServiceClient) GetUserByID(ctx context.Context, req *connect.Reques
 	return c.getUserByID.CallUnary(ctx, req)
 }
 
+// GetChannelByUser calls com.sweetloveinyourheart.srl.user.UserService.GetChannelByUser.
+func (c *userServiceClient) GetChannelByUser(ctx context.Context, req *connect.Request[_go.GetChannelByUserRequest]) (*connect.Response[_go.GetChannelByUserResponse], error) {
+	return c.getChannelByUser.CallUnary(ctx, req)
+}
+
+// GetChannelByHandle calls com.sweetloveinyourheart.srl.user.UserService.GetChannelByHandle.
+func (c *userServiceClient) GetChannelByHandle(ctx context.Context, req *connect.Request[_go.GetChannelByHandleRequest]) (*connect.Response[_go.GetChannelByHandleResponse], error) {
+	return c.getChannelByHandle.CallUnary(ctx, req)
+}
+
 // UserServiceHandler is an implementation of the com.sweetloveinyourheart.srl.user.UserService
 // service.
 type UserServiceHandler interface {
@@ -97,6 +131,10 @@ type UserServiceHandler interface {
 	UpsertOAuthUser(context.Context, *connect.Request[_go.UpsertOAuthUserRequest]) (*connect.Response[_go.UpsertOAuthUserResponse], error)
 	// Fetch user info by ID (used internally by other services).
 	GetUserByID(context.Context, *connect.Request[_go.GetUserByIDRequest]) (*connect.Response[_go.GetUserByIDResponse], error)
+	// Fetch channel info by user.
+	GetChannelByUser(context.Context, *connect.Request[_go.GetChannelByUserRequest]) (*connect.Response[_go.GetChannelByUserResponse], error)
+	// Fetch channel info by handle (e.g., @username).
+	GetChannelByHandle(context.Context, *connect.Request[_go.GetChannelByHandleRequest]) (*connect.Response[_go.GetChannelByHandleResponse], error)
 }
 
 // NewUserServiceHandler builds an HTTP handler from the service implementation. It returns the path
@@ -118,12 +156,28 @@ func NewUserServiceHandler(svc UserServiceHandler, opts ...connect.HandlerOption
 		connect.WithSchema(userServiceMethods.ByName("GetUserByID")),
 		connect.WithHandlerOptions(opts...),
 	)
+	userServiceGetChannelByUserHandler := connect.NewUnaryHandler(
+		UserServiceGetChannelByUserProcedure,
+		svc.GetChannelByUser,
+		connect.WithSchema(userServiceMethods.ByName("GetChannelByUser")),
+		connect.WithHandlerOptions(opts...),
+	)
+	userServiceGetChannelByHandleHandler := connect.NewUnaryHandler(
+		UserServiceGetChannelByHandleProcedure,
+		svc.GetChannelByHandle,
+		connect.WithSchema(userServiceMethods.ByName("GetChannelByHandle")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/com.sweetloveinyourheart.srl.user.UserService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case UserServiceUpsertOAuthUserProcedure:
 			userServiceUpsertOAuthUserHandler.ServeHTTP(w, r)
 		case UserServiceGetUserByIDProcedure:
 			userServiceGetUserByIDHandler.ServeHTTP(w, r)
+		case UserServiceGetChannelByUserProcedure:
+			userServiceGetChannelByUserHandler.ServeHTTP(w, r)
+		case UserServiceGetChannelByHandleProcedure:
+			userServiceGetChannelByHandleHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -139,4 +193,12 @@ func (UnimplementedUserServiceHandler) UpsertOAuthUser(context.Context, *connect
 
 func (UnimplementedUserServiceHandler) GetUserByID(context.Context, *connect.Request[_go.GetUserByIDRequest]) (*connect.Response[_go.GetUserByIDResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("com.sweetloveinyourheart.srl.user.UserService.GetUserByID is not implemented"))
+}
+
+func (UnimplementedUserServiceHandler) GetChannelByUser(context.Context, *connect.Request[_go.GetChannelByUserRequest]) (*connect.Response[_go.GetChannelByUserResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("com.sweetloveinyourheart.srl.user.UserService.GetChannelByUser is not implemented"))
+}
+
+func (UnimplementedUserServiceHandler) GetChannelByHandle(context.Context, *connect.Request[_go.GetChannelByHandleRequest]) (*connect.Response[_go.GetChannelByHandleResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("com.sweetloveinyourheart.srl.user.UserService.GetChannelByHandle is not implemented"))
 }

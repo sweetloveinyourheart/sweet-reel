@@ -1,6 +1,7 @@
 -- videos: main metadata owned by Video Service
 CREATE TABLE videos (
     id                  UUID            NOT NULL,
+    channel_id          UUID            NOT NULL,               -- references channel ID from User Service
     uploader_id         UUID            NOT NULL,               -- references user ID from User Service
     title               VARCHAR(255)    NOT NULL,
     description         TEXT,

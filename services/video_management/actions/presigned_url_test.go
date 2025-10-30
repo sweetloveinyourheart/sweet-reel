@@ -25,6 +25,7 @@ func (as *ActionsSuite) TestActions_PresignedUrl_Success() {
 
 	// Setup test data
 	userID := uuid.Must(uuid.NewV7())
+	channelID := uuid.Must(uuid.NewV7())
 	title := "Test Video"
 	description := "Test video description"
 	fileName := "test-video.mp4"
@@ -49,6 +50,7 @@ func (as *ActionsSuite) TestActions_PresignedUrl_Success() {
 	// Setup request
 	request := &connect.Request[proto.PresignedUrlRequest]{
 		Msg: &proto.PresignedUrlRequest{
+			ChannelId:   channelID.String(),
 			Title:       title,
 			Description: description,
 			FileName:    fileName,
@@ -83,6 +85,7 @@ func (as *ActionsSuite) TestActions_PresignedUrl_Success_WithoutDescription() {
 	defer cancel()
 
 	// Setup test data
+	channelID := uuid.Must(uuid.NewV7())
 	userID := uuid.Must(uuid.NewV7())
 	title := "Test Video Without Description"
 	fileName := "test-video.mp4"
@@ -103,6 +106,7 @@ func (as *ActionsSuite) TestActions_PresignedUrl_Success_WithoutDescription() {
 	// Setup request without description
 	request := &connect.Request[proto.PresignedUrlRequest]{
 		Msg: &proto.PresignedUrlRequest{
+			ChannelId:  channelID.String(),
 			Title:      title,
 			FileName:   fileName,
 			UploaderId: userID.String(),
@@ -228,6 +232,7 @@ func (as *ActionsSuite) TestActions_PresignedUrl_S3GenerateUrlError() {
 
 	// Setup test data
 	userID := uuid.Must(uuid.NewV7())
+	channelID := uuid.Must(uuid.NewV7())
 	title := "Test Video"
 	fileName := "test-video.mp4"
 	s3Error := errors.New("S3 service unavailable")
@@ -241,6 +246,7 @@ func (as *ActionsSuite) TestActions_PresignedUrl_S3GenerateUrlError() {
 	// Setup request
 	request := &connect.Request[proto.PresignedUrlRequest]{
 		Msg: &proto.PresignedUrlRequest{
+			ChannelId:  channelID.String(),
 			Title:      title,
 			FileName:   fileName,
 			UploaderId: userID.String(),
@@ -272,6 +278,7 @@ func (as *ActionsSuite) TestActions_PresignedUrl_DatabaseError() {
 	defer cancel()
 
 	// Setup test data
+	channelID := uuid.Must(uuid.NewV7())
 	userID := uuid.Must(uuid.NewV7())
 	title := "Test Video"
 	fileName := "test-video.mp4"
@@ -289,6 +296,7 @@ func (as *ActionsSuite) TestActions_PresignedUrl_DatabaseError() {
 	// Setup request
 	request := &connect.Request[proto.PresignedUrlRequest]{
 		Msg: &proto.PresignedUrlRequest{
+			ChannelId:  channelID.String(),
 			Title:      title,
 			FileName:   fileName,
 			UploaderId: userID.String(),
@@ -320,6 +328,7 @@ func (as *ActionsSuite) TestActions_PresignedUrl_KeyGeneration() {
 	defer cancel()
 
 	// Setup test data
+	channelID := uuid.Must(uuid.NewV7())
 	userID := uuid.Must(uuid.NewV7())
 	title := "Test Video"
 	fileName := "test-video.mp4"
@@ -340,6 +349,7 @@ func (as *ActionsSuite) TestActions_PresignedUrl_KeyGeneration() {
 	// Setup request
 	request := &connect.Request[proto.PresignedUrlRequest]{
 		Msg: &proto.PresignedUrlRequest{
+			ChannelId:  channelID.String(),
 			Title:      title,
 			FileName:   fileName,
 			UploaderId: userID.String(),
@@ -386,6 +396,7 @@ func (as *ActionsSuite) TestActions_PresignedUrl_DifferentFileExtensions() {
 			as.mockS3.ExpectedCalls = nil
 			as.mockVideoAggregateRepository.ExpectedCalls = nil
 
+			channelID := uuid.Must(uuid.NewV7())
 			userID := uuid.Must(uuid.NewV7())
 
 			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -405,6 +416,7 @@ func (as *ActionsSuite) TestActions_PresignedUrl_DifferentFileExtensions() {
 
 			request := &connect.Request[proto.PresignedUrlRequest]{
 				Msg: &proto.PresignedUrlRequest{
+					ChannelId:  channelID.String(),
 					Title:      "Test Video",
 					FileName:   tc.fileName,
 					UploaderId: userID.String(),

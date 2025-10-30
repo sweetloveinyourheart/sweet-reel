@@ -62,6 +62,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
     async session({ session, token }) {
       if (token?.accessToken) session.accessToken = token.accessToken
+      if (token?.error) session.error = token.error
 
       return session
     },
@@ -81,6 +82,7 @@ declare module "next-auth/jwt" {
     accessToken?: string
     accessTokenExp?: number
     refreshToken?: string
+    error?: SessionAuthError
   }
 }
 

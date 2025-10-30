@@ -3,6 +3,7 @@ import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import { YouTubeLayout } from "@/components/youtube-layout"
 import SessionProviderWrapper from "@/components/session-provider"
+import AccountProviderWrapper from "@/components/account-provider"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -17,7 +18,9 @@ export default function RootLayout({ children }: React.PropsWithChildren) {
     <html lang="en">
       <body className={inter.className}>
         <SessionProviderWrapper>
-          <YouTubeLayout>{children}</YouTubeLayout>
+          <AccountProviderWrapper>
+            <YouTubeLayout>{children}</YouTubeLayout>
+          </AccountProviderWrapper>
         </SessionProviderWrapper>
       </body>
     </html>

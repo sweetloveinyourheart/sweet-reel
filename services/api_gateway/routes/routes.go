@@ -35,6 +35,10 @@ func (r *Router) SetupRoutes() {
 func (r *Router) setupPublicRoutes() {
 	r.mux.Handle("/api/v1/oauth/google", helpers.POST(r.handlers.AuthHandler.GoogleOAuth))
 	r.mux.Handle("/api/v1/auth/refresh-token", helpers.GET(r.handlers.AuthHandler.RefreshToken))
+
+	// Channel routes
+	r.mux.Handle("/api/v1/channels/{handle}", helpers.GET(r.handlers.ChannelHandler.GetChannelByHandle))
+	r.mux.Handle("/api/v1/channels/videos/{handle}", helpers.GET(r.handlers.ChannelHandler.GetChannelVideosByHandle))
 }
 
 // setupProtectedRoutes sets up authenticated API routes
@@ -48,6 +52,9 @@ func (r *Router) setupProtectedRoutes() {
 	})
 
 	// Video management routes
-	r.mux.Handle("/api/v1/videos/user", authMiddleware(helpers.GET(r.handlers.VideoManagement.GetUserVideos)))
 	r.mux.Handle("/api/v1/videos/presigned-url", authMiddleware(helpers.POST(r.handlers.VideoManagement.GeneratePresignedURL)))
+
+	// Channel routes
+	r.mux.Handle("/api/v1/channels", authMiddleware(helpers.GET(r.handlers.ChannelHandler.GetChannel)))
+	r.mux.Handle("/api/v1/channels/videos", authMiddleware(helpers.GET(r.handlers.ChannelHandler.GetChannelVideos)))
 }

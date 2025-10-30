@@ -14,19 +14,19 @@ import (
 	proto "github.com/sweetloveinyourheart/sweet-reel/proto/code/video_management/go"
 )
 
-func (a *actions) GetUserVideos(ctx context.Context, request *connect.Request[proto.GetUserVideosRequest]) (*connect.Response[proto.GetUserVideosResponse], error) {
-	userID := uuid.FromStringOrNil(request.Msg.GetUserId())
+func (a *actions) GetChannelVideos(ctx context.Context, request *connect.Request[proto.GetChannelVideosRequest]) (*connect.Response[proto.GetChannelVideosResponse], error) {
+	userID := uuid.FromStringOrNil(request.Msg.GetChannelId())
 	if userID == uuid.Nil {
-		return nil, grpc.InvalidArgumentError(errors.Errorf("user id is not recognized, id: ", request.Msg.GetUserId()))
+		return nil, grpc.InvalidArgumentError(errors.Errorf("user id is not recognized, id: ", request.Msg.GetChannelId()))
 	}
 
-	videosWithThumbnail, err := a.videoAggregateRepo.GetUploadedVideos(ctx, userID, int(request.Msg.GetLimit()), int(request.Msg.Offset))
+	ChannelVideos, err := a.videoAggregateRepo.GetChannelVideos(ctx, userID, int(request.Msg.GetLimit()), int(request.Msg.Offset))
 	if err != nil {
 		return nil, grpc.InternalError(err)
 	}
 
-	var userVideos []*proto.UserVideo
-	for _, video := range videosWithThumbnail {
+	var userVideos []*proto.ChannelVideo
+	for _, video := range ChannelVideos {
 		if video.ThumbnailObjectKey == "" {
 			logger.Global().Warn("no video thumbnail was found")
 			continue
@@ -43,16 +43,17 @@ func (a *actions) GetUserVideos(ctx context.Context, request *connect.Request[pr
 			continue
 		}
 
-		userVideos = append(userVideos, &proto.UserVideo{
+		userVideos = append(userVideos, &proto.ChannelVideo{
 			VideoId:       video.ID.String(),
 			VideoTitle:    video.Title,
 			ThumbnailUrl:  thumbnailUrl,
+			TotalView:     int64(video.TotalView),
 			TotalDuration: int32(video.TotalDuration),
 			ProcessedAt:   video.ProcessedAt.Unix(),
 		})
 	}
 
-	response := &proto.GetUserVideosResponse{
+	response := &proto.GetChannelVideosResponse{
 		Videos: userVideos,
 	}
 

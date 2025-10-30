@@ -45,7 +45,7 @@ export function UserButtonClient({ session }: { session: Session | null }) {
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem asChild>
-            <Link href="/profile">Your Channel</Link>
+            <Link href="/channel">Your Channel</Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
             <Link href="/upload">Upload Video</Link>

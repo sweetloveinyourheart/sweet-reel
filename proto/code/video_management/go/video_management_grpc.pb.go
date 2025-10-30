@@ -19,8 +19,8 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	VideoManagement_PresignedUrl_FullMethodName  = "/com.sweetloveinyourheart.srl.videomanagement.dataproviders.VideoManagement/PresignedUrl"
-	VideoManagement_GetUserVideos_FullMethodName = "/com.sweetloveinyourheart.srl.videomanagement.dataproviders.VideoManagement/GetUserVideos"
+	VideoManagement_PresignedUrl_FullMethodName     = "/com.sweetloveinyourheart.srl.videomanagement.dataproviders.VideoManagement/PresignedUrl"
+	VideoManagement_GetChannelVideos_FullMethodName = "/com.sweetloveinyourheart.srl.videomanagement.dataproviders.VideoManagement/GetChannelVideos"
 )
 
 // VideoManagementClient is the client API for VideoManagement service.
@@ -28,7 +28,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type VideoManagementClient interface {
 	PresignedUrl(ctx context.Context, in *PresignedUrlRequest, opts ...grpc.CallOption) (*PresignedUrlResponse, error)
-	GetUserVideos(ctx context.Context, in *GetUserVideosRequest, opts ...grpc.CallOption) (*GetUserVideosResponse, error)
+	GetChannelVideos(ctx context.Context, in *GetChannelVideosRequest, opts ...grpc.CallOption) (*GetChannelVideosResponse, error)
 }
 
 type videoManagementClient struct {
@@ -49,10 +49,10 @@ func (c *videoManagementClient) PresignedUrl(ctx context.Context, in *PresignedU
 	return out, nil
 }
 
-func (c *videoManagementClient) GetUserVideos(ctx context.Context, in *GetUserVideosRequest, opts ...grpc.CallOption) (*GetUserVideosResponse, error) {
+func (c *videoManagementClient) GetChannelVideos(ctx context.Context, in *GetChannelVideosRequest, opts ...grpc.CallOption) (*GetChannelVideosResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetUserVideosResponse)
-	err := c.cc.Invoke(ctx, VideoManagement_GetUserVideos_FullMethodName, in, out, cOpts...)
+	out := new(GetChannelVideosResponse)
+	err := c.cc.Invoke(ctx, VideoManagement_GetChannelVideos_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -64,7 +64,7 @@ func (c *videoManagementClient) GetUserVideos(ctx context.Context, in *GetUserVi
 // for forward compatibility.
 type VideoManagementServer interface {
 	PresignedUrl(context.Context, *PresignedUrlRequest) (*PresignedUrlResponse, error)
-	GetUserVideos(context.Context, *GetUserVideosRequest) (*GetUserVideosResponse, error)
+	GetChannelVideos(context.Context, *GetChannelVideosRequest) (*GetChannelVideosResponse, error)
 }
 
 // UnimplementedVideoManagementServer should be embedded to have
@@ -77,8 +77,8 @@ type UnimplementedVideoManagementServer struct{}
 func (UnimplementedVideoManagementServer) PresignedUrl(context.Context, *PresignedUrlRequest) (*PresignedUrlResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method PresignedUrl not implemented")
 }
-func (UnimplementedVideoManagementServer) GetUserVideos(context.Context, *GetUserVideosRequest) (*GetUserVideosResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetUserVideos not implemented")
+func (UnimplementedVideoManagementServer) GetChannelVideos(context.Context, *GetChannelVideosRequest) (*GetChannelVideosResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetChannelVideos not implemented")
 }
 func (UnimplementedVideoManagementServer) testEmbeddedByValue() {}
 
@@ -118,20 +118,20 @@ func _VideoManagement_PresignedUrl_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
-func _VideoManagement_GetUserVideos_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetUserVideosRequest)
+func _VideoManagement_GetChannelVideos_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetChannelVideosRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(VideoManagementServer).GetUserVideos(ctx, in)
+		return srv.(VideoManagementServer).GetChannelVideos(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: VideoManagement_GetUserVideos_FullMethodName,
+		FullMethod: VideoManagement_GetChannelVideos_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(VideoManagementServer).GetUserVideos(ctx, req.(*GetUserVideosRequest))
+		return srv.(VideoManagementServer).GetChannelVideos(ctx, req.(*GetChannelVideosRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -148,8 +148,8 @@ var VideoManagement_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _VideoManagement_PresignedUrl_Handler,
 		},
 		{
-			MethodName: "GetUserVideos",
-			Handler:    _VideoManagement_GetUserVideos_Handler,
+			MethodName: "GetChannelVideos",
+			Handler:    _VideoManagement_GetChannelVideos_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
