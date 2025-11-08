@@ -12,6 +12,9 @@ service UserService {
     // Fetch user info by ID (used internally by other services).
     rpc GetUserByID(GetUserByIDRequest) returns (GetUserByIDResponse);
 
+    // Fetch channel info by ID.
+    rpc GetChannelByID(GetChannelByIDRequest) returns (GetChannelByIDResponse);
+
     // Fetch channel info by user.
     rpc GetChannelByUser(GetChannelByUserRequest) returns (GetChannelByUserResponse);
 
@@ -77,6 +80,15 @@ message GetChannelByUserRequest {
 }
 
 message GetChannelByUserResponse {
+    Channel channel = 1;
+    User owner = 2;
+}
+
+message GetChannelByIDRequest {
+    string video_id = 1;
+}
+
+message GetChannelByIDResponse {
     Channel channel = 1;
     User owner = 2;
 }

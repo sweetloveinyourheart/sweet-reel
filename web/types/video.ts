@@ -26,3 +26,24 @@ export type ChannelVideos = {
 export type GetChannelVideosResponse = {
   videos: ChannelVideos[]
 }
+
+export type UserMetadata = {
+  email: string
+  name: string
+  picture: string
+}
+
+export type ChannelMetadata = {
+  name: string
+  handle: string
+  onwer_metadata: UserMetadata
+}
+
+export type GetVideoMetadataResponse = {
+  video_title?: string
+  video_description?: string
+  total_view?: number
+  available_qualities?: string[]
+  processed_at?: number
+  channel_metadata: ChannelMetadata
+}

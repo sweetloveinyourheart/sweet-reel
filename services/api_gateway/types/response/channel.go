@@ -14,3 +14,9 @@ type ChannelResponse struct {
 	UpdatedAt       string       `json:"updated_at"`
 	Owner           UserResponse `json:"owner"`
 }
+
+type ChannelMetadata struct {
+	Name          string       `json:"name"`
+	Handle        string       `json:"handle"`
+	OwnerMetadata UserMetadata `json:"onwer_metadata"`
+}

@@ -17,3 +17,12 @@ type UserVideoResponse struct {
 type GetChannelVideosResponse struct {
 	Videos []UserVideoResponse `json:"videos"`
 }
+
+type GetVideoMetadataResponse struct {
+	VideoTitle         string          `json:"video_title,omitempty"`
+	VideoDescription   string          `json:"video_description,omitempty"`
+	TotalView          int64           `json:"total_view,omitempty"`
+	AvailableQualities []string        `json:"available_qualities,omitempty"`
+	ProcessedAt        int64           `json:"processed_at,omitempty"`
+	Channel            ChannelMetadata `json:"channel_metadata"`
+}

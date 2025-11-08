@@ -39,6 +39,9 @@ func (r *Router) setupPublicRoutes() {
 	// Channel routes
 	r.mux.Handle("/api/v1/channels/{handle}", helpers.GET(r.handlers.ChannelHandler.GetChannelByHandle))
 	r.mux.Handle("/api/v1/channels/videos/{handle}", helpers.GET(r.handlers.ChannelHandler.GetChannelVideosByHandle))
+
+	// Video routes
+	r.mux.Handle("/api/v1/videos/{video_id}/metadata", helpers.GET(r.handlers.Video.GetVideoMetadata))
 }
 
 // setupProtectedRoutes sets up authenticated API routes
@@ -52,7 +55,7 @@ func (r *Router) setupProtectedRoutes() {
 	})
 
 	// Video management routes
-	r.mux.Handle("/api/v1/videos/presigned-url", authMiddleware(helpers.POST(r.handlers.VideoManagement.GeneratePresignedURL)))
+	r.mux.Handle("/api/v1/videos/presigned-url", authMiddleware(helpers.POST(r.handlers.Video.GeneratePresignedURL)))
 
 	// Channel routes
 	r.mux.Handle("/api/v1/channels", authMiddleware(helpers.GET(r.handlers.ChannelHandler.GetChannel)))
