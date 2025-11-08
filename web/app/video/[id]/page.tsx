@@ -2,41 +2,12 @@ import { VideoCard } from "@/components/video-card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { ThumbsUp, ThumbsDown, Share2, Download, Flag } from "lucide-react"
+import { getServerApiClient } from "@/lib/api/server"
+import type { GetVideoMetadataResponse } from "@/types"
+import { redirect } from "next/navigation"
+import moment from "moment"
 
-// Mock video data
-const currentVideo = {
-  id: "1",
-  title: "Building Modern Web Applications with Next.js 14 - Complete Tutorial",
-  channel: {
-    name: "Tech Masters",
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=TechMasters",
-    subscribers: "1.2M",
-  },
-  views: "124,567",
-  uploadDate: "Mar 10, 2024",
-  likes: "12K",
-  description: `In this comprehensive tutorial, we'll build a modern web application using Next.js 14.
-
-We'll cover:
-- App Router and Server Components
-- Server Actions and Mutations
-- Data Fetching and Caching
-- Streaming and Suspense
-- Metadata and SEO optimization
-
-Perfect for developers who want to master Next.js and build production-ready applications!
-
-🔗 Resources:
-- Source code: github.com/example
-- Documentation: nextjs.org
-
-⏱️ Timestamps:
-0:00 Introduction
-2:30 Setting up Next.js 14
-8:15 App Router basics
-15:42 Server Components explained`,
-}
-
+// Mock related videos (TODO: Replace with actual API call)
 const relatedVideos = [
   {
     id: "2",
@@ -97,6 +68,41 @@ export default async function VideoPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
+  
+  // Get authenticated API client
+  const api = await getServerApiClient()
+  
+  if (!api) {
+    redirect("/signin")
+  }
+
+  // Fetch video metadata
+  let metadata
+  let error = null
+
+  try {
+    metadata = await api.get<GetVideoMetadataResponse>(`/videos/${id}/metadata`)
+  } catch (err) {
+    error = err instanceof Error ? err.message : "Failed to load video"
+  }
+
+  // If error occurred, show error page
+  if (error || !metadata) {
+    return (
+      <div className="flex items-center justify-center min-h-[50vh]">
+        <div className="text-center max-w-md">
+          <h1 className="text-2xl font-bold mb-2">Video Not Found</h1>
+          <p className="text-muted-foreground mb-4">
+            {error || "The video you're looking for doesn't exist or has been removed."}
+          </p>
+          <Button asChild>
+            <a href="/">Go Back Home</a>
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="flex flex-col gap-6 lg:flex-row">
       {/* Main content */}
@@ -112,19 +118,19 @@ export default async function VideoPage({
 
         {/* Video info */}
         <div className="space-y-4">
-          <h1 className="text-xl font-bold">{currentVideo.title}</h1>
+          <h1 className="text-xl font-bold">{metadata.video_title}</h1>
 
           {/* Channel info and actions */}
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <Avatar className="h-10 w-10">
-                <AvatarImage src={currentVideo.channel.avatar} />
-                <AvatarFallback>{currentVideo.channel.name[0]}</AvatarFallback>
+                <AvatarImage src={metadata.channel_metadata.onwer_metadata.picture} />
+                <AvatarFallback>{metadata.channel_metadata.name[0]}</AvatarFallback>
               </Avatar>
               <div className="flex flex-col">
-                <span className="font-semibold">{currentVideo.channel.name}</span>
+                <span className="font-semibold">{metadata.channel_metadata.name}</span>
                 <span className="text-sm text-muted-foreground">
-                  {currentVideo.channel.subscribers} subscribers
+                  @{metadata.channel_metadata.handle}
                 </span>
               </div>
               <Button className="ml-4" size="sm">
@@ -135,7 +141,7 @@ export default async function VideoPage({
             <div className="flex items-center gap-2">
               <Button variant="outline" size="sm" className="gap-2">
                 <ThumbsUp className="h-4 w-4" />
-                {currentVideo.likes}
+                Like
               </Button>
               <Button variant="outline" size="sm">
                 <ThumbsDown className="h-4 w-4" />
@@ -153,10 +159,29 @@ export default async function VideoPage({
           {/* Description */}
           <div className="rounded-xl bg-muted p-4">
             <div className="mb-2 flex gap-4 text-sm font-semibold">
-              <span>{currentVideo.views} views</span>
-              <span>{currentVideo.uploadDate}</span>
+              <span>{metadata.total_view?.toLocaleString() || 0} views</span>
+              {metadata.processed_at && (
+                <span>{moment(metadata.processed_at * 1000).format("MMM D, YYYY")}</span>
+              )}
             </div>
-            <p className="whitespace-pre-line text-sm">{currentVideo.description}</p>
+            <p className="whitespace-pre-line text-sm">{metadata.video_description}</p>
+            
+            {/* Available Qualities */}
+            {metadata.available_qualities && metadata.available_qualities.length > 0 && (
+              <div className="mt-4 pt-4 border-t">
+                <p className="text-sm font-semibold mb-2">Available Qualities:</p>
+                <div className="flex flex-wrap gap-2">
+                  {metadata.available_qualities.map((quality: string) => (
+                    <span
+                      key={quality}
+                      className="px-2 py-1 text-xs font-medium bg-primary/10 text-primary rounded"
+                    >
+                      {quality}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Comments section */}

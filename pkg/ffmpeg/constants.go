@@ -1,5 +1,14 @@
 package ffmpeg
 
+// Quality levels
+const (
+	QualityDefault = "default"
+	Quality480p    = "480p"
+	Quality720p    = "720p"
+	Quality1080p   = "1080p"
+	QualityUnknown = "unknown"
+)
+
 // Video codecs
 const (
 	CodecLibX264 = "libx264"

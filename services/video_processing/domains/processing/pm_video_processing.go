@@ -35,16 +35,17 @@ const (
 	TempDirPattern = "/tmp/video_processing_%s"
 	InputFileName  = "input.mp4"
 	HLSDirName     = "hls"
-
-	// Quality levels
-	Quality480p    = "480p"
-	Quality720p    = "720p"
-	Quality1080p   = "1080p"
-	QualityUnknown = "unknown"
 )
 
 // Re-export commonly used ffmpeg constants for convenience
 const (
+	// Quality levels
+	QualityDefault = ffmpeg.QualityDefault
+	Quality480p    = ffmpeg.Quality480p
+	Quality720p    = ffmpeg.Quality720p
+	Quality1080p   = ffmpeg.Quality1080p
+	QualityUnknown = ffmpeg.QualityUnknown
+
 	// MIME types
 	ThumbnailMimeType = ffmpeg.MimeTypeJPEG
 
@@ -233,7 +234,7 @@ func (vsp *VideoProcessManager) HandleMessage(ctx context.Context, message *kafk
 	if err != nil {
 		publishMsg := messages.VideoProcessingProgress{
 			VideoID:     videoID,
-			Status:      messages.VideoStatusReady,
+			Status:      messages.VideoStatusFailed,
 			ObjectKey:   key,
 			ProcessedAt: time.Now(),
 		}
@@ -379,7 +380,10 @@ func (vsp *VideoProcessManager) uploadProcessedSegmentFiles(ctx context.Context,
 		ext := filepath.Ext(path)
 		switch ext {
 		case ExtM3U8:
+			quality := vsp.extractQualityFromPath(relPath)
+
 			manifestData := messages.VideoProcessedManifestData{
+				Quality:   quality,
 				SizeBytes: info.Size(),
 			}
 			publishManifestMsg := messages.VideoProcessed{
@@ -474,7 +478,11 @@ func (vsp *VideoProcessManager) extractQualityFromPath(relPath string) string {
 	// Extract the quality directory from the path
 	parts := filepath.SplitList(relPath)
 	if len(parts) > 0 {
-		return filepath.Dir(relPath)
+		dir := filepath.Dir(relPath)
+		if dir == "." {
+			return QualityDefault
+		}
+		return dir
 	}
 
 	return QualityUnknown

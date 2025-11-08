@@ -27,6 +27,7 @@ type Video struct {
 	Status      VideoStatus `json:"status"`
 	ObjectKey   *string     `json:"object_key"`
 	ProcessedAt *time.Time  `json:"processed_at"`
+	ViewCount   int64       `json:"view_count"`
 	CreatedAt   time.Time   `json:"created_at"`
 	UpdatedAt   time.Time   `json:"updated_at"`
 }
@@ -80,6 +81,10 @@ func (v Video) GetProcessedAt() time.Time {
 	return *v.ProcessedAt
 }
 
+func (v Video) GetViewCount() int64 {
+	return v.ViewCount
+}
+
 // GetCreatedAt returns the created timestamp of the video
 func (v Video) GetCreatedAt() time.Time {
 	return v.CreatedAt
@@ -119,26 +124,4 @@ func (v Video) Validate() error {
 	}
 
 	return nil
-}
-
-type ChannelVideo struct {
-	Video
-	TotalDuration      int    `json:"total_duration"`
-	TotalView          int    `json:"total_view"`
-	ThumbnailObjectKey string `json:"thumbnail_object_key"`
-}
-
-// GetTotalDuration returns the total duration of the video
-func (v ChannelVideo) GetTotalDuration() int {
-	return v.TotalDuration
-}
-
-// GetTotalView returns the total view count of the video
-func (v ChannelVideo) GetTotalView() int {
-	return v.TotalView
-}
-
-// GetThumbnailObjectKey returns the thumbnail object key of the video
-func (v ChannelVideo) GetThumbnailObjectKey() string {
-	return v.ThumbnailObjectKey
 }

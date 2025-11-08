@@ -2,6 +2,7 @@ package repos
 
 import (
 	"context"
+	"database/sql"
 	"time"
 
 	"github.com/gofrs/uuid"
@@ -13,6 +14,7 @@ import (
 type IVideoAggregateRepository interface {
 	IVideoRepository
 	GetChannelVideos(ctx context.Context, uploaderID uuid.UUID, limit, offset int) ([]*models.ChannelVideo, error)
+	GetVideoMetadata(ctx context.Context, videoID uuid.UUID) (*models.VideoMetadata, error)
 }
 
 type VideoAggregateRepository struct {
@@ -41,9 +43,9 @@ func (r *VideoAggregateRepository) GetChannelVideos(ctx context.Context, channel
 			videos.created_at,
 			videos.updated_at,
 			videos.view_count,
-			video_thumbnails.video_id,
+			video_thumbnails.id,
 			video_thumbnails.object_key,
-			video_variants.video_id,
+			video_variants.id,
 			video_variants.total_duration
 		FROM videos
 		LEFT JOIN video_thumbnails ON videos.id = video_thumbnails.video_id
@@ -105,12 +107,12 @@ func (r *VideoAggregateRepository) GetChannelVideos(ctx context.Context, channel
 					Status:      status,
 					ObjectKey:   objectKey,
 					ProcessedAt: processedAt,
+					ViewCount:   viewCount,
 					CreatedAt:   createdAt,
 					UpdatedAt:   updatedAt,
 				},
 				ThumbnailObjectKey: "",
 				TotalDuration:      0,
-				TotalView:          int(viewCount),
 			}
 			videoMap[videoID] = video
 			videoOrder = append(videoOrder, videoID)
@@ -138,4 +140,99 @@ func (r *VideoAggregateRepository) GetChannelVideos(ctx context.Context, channel
 	}
 
 	return videos, nil
+}
+
+func (r *VideoAggregateRepository) GetVideoMetadata(ctx context.Context, videoID uuid.UUID) (*models.VideoMetadata, error) {
+	query := `
+		SELECT DISTINCT ON (video_variants.quality)
+			videos.id,
+			uploader_id,
+			channel_id,
+			title,
+			description,
+			status,
+			videos.object_key,
+			processed_at,
+			videos.created_at,
+			videos.updated_at,
+			videos.view_count,
+			video_variants.id,
+			video_variants.quality
+		FROM videos
+		LEFT JOIN video_variants ON videos.id = video_variants.video_id
+		WHERE videos.id = $1 AND status = 'ready'
+		ORDER BY video_variants.quality`
+
+	rows, err := r.Tx.Query(ctx, query, videoID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var metadata *models.VideoMetadata
+	qualityHashSet := make(map[string]struct{})
+
+	for rows.Next() {
+		var (
+			vID            uuid.UUID
+			uploaderID     uuid.UUID
+			channelID      uuid.UUID
+			title          string
+			description    *string
+			status         models.VideoStatus
+			objectKey      *string
+			processedAt    *time.Time
+			createdAt      time.Time
+			updatedAt      time.Time
+			viewCount      int64
+			variantID      *uuid.UUID
+			variantQuality string
+		)
+
+		err := rows.Scan(
+			&vID, &uploaderID, &channelID, &title, &description,
+			&status, &objectKey, &processedAt,
+			&createdAt, &updatedAt, &viewCount,
+			&variantID, &variantQuality)
+		if err != nil {
+			return nil, err
+		}
+
+		if metadata == nil {
+			metadata = &models.VideoMetadata{
+				Video: models.Video{
+					ID:          vID,
+					UploaderID:  uploaderID,
+					ChannelID:   channelID,
+					Title:       title,
+					Description: description,
+					Status:      status,
+					ObjectKey:   objectKey,
+					ProcessedAt: processedAt,
+					CreatedAt:   createdAt,
+					UpdatedAt:   updatedAt,
+					ViewCount:   viewCount,
+				},
+				AvailableQualities: []string{},
+			}
+		}
+
+		// Collect variants if present
+		if variantID != nil && variantQuality != "" {
+			if _, exists := qualityHashSet[variantQuality]; !exists {
+				qualityHashSet[variantQuality] = struct{}{}
+				metadata.AvailableQualities = append(metadata.AvailableQualities, variantQuality)
+			}
+		}
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	if metadata == nil {
+		return nil, sql.ErrNoRows
+	}
+
+	return metadata, nil
 }

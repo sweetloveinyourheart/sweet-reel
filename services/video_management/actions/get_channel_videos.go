@@ -15,18 +15,18 @@ import (
 )
 
 func (a *actions) GetChannelVideos(ctx context.Context, request *connect.Request[proto.GetChannelVideosRequest]) (*connect.Response[proto.GetChannelVideosResponse], error) {
-	userID := uuid.FromStringOrNil(request.Msg.GetChannelId())
-	if userID == uuid.Nil {
-		return nil, grpc.InvalidArgumentError(errors.Errorf("user id is not recognized, id: ", request.Msg.GetChannelId()))
+	channelID := uuid.FromStringOrNil(request.Msg.GetChannelId())
+	if channelID == uuid.Nil {
+		return nil, grpc.InvalidArgumentError(errors.Errorf("channel id is not recognized, id: ", request.Msg.GetChannelId()))
 	}
 
-	ChannelVideos, err := a.videoAggregateRepo.GetChannelVideos(ctx, userID, int(request.Msg.GetLimit()), int(request.Msg.Offset))
+	channelVideos, err := a.videoAggregateRepo.GetChannelVideos(ctx, channelID, int(request.Msg.GetLimit()), int(request.Msg.Offset))
 	if err != nil {
 		return nil, grpc.InternalError(err)
 	}
 
 	var userVideos []*proto.ChannelVideo
-	for _, video := range ChannelVideos {
+	for _, video := range channelVideos {
 		if video.ThumbnailObjectKey == "" {
 			logger.Global().Warn("no video thumbnail was found")
 			continue
@@ -47,7 +47,7 @@ func (a *actions) GetChannelVideos(ctx context.Context, request *connect.Request
 			VideoId:       video.ID.String(),
 			VideoTitle:    video.Title,
 			ThumbnailUrl:  thumbnailUrl,
-			TotalView:     int64(video.TotalView),
+			TotalView:     video.ViewCount,
 			TotalDuration: int32(video.TotalDuration),
 			ProcessedAt:   video.ProcessedAt.Unix(),
 		})

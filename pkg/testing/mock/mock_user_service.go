@@ -53,3 +53,12 @@ func (m *MockUserServiceClient) GetChannelByUser(
 	resp, _ := args.Get(0).(*connect.Response[proto.GetChannelByUserResponse])
 	return resp, args.Error(1)
 }
+
+func (m *MockUserServiceClient) GetChannelByID(
+	ctx context.Context,
+	req *connect.Request[proto.GetChannelByIDRequest],
+) (*connect.Response[proto.GetChannelByIDResponse], error) {
+	args := m.Called(ctx, req)
+	resp, _ := args.Get(0).(*connect.Response[proto.GetChannelByIDResponse])
+	return resp, args.Error(1)
+}

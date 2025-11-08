@@ -21,6 +21,7 @@ const _ = grpc.SupportPackageIsVersion9
 const (
 	UserService_UpsertOAuthUser_FullMethodName    = "/com.sweetloveinyourheart.srl.user.UserService/UpsertOAuthUser"
 	UserService_GetUserByID_FullMethodName        = "/com.sweetloveinyourheart.srl.user.UserService/GetUserByID"
+	UserService_GetChannelByID_FullMethodName     = "/com.sweetloveinyourheart.srl.user.UserService/GetChannelByID"
 	UserService_GetChannelByUser_FullMethodName   = "/com.sweetloveinyourheart.srl.user.UserService/GetChannelByUser"
 	UserService_GetChannelByHandle_FullMethodName = "/com.sweetloveinyourheart.srl.user.UserService/GetChannelByHandle"
 )
@@ -35,6 +36,8 @@ type UserServiceClient interface {
 	UpsertOAuthUser(ctx context.Context, in *UpsertOAuthUserRequest, opts ...grpc.CallOption) (*UpsertOAuthUserResponse, error)
 	// Fetch user info by ID (used internally by other services).
 	GetUserByID(ctx context.Context, in *GetUserByIDRequest, opts ...grpc.CallOption) (*GetUserByIDResponse, error)
+	// Fetch channel info by ID.
+	GetChannelByID(ctx context.Context, in *GetChannelByIDRequest, opts ...grpc.CallOption) (*GetChannelByIDResponse, error)
 	// Fetch channel info by user.
 	GetChannelByUser(ctx context.Context, in *GetChannelByUserRequest, opts ...grpc.CallOption) (*GetChannelByUserResponse, error)
 	// Fetch channel info by handle (e.g., @username).
@@ -63,6 +66,16 @@ func (c *userServiceClient) GetUserByID(ctx context.Context, in *GetUserByIDRequ
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(GetUserByIDResponse)
 	err := c.cc.Invoke(ctx, UserService_GetUserByID_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userServiceClient) GetChannelByID(ctx context.Context, in *GetChannelByIDRequest, opts ...grpc.CallOption) (*GetChannelByIDResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetChannelByIDResponse)
+	err := c.cc.Invoke(ctx, UserService_GetChannelByID_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -99,6 +112,8 @@ type UserServiceServer interface {
 	UpsertOAuthUser(context.Context, *UpsertOAuthUserRequest) (*UpsertOAuthUserResponse, error)
 	// Fetch user info by ID (used internally by other services).
 	GetUserByID(context.Context, *GetUserByIDRequest) (*GetUserByIDResponse, error)
+	// Fetch channel info by ID.
+	GetChannelByID(context.Context, *GetChannelByIDRequest) (*GetChannelByIDResponse, error)
 	// Fetch channel info by user.
 	GetChannelByUser(context.Context, *GetChannelByUserRequest) (*GetChannelByUserResponse, error)
 	// Fetch channel info by handle (e.g., @username).
@@ -117,6 +132,9 @@ func (UnimplementedUserServiceServer) UpsertOAuthUser(context.Context, *UpsertOA
 }
 func (UnimplementedUserServiceServer) GetUserByID(context.Context, *GetUserByIDRequest) (*GetUserByIDResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUserByID not implemented")
+}
+func (UnimplementedUserServiceServer) GetChannelByID(context.Context, *GetChannelByIDRequest) (*GetChannelByIDResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetChannelByID not implemented")
 }
 func (UnimplementedUserServiceServer) GetChannelByUser(context.Context, *GetChannelByUserRequest) (*GetChannelByUserResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetChannelByUser not implemented")
@@ -180,6 +198,24 @@ func _UserService_GetUserByID_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _UserService_GetChannelByID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetChannelByIDRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).GetChannelByID(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserService_GetChannelByID_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).GetChannelByID(ctx, req.(*GetChannelByIDRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _UserService_GetChannelByUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetChannelByUserRequest)
 	if err := dec(in); err != nil {
@@ -230,6 +266,10 @@ var UserService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetUserByID",
 			Handler:    _UserService_GetUserByID_Handler,
+		},
+		{
+			MethodName: "GetChannelByID",
+			Handler:    _UserService_GetChannelByID_Handler,
 		},
 		{
 			MethodName: "GetChannelByUser",

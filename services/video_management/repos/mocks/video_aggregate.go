@@ -20,3 +20,11 @@ func (m *MockVideoAggregateRepository) GetChannelVideos(ctx context.Context, upl
 	}
 	return args.Get(0).([]*models.ChannelVideo), args.Error(1)
 }
+
+func (m *MockVideoAggregateRepository) GetVideoMetadata(ctx context.Context, videoID uuid.UUID) (*models.VideoMetadata, error) {
+	args := m.Called(ctx, videoID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*models.VideoMetadata), args.Error(1)
+}

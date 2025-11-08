@@ -13,6 +13,7 @@ type VideoManifest struct {
 	ID        uuid.UUID `json:"id"`
 	VideoID   uuid.UUID `json:"video_id"`
 	ObjectKey string    `json:"object_key"`
+	Quality   string    `json:"quality"`
 	SizeBytes *int64    `json:"size_bytes"`
 	CreatedAt time.Time `json:"created_at"`
 }
@@ -30,6 +31,11 @@ func (vm VideoManifest) GetVideoID() uuid.UUID {
 // GetObjectKey returns the manifest URL of the video manifest
 func (vm VideoManifest) GetObjectKey() string {
 	return vm.ObjectKey
+}
+
+// GetQuality returns the quality of the video variant
+func (vv VideoManifest) GetQuality() string {
+	return vv.Quality
 }
 
 // GetSizeBytes returns the size in bytes of the video manifest or 0 if nil

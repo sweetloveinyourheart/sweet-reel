@@ -23,7 +23,7 @@ type IVideoRepository interface {
 
 	// Video manifest operations
 	CreateVideoManifest(ctx context.Context, manifest *models.VideoManifest) error
-	GetVideoManifestByVideoID(ctx context.Context, videoID uuid.UUID) (*models.VideoManifest, error)
+	GetVideoManifestsByVideoID(ctx context.Context, videoID uuid.UUID) ([]*models.VideoManifest, error)
 	UpdateVideoManifest(ctx context.Context, manifest *models.VideoManifest) error
 	DeleteVideoManifest(ctx context.Context, id uuid.UUID) error
 
@@ -203,38 +203,47 @@ func (r *VideoRepository) ListVideos(ctx context.Context, limit, offset int) ([]
 
 func (r *VideoRepository) CreateVideoManifest(ctx context.Context, manifest *models.VideoManifest) error {
 	query := `
-		INSERT INTO video_manifests (id, video_id, object_key, size_bytes)
-		VALUES ($1, $2, $3, $4)`
+		INSERT INTO video_manifests (id, video_id, object_key, quality, size_bytes)
+		VALUES ($1, $2, $3, $4, $5)`
 
 	_, err := r.Tx.Exec(ctx, query,
 		manifest.ID, manifest.VideoID, manifest.ObjectKey,
-		manifest.SizeBytes)
+		manifest.Quality, manifest.SizeBytes)
 	return err
 }
 
-func (r *VideoRepository) GetVideoManifestByVideoID(ctx context.Context, videoID uuid.UUID) (*models.VideoManifest, error) {
+func (r *VideoRepository) GetVideoManifestsByVideoID(ctx context.Context, videoID uuid.UUID) ([]*models.VideoManifest, error) {
 	query := `
-		SELECT id, video_id, object_key, size_bytes, created_at
+		SELECT id, video_id, object_key, quality, size_bytes, created_at
 		FROM video_manifests WHERE video_id = $1`
 
-	manifest := &models.VideoManifest{}
-	err := r.Tx.QueryRow(ctx, query, videoID).Scan(
-		&manifest.ID, &manifest.VideoID, &manifest.ObjectKey,
-		&manifest.SizeBytes, &manifest.CreatedAt)
-
+	rows, err := r.Tx.Query(ctx, query)
 	if err != nil {
 		return nil, err
 	}
-	return manifest, nil
+	defer rows.Close()
+
+	var manifests []*models.VideoManifest
+	for rows.Next() {
+		manifest := &models.VideoManifest{}
+		err := rows.Scan(
+			&manifest.ID, &manifest.VideoID, &manifest.ObjectKey,
+			&manifest.Quality, &manifest.SizeBytes, &manifest.CreatedAt)
+		if err != nil {
+			return nil, err
+		}
+		manifests = append(manifests, manifest)
+	}
+	return manifests, rows.Err()
 }
 
 func (r *VideoRepository) UpdateVideoManifest(ctx context.Context, manifest *models.VideoManifest) error {
 	query := `
-		UPDATE video_manifests SET video_id = $2, object_key = $3, size_bytes = $4
+		UPDATE video_manifests SET video_id = $2, object_key = $3, quality = $4, size_bytes = $5
 		WHERE id = $1`
 
 	_, err := r.Tx.Exec(ctx, query,
-		manifest.ID, manifest.VideoID, manifest.ObjectKey, manifest.SizeBytes)
+		manifest.ID, manifest.VideoID, manifest.ObjectKey, manifest.Quality, manifest.SizeBytes)
 	return err
 }
 

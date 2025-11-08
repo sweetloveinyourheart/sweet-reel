@@ -77,12 +77,12 @@ func (m *MockVideoRepository) CreateVideoManifest(ctx context.Context, manifest 
 	return args.Error(0)
 }
 
-func (m *MockVideoRepository) GetVideoManifestByVideoID(ctx context.Context, videoID uuid.UUID) (*models.VideoManifest, error) {
+func (m *MockVideoRepository) GetVideoManifestsByVideoID(ctx context.Context, videoID uuid.UUID) ([]*models.VideoManifest, error) {
 	args := m.Called(ctx, videoID)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
-	return args.Get(0).(*models.VideoManifest), args.Error(1)
+	return args.Get(0).([]*models.VideoManifest), args.Error(1)
 }
 
 func (m *MockVideoRepository) UpdateVideoManifest(ctx context.Context, manifest *models.VideoManifest) error {

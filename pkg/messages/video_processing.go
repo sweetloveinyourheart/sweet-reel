@@ -38,7 +38,8 @@ type VideoProcessed struct {
 }
 
 type VideoProcessedManifestData struct {
-	SizeBytes int64 `json:"size_bytes"`
+	Quality   string `json:"quality"`
+	SizeBytes int64  `json:"size_bytes"`
 }
 
 type VideoProcessedThumbnailData struct {

@@ -2,15 +2,15 @@ package handlers
 
 // Handlers holds all the request handlers
 type Handlers struct {
-	AuthHandler     IAuthHandler
-	ChannelHandler  IChannelHandler
-	VideoManagement IVideoManagementHandler
+	AuthHandler    IAuthHandler
+	ChannelHandler IChannelHandler
+	Video          IVideoHandler
 }
 
 func NewHandlers() *Handlers {
 	return &Handlers{
-		VideoManagement: NewVideoManagementHandler(),
-		ChannelHandler:  NewChannelHandler(),
-		AuthHandler:     NewAuthHandler(),
+		Video:          NewVideoHandler(),
+		ChannelHandler: NewChannelHandler(),
+		AuthHandler:    NewAuthHandler(),
 	}
 }
