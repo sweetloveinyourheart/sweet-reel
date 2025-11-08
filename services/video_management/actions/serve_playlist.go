@@ -6,12 +6,13 @@ import (
 	"connectrpc.com/connect"
 	"github.com/cockroachdb/errors"
 	"github.com/gofrs/uuid"
+	"go.uber.org/zap"
+
 	"github.com/sweetloveinyourheart/sweet-reel/pkg/ffmpeg"
 	"github.com/sweetloveinyourheart/sweet-reel/pkg/grpc"
 	"github.com/sweetloveinyourheart/sweet-reel/pkg/logger"
 	"github.com/sweetloveinyourheart/sweet-reel/pkg/s3"
 	proto "github.com/sweetloveinyourheart/sweet-reel/proto/code/video_management/go"
-	"go.uber.org/zap"
 )
 
 const (
